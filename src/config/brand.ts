@@ -13,8 +13,13 @@ export const BRAND = {
   /** Display name shown to users. */
   name: 'LoveOS',
 
-  /** Short descriptor used under the name on the welcome screen. */
-  tagline: 'your relationship, beautifully organised',
+  /**
+   * Short descriptor for the product.
+   *
+   * Rendered as the headline on M00-S01 Welcome, where the design typesets it
+   * across two lines — see `@/copy/welcome`, which asserts the two stay in sync.
+   */
+  tagline: 'Your relationship. Beautifully kept.',
 
   /**
    * Reverse-DNS app identifier used by the app stores.
