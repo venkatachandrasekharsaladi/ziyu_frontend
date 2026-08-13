@@ -1079,10 +1079,15 @@ describe('Input', () => {
       />,
     )
 
+    // React Native has NO `aria-invalid` / `accessibilityInvalid`. Its supported
+    // set is busy, checked, disabled, expanded, hidden, label, labelledby, live,
+    // modal, selected and the value* props. Setting an invalid flag would be a
+    // no-op that only looks accessible. The two mechanisms that do work: the hint
+    // on the field, and a polite live region on the message.
     const field = screen.getByLabelText('Email address')
-
     expect(field.props.accessibilityHint).toBe('Enter a valid email address')
-    expect(field.props.accessibilityInvalid).toBe(true)
+
+    expect(screen.getByTestId('input-error').props['aria-live']).toBe('polite')
   })
 
   it('renders no error region when there is no error', async () => {

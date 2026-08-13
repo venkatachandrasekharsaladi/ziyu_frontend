@@ -281,8 +281,13 @@ is SemiBold, which is already loaded.
   | **focus** | border → 1pt `brand.primary`, plus a 3pt ring `rgba(56,19,132,0.12)` | The field already has a border, so focus intensifies an existing mechanism rather than introducing a new one. The ring is a second, non-colour cue. |
   | **error** | border → `feedback.error`, message below in `footnote`/`error` | Colour alone never carries it — the message is always present when `error` is set. |
   | **disabled** | fill `surface.page`, border `border.subtle`, text `text.placeholder` | Reads as inert by losing its fill, not by dimming legibility. |
-- `accessibilityLabel` falls back to `label`; `error` is wired to `accessibilityHint` so a
-  screen reader reaches it without a visual scan.
+- `accessibilityLabel` falls back to `label`. An `error` is carried by **two** mechanisms:
+  `accessibilityHint` on the field, and a polite live region on the message so its
+  appearance is announced rather than only seen. Note that React Native has **no**
+  `aria-invalid` / `accessibilityInvalid` — its supported set is `busy`, `checked`,
+  `disabled`, `expanded`, `hidden`, `label`, `labelledby`, `live`, `modal`, `selected`
+  and the `value*` props. Setting an invalid flag would be a no-op that only looks
+  accessible, so it is deliberately not used.
 
 **`primitives/Card.tsx`** — `surface.card` fill, 1pt `border.subtle`, `radii.field`,
 `spacing.xxl` padding, `card` elevation. One consumer today (S03) and an obvious one in every
