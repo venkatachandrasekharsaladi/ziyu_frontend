@@ -27,7 +27,9 @@ function formatCooldown(seconds: number): string {
  */
 export function VerifyEmailScreen() {
   const router = useRouter()
-  const [remaining, setRemaining] = useState(COPY.resendCooldownSeconds)
+  // Explicit `number`: COPY is `as const`, so inference would narrow this to the
+  // literal 60 and reject every decrement.
+  const [remaining, setRemaining] = useState<number>(COPY.resendCooldownSeconds)
   const [isSending, setIsSending] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
