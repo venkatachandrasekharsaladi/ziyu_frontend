@@ -11,6 +11,10 @@ export const spacing = {
   lg: 16,
   xl: 20,
   xxl: 24,
+  /** Figma 522:170, 522:203 — real gaps on M00-S03. */
+  xxxl: 32,
+  /** Figma 522:164, 522:203 — section separation on the form screens. */
+  huge: 48,
   /** Horizontal inset either side of the hero collage. Figma 522:286. */
   heroInset: 35,
 } as const

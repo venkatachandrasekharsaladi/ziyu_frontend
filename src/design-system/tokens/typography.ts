@@ -22,6 +22,18 @@ export const typography = {
     lineHeight: 44,
     letterSpacing: -1,
   },
+  /**
+   * Screen headline on every form screen. Figma 522:167, 522:242.
+   *
+   * M00-S05 draws its headline at 28/34 — the only frame that does, and its
+   * headline is short enough that nothing needed to shrink. It conforms to this.
+   */
+  h2: {
+    fontFamily: fontFamily.bold,
+    fontSize: 34,
+    lineHeight: 40,
+    letterSpacing: 0,
+  },
   /** Product wordmark in the top bar. Figma 522:270. */
   wordmark: {
     fontFamily: fontFamily.semibold,
@@ -41,7 +53,36 @@ export const typography = {
     fontSize: 16,
     lineHeight: 24,
   },
-  /** Uppercase footnote. Figma 522:285. */
+  /**
+   * Button labels.
+   *
+   * SemiBold at 16 supplies the emphasis Figma reached for with 20/26 on
+   * M00-S02 and M00-S03, without adding a fourth type size. See spec D15.
+   */
+  labelStrong: {
+    fontFamily: fontFamily.semibold,
+    fontSize: 16,
+    lineHeight: 24,
+  },
+  /** Requirement rows and field error messages. Figma 522:191. */
+  footnote: {
+    fontFamily: fontFamily.regular,
+    fontSize: 14,
+    lineHeight: 20,
+  },
+  /** Resend timer on M00-S04. Figma 522:263. */
+  countdown: {
+    fontFamily: fontFamily.regular,
+    fontSize: 10,
+    lineHeight: 14,
+    letterSpacing: 0.5,
+  },
+  /**
+   * Uppercase footnote — field labels and divider labels. Figma 522:285.
+   *
+   * Tracking stays 1.1. M00-S02 and M00-S05 draw their field labels at 0.55;
+   * they conform to this token rather than it bending to them.
+   */
   caption: {
     fontFamily: fontFamily.semibold,
     fontSize: 11,

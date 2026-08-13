@@ -29,6 +29,29 @@ These apply to **every** task. They are copied verbatim from the spec and from t
 - **Contrast floor: WCAG AA (4.5:1) for all text.** Four values in the Figma designs fail this and are deliberately overridden (D20). Task 2's test enforces the whole table.
 - **Commit after every task**, using the message given in that task's final step. No `Co-Authored-By` trailer.
 
+### Testing convention — `render` is async
+
+**`@testing-library/react-native` v14's `render` is an async function.** So are
+`rerender` and `unmount`. Every call must be awaited and every test callback
+declared `async`:
+
+```tsx
+it('renders', async () => {
+  await render(<Thing />)          // NOT: render(<Thing />)
+
+  expect(screen.getByText('x')).toBeTruthy()
+})
+```
+
+Without the `await`, `render` returns an unresolved Promise, `screen` is still
+its default stub, and every query throws a misleading **"`render` function has
+not been called"** — pointing at the assertion rather than the missing await.
+This was hit and fixed in Task 1; the snippets below are already correct.
+
+`userEvent.press` / `userEvent.type` are also async, and take the element as
+their first argument. For fake timers, use
+`userEvent.setup({ advanceTimers: jest.advanceTimersByTime })`.
+
 ### Known testing limitation — read before writing any test
 
 `react-native-unistyles` is a native Nitro module and cannot execute under Jest. The package ships its own mock at `react-native-unistyles/mocks`, which Task 1 wires into `setupFiles`. **That mock strips `variants` and `compoundVariants` from every stylesheet and makes `useVariants` a no-op.**
@@ -39,6 +62,7 @@ Consequences, which every later task depends on:
 2. **Base (non-variant) style properties do survive** the mock, so they can be asserted.
 3. Therefore tests assert **behaviour, structure and accessibility** — text content, roles, `accessibilityState`, `accessibilityLabel`, callbacks, conditional children — plus **pure values** from tokens, schemas and services.
 4. Variant→style resolution is verified **on device**, tracked in the spec's open items. This is a real gap, recorded honestly rather than papered over with tests that pass for the wrong reason.
+5. **For a task that only adds variants, the TDD red gate is `npx tsc --noEmit`, not `npm test`.** Because `useVariants` is a no-op under the mock and Jest runs through Babel without typechecking, a test passing an unknown variant name renders happily and the test goes *green before the implementation exists*. Task 3 hit exactly this. When a task's step says "run it to verify it fails", check the typechecker as well — a green Jest run at the red step is expected, not a signal you can skip the work.
 
 ---
 
@@ -174,8 +198,8 @@ import { render, screen } from '@testing-library/react-native'
 import { Text } from '@/design-system/primitives/Text'
 
 describe('test harness', () => {
-  it('renders a Unistyles-styled primitive without touching native code', () => {
-    render(<Text variant="body">Harness is alive</Text>)
+  it('renders a Unistyles-styled primitive without touching native code', async () => {
+    await render(<Text variant="body">Harness is alive</Text>)
 
     expect(screen.getByText('Harness is alive')).toBeTruthy()
   })
@@ -288,20 +312,20 @@ describe('theme contrast', () => {
     expect(contrast(fg, bg)).toBeGreaterThanOrEqual(AA)
   })
 
-  it('does not reintroduce the placeholder that fails AA', () => {
+  it('does not reintroduce the placeholder that fails AA', async () => {
     // #7A7583 was the Figma value. At 100% it reaches only 4.03:1 on the field
     // fill; at the 50% opacity Figma actually used, roughly 2.1:1. (D20.1)
     expect(contrast('#7A7583', surface.field)).toBeLessThan(AA)
     expect(t.colors.text.placeholder).not.toBe('#7A7583')
   })
 
-  it('keeps text.muted away from text roles', () => {
+  it('keeps text.muted away from text roles', async () => {
     // #CAC4D4 is decorative only. On the white card it scores ~1.7:1, which is
     // what made S03's requirement rows unreadable. (D20.3)
     expect(contrast(t.colors.text.muted, surface.card)).toBeLessThan(AA)
   })
 
-  it('uses one control height everywhere', () => {
+  it('uses one control height everywhere', async () => {
     expect(t.control.height).toBe(56)
   })
 })
@@ -563,19 +587,19 @@ const TONES: TextTone[] = [
 ]
 
 describe('Text', () => {
-  it.each(VARIANTS)('renders the %s variant', (variant) => {
-    render(<Text variant={variant}>Content</Text>)
+  it.each(VARIANTS)('renders the %s variant', async (variant) => {
+    await render(<Text variant={variant}>Content</Text>)
 
     expect(screen.getByText('Content')).toBeTruthy()
   })
 
-  it.each(TONES)('renders the %s tone', (tone) => {
-    render(<Text tone={tone}>Content</Text>)
+  it.each(TONES)('renders the %s tone', async (tone) => {
+    await render(<Text tone={tone}>Content</Text>)
 
     expect(screen.getByText('Content')).toBeTruthy()
   })
 
-  it('forwards accessibilityRole, so an inline link can be a link', () => {
+  it('forwards accessibilityRole, so an inline link can be a link', async () => {
     render(
       <Text>
         Prompt <Text tone="brand" accessibilityRole="link">Act</Text>
@@ -585,7 +609,7 @@ describe('Text', () => {
     expect(screen.getByRole('link')).toBeTruthy()
   })
 
-  it('nests for mixed-style lines without needing a style prop', () => {
+  it('nests for mixed-style lines without needing a style prop', async () => {
     render(
       <Text variant="label" tone="body">
         New here? <Text variant="label" tone="brand">Create an account</Text>
@@ -706,15 +730,15 @@ import { Text } from '@/design-system/primitives/Text'
 const VARIANTS: ButtonVariant[] = ['primary', 'soft', 'outline', 'link']
 
 describe('Button', () => {
-  it.each(VARIANTS)('renders the %s variant as a button with its label', (variant) => {
-    render(<Button label="Sign In" onPress={() => {}} variant={variant} />)
+  it.each(VARIANTS)('renders the %s variant as a button with its label', async (variant) => {
+    await render(<Button label="Sign In" onPress={() => {}} variant={variant} />)
 
     expect(screen.getByRole('button', { name: 'Sign In' })).toBeTruthy()
   })
 
   it('calls onPress once when tapped', async () => {
     const onPress = jest.fn()
-    render(<Button label="Sign In" onPress={onPress} />)
+    await render(<Button label="Sign In" onPress={onPress} />)
 
     await userEvent.press(screen.getByRole('button'))
 
@@ -723,7 +747,7 @@ describe('Button', () => {
 
   it('ignores a second tap inside the double-fire guard window', async () => {
     const onPress = jest.fn()
-    render(<Button label="Sign In" onPress={onPress} />)
+    await render(<Button label="Sign In" onPress={onPress} />)
     const button = screen.getByRole('button')
 
     await userEvent.press(button)
@@ -734,7 +758,7 @@ describe('Button', () => {
 
   it('does not call onPress when disabled, and reports it', async () => {
     const onPress = jest.fn()
-    render(<Button label="Sign In" onPress={onPress} disabled />)
+    await render(<Button label="Sign In" onPress={onPress} disabled />)
 
     const button = screen.getByRole('button')
     await userEvent.press(button)
@@ -743,7 +767,7 @@ describe('Button', () => {
     expect(button.props.accessibilityState).toMatchObject({ disabled: true })
   })
 
-  it('renders the trailing slot', () => {
+  it('renders the trailing slot', async () => {
     render(
       <Button
         label="Resend Email"
@@ -757,7 +781,7 @@ describe('Button', () => {
 
   it('when loading, keeps its label, reports busy, and ignores presses', async () => {
     const onPress = jest.fn()
-    render(<Button label="Sign In" onPress={onPress} loading />)
+    await render(<Button label="Sign In" onPress={onPress} loading />)
 
     const button = screen.getByRole('button')
     await userEvent.press(button)
@@ -769,7 +793,7 @@ describe('Button', () => {
     expect(onPress).not.toHaveBeenCalled()
   })
 
-  it('replaces the trailing slot with the spinner while loading', () => {
+  it('replaces the trailing slot with the spinner while loading', async () => {
     render(
       <Button
         label="Resend Email"
@@ -782,7 +806,7 @@ describe('Button', () => {
     expect(screen.queryByText('00:59')).toBeNull()
   })
 
-  it('lets a caller override the screen-reader label', () => {
+  it('lets a caller override the screen-reader label', async () => {
     render(
       <Button label="Sign In" onPress={() => {}} accessibilityLabel="Sign in to LoveOS" />,
     )
@@ -1003,7 +1027,7 @@ import { Input } from '@/design-system/primitives/Input'
 import { Text } from '@/design-system/primitives/Text'
 
 describe('Input', () => {
-  it('renders its label and placeholder', () => {
+  it('renders its label and placeholder', async () => {
     render(
       <Input
         label="Email address"
@@ -1017,22 +1041,22 @@ describe('Input', () => {
     expect(screen.getByPlaceholderText('you@example.com')).toBeTruthy()
   })
 
-  it('labels the field for a screen reader using its visible label', () => {
-    render(<Input label="Email address" value="" onChangeText={() => {}} />)
+  it('labels the field for a screen reader using its visible label', async () => {
+    await render(<Input label="Email address" value="" onChangeText={() => {}} />)
 
     expect(screen.getByLabelText('Email address')).toBeTruthy()
   })
 
   it('reports typing', async () => {
     const onChangeText = jest.fn()
-    render(<Input label="Email address" value="" onChangeText={onChangeText} />)
+    await render(<Input label="Email address" value="" onChangeText={onChangeText} />)
 
     await userEvent.type(screen.getByLabelText('Email address'), 'a')
 
     expect(onChangeText).toHaveBeenCalled()
   })
 
-  it('renders the error message, so the state never rests on colour alone', () => {
+  it('renders the error message, so the state never rests on colour alone', async () => {
     render(
       <Input
         label="Email address"
@@ -1045,7 +1069,7 @@ describe('Input', () => {
     expect(screen.getByText('Enter a valid email address')).toBeTruthy()
   })
 
-  it('exposes the error to a screen reader without a visual scan', () => {
+  it('exposes the error to a screen reader without a visual scan', async () => {
     render(
       <Input
         label="Email address"
@@ -1055,27 +1079,32 @@ describe('Input', () => {
       />,
     )
 
+    // React Native has NO `aria-invalid` / `accessibilityInvalid`. Its supported
+    // set is busy, checked, disabled, expanded, hidden, label, labelledby, live,
+    // modal, selected and the value* props. Setting an invalid flag would be a
+    // no-op that only looks accessible. The two mechanisms that do work: the hint
+    // on the field, and a polite live region on the message.
     const field = screen.getByLabelText('Email address')
-
     expect(field.props.accessibilityHint).toBe('Enter a valid email address')
-    expect(field.props.accessibilityInvalid).toBe(true)
+
+    expect(screen.getByTestId('input-error').props['aria-live']).toBe('polite')
   })
 
-  it('renders no error region when there is no error', () => {
-    render(<Input label="Email address" value="" onChangeText={() => {}} />)
+  it('renders no error region when there is no error', async () => {
+    await render(<Input label="Email address" value="" onChangeText={() => {}} />)
 
     expect(screen.queryByTestId('input-error')).toBeNull()
   })
 
-  it('masks a secure field and offers a labelled reveal toggle', () => {
-    render(<Input label="Password" value="hunter2" onChangeText={() => {}} secure />)
+  it('masks a secure field and offers a labelled reveal toggle', async () => {
+    await render(<Input label="Password" value="hunter2" onChangeText={() => {}} secure />)
 
     expect(screen.getByLabelText('Password').props.secureTextEntry).toBe(true)
     expect(screen.getByRole('button', { name: 'Show password' })).toBeTruthy()
   })
 
   it('unmasks when the toggle is pressed, and relabels it', async () => {
-    render(<Input label="Password" value="hunter2" onChangeText={() => {}} secure />)
+    await render(<Input label="Password" value="hunter2" onChangeText={() => {}} secure />)
 
     await userEvent.press(screen.getByRole('button', { name: 'Show password' }))
 
@@ -1083,13 +1112,13 @@ describe('Input', () => {
     expect(screen.getByRole('button', { name: 'Hide password' })).toBeTruthy()
   })
 
-  it('renders no toggle on a non-secure field', () => {
-    render(<Input label="Email address" value="" onChangeText={() => {}} />)
+  it('renders no toggle on a non-secure field', async () => {
+    await render(<Input label="Email address" value="" onChangeText={() => {}} />)
 
     expect(screen.queryByRole('button')).toBeNull()
   })
 
-  it('renders a labelTrailing slot beside the label', () => {
+  it('renders a labelTrailing slot beside the label', async () => {
     render(
       <Input
         label="Password"
@@ -1103,8 +1132,8 @@ describe('Input', () => {
     expect(screen.getByText('Forgot password?')).toBeTruthy()
   })
 
-  it('blocks editing when not editable', () => {
-    render(<Input label="Email address" value="" onChangeText={() => {}} editable={false} />)
+  it('blocks editing when not editable', async () => {
+    await render(<Input label="Email address" value="" onChangeText={() => {}} editable={false} />)
 
     expect(screen.getByLabelText('Email address').props.editable).toBe(false)
   })
@@ -1354,7 +1383,7 @@ import { Card } from '@/design-system/primitives/Card'
 import { Text } from '@/design-system/primitives/Text'
 
 describe('Card', () => {
-  it('renders its children', () => {
+  it('renders its children', async () => {
     render(
       <Card>
         <Text>Password security</Text>
@@ -1374,23 +1403,23 @@ import { render, screen } from '@testing-library/react-native'
 import { Divider } from '@/design-system/primitives/Divider'
 
 describe('Divider', () => {
-  it('renders a label between two rules', () => {
-    render(<Divider label="Or continue with" />)
+  it('renders a label between two rules', async () => {
+    await render(<Divider label="Or continue with" />)
 
     expect(screen.getByText('Or continue with')).toBeTruthy()
     expect(screen.getAllByTestId('divider-rule')).toHaveLength(2)
   })
 
-  it('renders a single rule with no label', () => {
-    render(<Divider />)
+  it('renders a single rule with no label', async () => {
+    await render(<Divider />)
 
     expect(screen.getAllByTestId('divider-rule')).toHaveLength(1)
   })
 
-  it('gives its rules flex, never a fixed width', () => {
+  it('gives its rules flex, never a fixed width', async () => {
     // M00-S02 drew each rule at a fixed 93.37pt, which only holds at exactly
     // 390pt wide. Anything else leaves a gap or overlaps the label.
-    render(<Divider label="Or continue with" />)
+    await render(<Divider label="Or continue with" />)
 
     for (const rule of screen.getAllByTestId('divider-rule')) {
       const style = Array.isArray(rule.props.style)
@@ -1541,34 +1570,34 @@ import { BRAND } from '@/config/brand'
 import { AppHeader } from '@/design-system/patterns/AppHeader'
 
 describe('AppHeader', () => {
-  it('shows the wordmark from BRAND, never a literal', () => {
-    render(<AppHeader />)
+  it('shows the wordmark from BRAND, never a literal', async () => {
+    await render(<AppHeader />)
 
     expect(screen.getByText(BRAND.name)).toBeTruthy()
   })
 
-  it('renders no back button when onBack is absent', () => {
-    render(<AppHeader />)
+  it('renders no back button when onBack is absent', async () => {
+    await render(<AppHeader />)
 
     expect(screen.queryByRole('button', { name: 'Go back' })).toBeNull()
   })
 
   it('renders a back button when onBack is given, and calls it', async () => {
     const onBack = jest.fn()
-    render(<AppHeader onBack={onBack} />)
+    await render(<AppHeader onBack={onBack} />)
 
     await userEvent.press(screen.getByRole('button', { name: 'Go back' }))
 
     expect(onBack).toHaveBeenCalledTimes(1)
   })
 
-  it('always renders both edge slots, so the wordmark is centred by symmetry', () => {
+  it('always renders both edge slots, so the wordmark is centred by symmetry', async () => {
     // M00-S05 centred its wordmark with padding-right: 158.7px, which only
     // looks centred at exactly 390pt. A matching spacer centres it at any width.
-    render(<AppHeader />)
+    await render(<AppHeader />)
     expect(screen.getAllByTestId('header-edge')).toHaveLength(2)
 
-    render(<AppHeader onBack={() => {}} />)
+    await render(<AppHeader onBack={() => {}} />)
     expect(screen.getAllByTestId('header-edge')).toHaveLength(2)
   })
 })
@@ -1585,8 +1614,8 @@ describe('SocialButton', () => {
   it.each([
     ['google', 'Google'],
     ['apple', 'Apple'],
-  ] as const)('renders the %s provider', (provider, label) => {
-    render(<SocialButton provider={provider} onPress={() => {}} />)
+  ] as const)('renders the %s provider', async (provider, label) => {
+    await render(<SocialButton provider={provider} onPress={() => {}} />)
 
     expect(screen.getByRole('button', { name: `Continue with ${label}` })).toBeTruthy()
     expect(screen.getByText(label)).toBeTruthy()
@@ -1594,7 +1623,7 @@ describe('SocialButton', () => {
 
   it('calls onPress', async () => {
     const onPress = jest.fn()
-    render(<SocialButton provider="google" onPress={onPress} />)
+    await render(<SocialButton provider="google" onPress={onPress} />)
 
     await userEvent.press(screen.getByRole('button'))
 
@@ -1603,7 +1632,7 @@ describe('SocialButton', () => {
 
   it('does not fire when disabled', async () => {
     const onPress = jest.fn()
-    render(<SocialButton provider="apple" onPress={onPress} disabled />)
+    await render(<SocialButton provider="apple" onPress={onPress} disabled />)
 
     await userEvent.press(screen.getByRole('button'))
 
@@ -1620,7 +1649,7 @@ import { render, screen, userEvent } from '@testing-library/react-native'
 import { FooterPrompt } from '@/design-system/patterns/FooterPrompt'
 
 describe('FooterPrompt', () => {
-  it('renders the prompt and the link', () => {
+  it('renders the prompt and the link', async () => {
     render(
       <FooterPrompt text="New to LoveOS?" linkLabel="Create an account" onPress={() => {}} />,
     )
@@ -2207,11 +2236,11 @@ import {
 } from '@/modules/module-00-auth/state/authSchemas'
 
 describe('signInSchema', () => {
-  it('accepts a valid pair', () => {
+  it('accepts a valid pair', async () => {
     expect(signInSchema.safeParse({ email: 'a@example.com', password: 'x' }).success).toBe(true)
   })
 
-  it('rejects a malformed email', () => {
+  it('rejects a malformed email', async () => {
     const result = signInSchema.safeParse({ email: 'nope', password: 'x' })
 
     expect(result.success).toBe(false)
@@ -2220,18 +2249,18 @@ describe('signInSchema', () => {
     }
   })
 
-  it('rejects an empty password', () => {
+  it('rejects an empty password', async () => {
     expect(signInSchema.safeParse({ email: 'a@example.com', password: '' }).success).toBe(false)
   })
 
-  it('does not impose strength rules on sign in', () => {
+  it('does not impose strength rules on sign in', async () => {
     // Rejecting a weak password a user already has is a dead end.
     expect(signInSchema.safeParse({ email: 'a@example.com', password: 'a' }).success).toBe(true)
   })
 })
 
 describe('signUpSchema', () => {
-  it('accepts a password meeting every rule', () => {
+  it('accepts a password meeting every rule', async () => {
     expect(signUpSchema.safeParse({ email: 'a@example.com', password: 'hunter22!' }).success).toBe(true)
   })
 
@@ -2245,13 +2274,13 @@ describe('signUpSchema', () => {
 })
 
 describe('PASSWORD_RULES', () => {
-  it('is the same set the schema enforces, so the checklist cannot disagree', () => {
+  it('is the same set the schema enforces, so the checklist cannot disagree', async () => {
     const passing = 'hunter22!'
     expect(PASSWORD_RULES.every((rule) => rule.test(passing))).toBe(true)
     expect(signUpSchema.safeParse({ email: 'a@example.com', password: passing }).success).toBe(true)
   })
 
-  it('fails every rule on an empty password', () => {
+  it('fails every rule on an empty password', async () => {
     expect(PASSWORD_RULES.some((rule) => rule.test(''))).toBe(false)
   })
 
@@ -2264,7 +2293,7 @@ describe('PASSWORD_RULES', () => {
 })
 
 describe('emailOnlySchema', () => {
-  it('accepts a valid address and rejects a malformed one', () => {
+  it('accepts a valid address and rejects a malformed one', async () => {
     expect(emailOnlySchema.safeParse({ email: 'a@example.com' }).success).toBe(true)
     expect(emailOnlySchema.safeParse({ email: 'nope' }).success).toBe(false)
   })
@@ -2451,8 +2480,8 @@ describe('SignInScreen', () => {
     mockPush.mockClear()
   })
 
-  it('renders every block from copy', () => {
-    render(<SignInScreen />)
+  it('renders every block from copy', async () => {
+    await render(<SignInScreen />)
 
     expect(screen.getByText(SIGN_IN_COPY.heading)).toBeTruthy()
     expect(screen.getByText(SIGN_IN_COPY.lede)).toBeTruthy()
@@ -2467,7 +2496,7 @@ describe('SignInScreen', () => {
 
   it('shows a field error for a malformed email and does not call the service', async () => {
     const signIn = jest.spyOn(authService, 'signIn')
-    render(<SignInScreen />)
+    await render(<SignInScreen />)
 
     await fillAndSubmit('nope', 'hunter2!')
 
@@ -2477,7 +2506,7 @@ describe('SignInScreen', () => {
   })
 
   it('navigates to verify-email on success', async () => {
-    render(<SignInScreen />)
+    await render(<SignInScreen />)
 
     await fillAndSubmit('a@example.com', 'hunter2!')
 
@@ -2487,7 +2516,7 @@ describe('SignInScreen', () => {
   })
 
   it('shows a form-level error on bad credentials and clears only the password', async () => {
-    render(<SignInScreen />)
+    await render(<SignInScreen />)
 
     await fillAndSubmit('wrong@example.com', 'hunter2!')
 
@@ -2499,7 +2528,7 @@ describe('SignInScreen', () => {
   })
 
   it('shows a form-level error on network failure', async () => {
-    render(<SignInScreen />)
+    await render(<SignInScreen />)
 
     await fillAndSubmit('offline@example.com', 'hunter2!')
 
@@ -2507,7 +2536,7 @@ describe('SignInScreen', () => {
   })
 
   it('navigates to forgot-password', async () => {
-    render(<SignInScreen />)
+    await render(<SignInScreen />)
 
     await userEvent.press(screen.getByRole('link', { name: SIGN_IN_COPY.forgotLink }))
 
@@ -2515,7 +2544,7 @@ describe('SignInScreen', () => {
   })
 
   it('navigates to sign-up from the footer', async () => {
-    render(<SignInScreen />)
+    await render(<SignInScreen />)
 
     await userEvent.press(screen.getByRole('link', { name: SIGN_IN_COPY.footerLink }))
 
@@ -2968,8 +2997,8 @@ describe('VerifyEmailScreen', () => {
     jest.useRealTimers()
   })
 
-  it('renders its blocks from copy', () => {
-    render(<VerifyEmailScreen />)
+  it('renders its blocks from copy', async () => {
+    await render(<VerifyEmailScreen />)
 
     expect(screen.getByText(VERIFY_EMAIL_COPY.heading)).toBeTruthy()
     expect(screen.getByText(VERIFY_EMAIL_COPY.lede)).toBeTruthy()
@@ -2977,14 +3006,14 @@ describe('VerifyEmailScreen', () => {
     expect(screen.getByRole('button', { name: VERIFY_EMAIL_COPY.changeEmail })).toBeTruthy()
   })
 
-  it('starts the countdown on mount, showing mm:ss', () => {
-    render(<VerifyEmailScreen />)
+  it('starts the countdown on mount, showing mm:ss', async () => {
+    await render(<VerifyEmailScreen />)
 
     expect(screen.getByText('00:60')).toBeTruthy()
   })
 
-  it('counts down each second', () => {
-    render(<VerifyEmailScreen />)
+  it('counts down each second', async () => {
+    await render(<VerifyEmailScreen />)
 
     act(() => {
       jest.advanceTimersByTime(3000)
@@ -2993,16 +3022,16 @@ describe('VerifyEmailScreen', () => {
     expect(screen.getByText('00:57')).toBeTruthy()
   })
 
-  it('disables resend while the countdown runs', () => {
-    render(<VerifyEmailScreen />)
+  it('disables resend while the countdown runs', async () => {
+    await render(<VerifyEmailScreen />)
 
     expect(
       screen.getByRole('button', { name: VERIFY_EMAIL_COPY.resend }).props.accessibilityState,
     ).toMatchObject({ disabled: true })
   })
 
-  it('enables resend and drops the timer at zero', () => {
-    render(<VerifyEmailScreen />)
+  it('enables resend and drops the timer at zero', async () => {
+    await render(<VerifyEmailScreen />)
 
     act(() => {
       jest.advanceTimersByTime(60_000)
@@ -3016,7 +3045,7 @@ describe('VerifyEmailScreen', () => {
 
   it('goes back when Change Email is pressed', async () => {
     const user = userEvent.setup({ advanceTimers: jest.advanceTimersByTime })
-    render(<VerifyEmailScreen />)
+    await render(<VerifyEmailScreen />)
 
     await user.press(screen.getByRole('button', { name: VERIFY_EMAIL_COPY.changeEmail }))
 
@@ -3332,35 +3361,35 @@ import { PasswordRequirements } from '@/modules/module-00-auth/components/Passwo
 import { PASSWORD_RULES } from '@/modules/module-00-auth/state/authSchemas'
 
 describe('PasswordRequirements', () => {
-  it('lists every rule', () => {
-    render(<PasswordRequirements value="" />)
+  it('lists every rule', async () => {
+    await render(<PasswordRequirements value="" />)
 
     for (const rule of PASSWORD_RULES) {
       expect(screen.getByText(rule.label)).toBeTruthy()
     }
   })
 
-  it('marks nothing met on an empty password', () => {
-    render(<PasswordRequirements value="" />)
+  it('marks nothing met on an empty password', async () => {
+    await render(<PasswordRequirements value="" />)
 
     expect(screen.queryAllByTestId('rule-met')).toHaveLength(0)
   })
 
-  it('marks a rule met as soon as it passes', () => {
-    render(<PasswordRequirements value="abcdefgh" />)
+  it('marks a rule met as soon as it passes', async () => {
+    await render(<PasswordRequirements value="abcdefgh" />)
 
     // Only the length rule passes.
     expect(screen.getAllByTestId('rule-met')).toHaveLength(1)
   })
 
-  it('marks every rule met on a fully valid password', () => {
-    render(<PasswordRequirements value="hunter22!" />)
+  it('marks every rule met on a fully valid password', async () => {
+    await render(<PasswordRequirements value="hunter22!" />)
 
     expect(screen.getAllByTestId('rule-met')).toHaveLength(PASSWORD_RULES.length)
   })
 
-  it('announces met and unmet states as text, not by colour alone', () => {
-    render(<PasswordRequirements value="hunter22!" />)
+  it('announces met and unmet states as text, not by colour alone', async () => {
+    await render(<PasswordRequirements value="hunter22!" />)
 
     for (const rule of PASSWORD_RULES) {
       expect(screen.getByLabelText(`${rule.label}: met`)).toBeTruthy()
@@ -3393,8 +3422,8 @@ describe('CreateAccountScreen', () => {
     mockPush.mockClear()
   })
 
-  it('renders its blocks from copy', () => {
-    render(<CreateAccountScreen />)
+  it('renders its blocks from copy', async () => {
+    await render(<CreateAccountScreen />)
 
     expect(screen.getByText(COPY.headingLines[0])).toBeTruthy()
     expect(screen.getByText(COPY.lede)).toBeTruthy()
@@ -3404,7 +3433,7 @@ describe('CreateAccountScreen', () => {
   })
 
   it('navigates to verify-email on success', async () => {
-    render(<CreateAccountScreen />)
+    await render(<CreateAccountScreen />)
 
     await fillAndSubmit('new@example.com', 'hunter22!')
 
@@ -3414,7 +3443,7 @@ describe('CreateAccountScreen', () => {
   })
 
   it('attaches a taken email to the email field', async () => {
-    render(<CreateAccountScreen />)
+    await render(<CreateAccountScreen />)
 
     await fillAndSubmit('taken@example.com', 'hunter22!')
 
@@ -3423,7 +3452,7 @@ describe('CreateAccountScreen', () => {
   })
 
   it('rejects a weak password before calling the service', async () => {
-    render(<CreateAccountScreen />)
+    await render(<CreateAccountScreen />)
 
     await fillAndSubmit('new@example.com', 'abc')
 
@@ -3432,7 +3461,7 @@ describe('CreateAccountScreen', () => {
   })
 
   it('navigates to sign-in from the footer', async () => {
-    render(<CreateAccountScreen />)
+    await render(<CreateAccountScreen />)
 
     await userEvent.press(screen.getByRole('link', { name: COPY.footerLink }))
 
@@ -3764,8 +3793,8 @@ describe('ForgotPasswordScreen', () => {
     mockPush.mockClear()
   })
 
-  it('renders the form state from copy', () => {
-    render(<ForgotPasswordScreen />)
+  it('renders the form state from copy', async () => {
+    await render(<ForgotPasswordScreen />)
 
     expect(screen.getByText(COPY.heading)).toBeTruthy()
     expect(screen.getByText(COPY.lede)).toBeTruthy()
@@ -3774,7 +3803,7 @@ describe('ForgotPasswordScreen', () => {
   })
 
   it('rejects a malformed email without calling the service', async () => {
-    render(<ForgotPasswordScreen />)
+    await render(<ForgotPasswordScreen />)
 
     await submit('nope')
 
@@ -3783,7 +3812,7 @@ describe('ForgotPasswordScreen', () => {
   })
 
   it('swaps to the sent state in place, naming the address', async () => {
-    render(<ForgotPasswordScreen />)
+    await render(<ForgotPasswordScreen />)
 
     await submit('a@example.com')
 
@@ -3795,7 +3824,7 @@ describe('ForgotPasswordScreen', () => {
   })
 
   it('reports success for an unknown address too', async () => {
-    render(<ForgotPasswordScreen />)
+    await render(<ForgotPasswordScreen />)
 
     // Confirming which addresses exist is account enumeration.
     await submit('nobody@example.com')
@@ -3804,7 +3833,7 @@ describe('ForgotPasswordScreen', () => {
   })
 
   it('offers a resend in the sent state', async () => {
-    render(<ForgotPasswordScreen />)
+    await render(<ForgotPasswordScreen />)
 
     await submit('a@example.com')
 
@@ -3812,7 +3841,7 @@ describe('ForgotPasswordScreen', () => {
   })
 
   it('navigates back to sign in', async () => {
-    render(<ForgotPasswordScreen />)
+    await render(<ForgotPasswordScreen />)
 
     await userEvent.press(screen.getByRole('button', { name: COPY.backToSignIn }))
 
