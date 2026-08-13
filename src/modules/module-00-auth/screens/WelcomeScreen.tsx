@@ -9,8 +9,8 @@ import { StyleSheet, useUnistyles } from 'react-native-unistyles'
 import { WELCOME_COPY } from '@/copy/welcome'
 import { Button } from '@/design-system/primitives/Button'
 import { Text } from '@/design-system/primitives/Text'
+import { AppHeader } from '@/design-system/patterns/AppHeader'
 import { AmbientLayer } from '@/modules/module-00-auth/components/AmbientLayer'
-import { BrandHeader } from '@/modules/module-00-auth/components/BrandHeader'
 import { HeroCollage } from '@/modules/module-00-auth/components/HeroCollage'
 import { PrivacyFooter } from '@/modules/module-00-auth/components/PrivacyFooter'
 
@@ -42,7 +42,8 @@ export function WelcomeScreen() {
       <StatusBar style="dark" />
 
       <View style={[styles.safeArea, { paddingTop: insets.top, paddingBottom: insets.bottom }]}>
-        <BrandHeader />
+        {/* No `onBack`: Welcome is the entry point, so there is nowhere back to. */}
+        <AppHeader />
 
         <View style={styles.main}>
           <AmbientLayer />
