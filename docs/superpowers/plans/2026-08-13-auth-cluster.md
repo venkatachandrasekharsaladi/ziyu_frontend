@@ -62,6 +62,7 @@ Consequences, which every later task depends on:
 2. **Base (non-variant) style properties do survive** the mock, so they can be asserted.
 3. Therefore tests assert **behaviour, structure and accessibility** — text content, roles, `accessibilityState`, `accessibilityLabel`, callbacks, conditional children — plus **pure values** from tokens, schemas and services.
 4. Variant→style resolution is verified **on device**, tracked in the spec's open items. This is a real gap, recorded honestly rather than papered over with tests that pass for the wrong reason.
+5. **For a task that only adds variants, the TDD red gate is `npx tsc --noEmit`, not `npm test`.** Because `useVariants` is a no-op under the mock and Jest runs through Babel without typechecking, a test passing an unknown variant name renders happily and the test goes *green before the implementation exists*. Task 3 hit exactly this. When a task's step says "run it to verify it fails", check the typechecker as well — a green Jest run at the red step is expected, not a signal you can skip the work.
 
 ---
 
