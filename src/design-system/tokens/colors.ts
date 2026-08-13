@@ -23,8 +23,35 @@ export const palette = {
   /** Background gradient, bottom stop. Doubles as a soft raised surface. */
   lavender200: '#E8DDFF',
 
-  /** Outline-button border. Declared for M00-S02. */
+  /** Input fill. Sits between lavender50 and lavender200. Figma 522:77. */
+  lavender100: '#F8F1FB',
+
+  /** Divider and outline-button border. */
   greyLavender200: '#E6E0EA',
+
+  /** Field border. Darker than greyLavender200. Figma 522:77, 522:145, 522:173. */
+  greyLavender300: '#CAC4D4',
+
+  /**
+   * Placeholder ink.
+   *
+   * Figma draws #7A7583 at 50% opacity, which scores roughly 2.1:1 on
+   * lavender100 and fails WCAG AA. Even at full opacity #7A7583 reaches only
+   * 4.03:1. Darkened here to clear AA at 4.52:1. See spec D20.1.
+   */
+  ink400: '#726D7B',
+
+  /**
+   * Feedback colours. Both INVENTED — no Figma frame draws an error or success
+   * colour, and the Welcome spec deliberately kept Google's #EA4335 out of the
+   * palette so it could not become one. The crimson is carried toward magenta
+   * so it reads as part of a lavender palette rather than a system alert.
+   */
+  crimson600: '#A81E3C',
+  green700: '#1F7A55',
+
+  /** Page background glow, top centre. Figma 522:54. */
+  glowLavender: 'rgba(206, 189, 255, 0.4)',
 
   white: '#FFFFFF',
 
