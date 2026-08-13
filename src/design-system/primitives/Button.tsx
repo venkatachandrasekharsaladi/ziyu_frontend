@@ -1,43 +1,53 @@
-import { useCallback, useRef } from 'react'
-import { Pressable } from 'react-native'
-import { StyleSheet } from 'react-native-unistyles'
+import { type ReactNode, useCallback, useRef } from 'react'
+import { ActivityIndicator, Pressable, View } from 'react-native'
+import { StyleSheet, useUnistyles } from 'react-native-unistyles'
 
 import { Text, type TextTone } from '@/design-system/primitives/Text'
 
-export type ButtonVariant = 'primary' | 'link' | 'outline'
+export type ButtonVariant = 'primary' | 'soft' | 'outline' | 'link'
 
 type ButtonProps = {
   label: string
   onPress: () => void
   variant?: ButtonVariant
   disabled?: boolean
+  /** Shows a spinner, blocks presses, and reports `busy` to a screen reader. */
+  loading?: boolean
+  /** Content after the label — M00-S02's arrow, M00-S04's countdown. */
+  trailing?: ReactNode
   /** Overrides the label read out by a screen reader. */
   accessibilityLabel?: string
 }
 
 const LABEL_TONE: Record<ButtonVariant, TextTone> = {
   primary: 'onPrimary',
-  link: 'link',
+  soft: 'brand',
   outline: 'brand',
+  link: 'link',
 }
 
 /**
  * The only button in the app.
  *
- * All three variants are defined now, against M00-S01 *and* M00-S02, so the
- * component is settled once rather than invented on one screen and rebuilt on
- * the next (`SCREENS.md` rule 7). `outline` is what the Google and Apple
- * buttons on Sign In will use; it renders correctly today but nothing
- * currently mounts it.
+ * Figma drew five different primary buttons across the five M00 screens —
+ * three heights, three label sizes and four shadow colours, with no two frames
+ * agreeing. This is the one they normalise to: one control height (spec D14),
+ * `labelStrong` (D15) and a black two-stack shadow (D16).
  */
 export function Button({
   label,
   onPress,
   variant = 'primary',
   disabled = false,
+  loading = false,
+  trailing,
   accessibilityLabel,
 }: ButtonProps) {
-  styles.useVariants({ variant, disabled })
+  const isBlocked = disabled || loading
+
+  styles.useVariants({ variant, disabled: isBlocked })
+
+  const { theme } = useUnistyles()
 
   // Navigation is not instant. Without this guard a fast double tap pushes the
   // destination twice and the user has to press back twice to escape.
@@ -56,18 +66,35 @@ export function Button({
     }, 600)
   }, [onPress])
 
+  // A disabled primary loses its purple fill for a grey one, so its label has to
+  // switch from white to body ink to stay legible. See spec D20.4.
+  const tone = isBlocked && variant === 'primary' ? 'body' : LABEL_TONE[variant]
+
   return (
     <Pressable
       onPress={handlePress}
-      disabled={disabled}
+      disabled={isBlocked}
       accessibilityRole="button"
       accessibilityLabel={accessibilityLabel ?? label}
-      accessibilityState={{ disabled }}
+      accessibilityState={{ disabled: isBlocked, busy: loading }}
       style={styles.pressable}
     >
-      <Text variant="label" tone={LABEL_TONE[variant]} align="center">
-        {label}
-      </Text>
+      <View style={styles.content}>
+        <Text variant="labelStrong" tone={tone} align="center">
+          {label}
+        </Text>
+
+        {loading ? (
+          <ActivityIndicator
+            size="small"
+            color={
+              variant === 'primary' ? theme.colors.text.onPrimary : theme.colors.brand.primary
+            }
+          />
+        ) : (
+          trailing
+        )}
+      </View>
     </Pressable>
   )
 }
@@ -81,27 +108,41 @@ const styles = StyleSheet.create((theme) => ({
     variants: {
       variant: {
         primary: {
+          height: theme.control.height,
           backgroundColor: theme.colors.brand.primary,
-          paddingVertical: theme.spacing.xxl,
-          // Figma renders two stacked shadows in black at 10% — not a purple
-          // tint. `boxShadow` is the only style that can express both.
-          boxShadow:
-            '0px 4px 6px -1px rgba(0, 0, 0, 0.1), 0px 2px 4px -2px rgba(0, 0, 0, 0.1)',
+          boxShadow: theme.elevation.control,
+        },
+        soft: {
+          height: theme.control.height,
+          backgroundColor: theme.colors.surface.field,
+        },
+        outline: {
+          height: theme.control.height,
+          backgroundColor: theme.colors.surface.card,
+          borderWidth: 1,
+          borderColor: theme.colors.border.subtle,
         },
         link: {
           paddingVertical: theme.spacing.md,
         },
-        outline: {
-          backgroundColor: theme.colors.text.onPrimary,
-          borderWidth: 1,
-          borderColor: theme.colors.border.subtle,
-          paddingVertical: theme.spacing.lg,
-        },
       },
       disabled: {
-        true: { opacity: 0.5 },
-        false: { opacity: 1 },
+        // NOT opacity. Dimming the fill renders white on an effective #9A85C2,
+        // about 3.22:1 — permitted for an inactive control, but illegible. A
+        // solid grey fill with body ink reaches 5.48:1. See spec D20.4.
+        true: {
+          backgroundColor: theme.colors.border.field,
+          borderColor: theme.colors.border.field,
+          boxShadow: 'none',
+        },
+        false: {},
       },
     },
+  },
+  content: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: theme.spacing.md,
   },
 }))
