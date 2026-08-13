@@ -25,4 +25,8 @@ module.exports = {
   },
   testMatch: ['**/__tests__/**/*.test.{ts,tsx}'],
   collectCoverageFrom: ['src/**/*.{ts,tsx}', '!src/**/*.d.ts'],
+  // The FIRST test in a screen suite pays the cost of compiling the whole
+  // dependency graph — react-hook-form, zod, the icon set — which exceeds Jest's
+  // 5s default on a cold cache. Later tests in the same file run in ~100ms.
+  testTimeout: 30_000,
 }
