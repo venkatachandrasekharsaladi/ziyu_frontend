@@ -1,9 +1,32 @@
 import { Feather } from '@expo/vector-icons'
 import { type ReactNode, useCallback, useState } from 'react'
-import { Pressable, TextInput, View, type TextInputProps } from 'react-native'
+import {
+  Platform,
+  Pressable,
+  TextInput,
+  View,
+  type StyleProp,
+  type TextInputProps,
+  type TextStyle,
+} from 'react-native'
 import { StyleSheet, useUnistyles } from 'react-native-unistyles'
 
 import { Text } from '@/design-system/primitives/Text'
+
+/**
+ * Web draws a black focus rectangle INSIDE the field, on top of our own ring.
+ *
+ * `outlineStyle` is a react-native-web-only property and is absent from RN's
+ * `TextStyle`, so putting it in the Unistyles stylesheet collapses that
+ * stylesheet's inference to `never`. The cast is isolated here instead.
+ *
+ * Suppressing the browser outline is only acceptable because the field's focus
+ * state is a visible border plus ring. Do not keep this without that.
+ */
+const WEB_SUPPRESS_OUTLINE =
+  Platform.OS === 'web'
+    ? ({ outlineStyle: 'none' } as unknown as StyleProp<TextStyle>)
+    : undefined
 
 type InputProps = {
   label: string
@@ -95,7 +118,7 @@ export function Input({
           editable={editable}
           accessibilityLabel={label}
           accessibilityHint={error}
-          style={styles.textInput}
+          style={[styles.textInput, WEB_SUPPRESS_OUTLINE]}
         />
 
         {secure ? (

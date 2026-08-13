@@ -1,8 +1,9 @@
+import { LinearGradient } from 'expo-linear-gradient'
 import { StatusBar } from 'expo-status-bar'
 import type { ReactNode } from 'react'
 import { KeyboardAvoidingView, Platform, ScrollView, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import { StyleSheet } from 'react-native-unistyles'
+import { StyleSheet, useUnistyles } from 'react-native-unistyles'
 
 import { AppHeader } from '@/design-system/patterns/AppHeader'
 
@@ -26,37 +27,55 @@ type AuthScreenLayoutProps = {
  */
 export function AuthScreenLayout({ onBack, centred = false, children }: AuthScreenLayoutProps) {
   const insets = useSafeAreaInsets()
+  const { theme } = useUnistyles()
 
   return (
     <View style={styles.screen}>
       <StatusBar style="dark" />
 
-      <View style={styles.glow} pointerEvents="none" />
-
       <View style={{ paddingTop: insets.top }}>
         <AppHeader onBack={onBack} />
       </View>
 
-      <KeyboardAvoidingView
-        style={styles.flex}
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-      >
-        <ScrollView
+      <View style={styles.flex}>
+        {/*
+          A vertical fade, NOT a rounded solid View. The first attempt used a
+          border-radius'd solid fill, which rendered as a hard-edged lavender
+          ellipse with a crisp curve cutting across the heading — a band, not a
+          glow. A gradient to full transparency has no edge to see, and unlike a
+          blur it behaves identically on native and web.
+
+          Rendered inside the body rather than at the screen root so it starts
+          below the header; at the root, the header's opaque fill would clip it
+          and leave a visible step.
+        */}
+        <LinearGradient
+          colors={[theme.colors.surface.glow, 'rgba(206, 189, 255, 0)']}
+          style={styles.glow}
+          pointerEvents="none"
+        />
+
+        <KeyboardAvoidingView
           style={styles.flex}
-          contentContainerStyle={[
-            styles.content,
-            // flexGrow on the CONTENT container, not justifyContent on the
-            // ScrollView itself, which would fight the scroll.
-            centred && styles.centred,
-            { paddingBottom: insets.bottom + 24 },
-          ]}
-          // Without this, the first tap on the submit button only dismisses the
-          // keyboard and the user has to tap twice.
-          keyboardShouldPersistTaps="handled"
+          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
         >
-          <View style={styles.column}>{children}</View>
-        </ScrollView>
-      </KeyboardAvoidingView>
+          <ScrollView
+            style={styles.flex}
+            contentContainerStyle={[
+              styles.content,
+              // flexGrow on the CONTENT container, not justifyContent on the
+              // ScrollView itself, which would fight the scroll.
+              centred && styles.centred,
+              { paddingBottom: insets.bottom + 24 },
+            ]}
+            // Without this, the first tap on the submit button only dismisses the
+            // keyboard and the user has to tap twice.
+            keyboardShouldPersistTaps="handled"
+          >
+            <View style={styles.column}>{children}</View>
+          </ScrollView>
+        </KeyboardAvoidingView>
+      </View>
     </View>
   )
 }
@@ -69,16 +88,15 @@ const styles = StyleSheet.create((theme) => ({
   flex: {
     flex: 1,
   },
-  // Percentage-positioned rather than Figma's fixed 1161pt circle, so it holds
-  // its relationship on any screen height.
+  // Percentage height rather than Figma's fixed 1161pt circle, so it holds its
+  // relationship on any screen height. No border radius and no solid fill: the
+  // fade IS the shape.
   glow: {
     position: 'absolute',
-    top: '-22%',
-    left: '-40%',
-    right: '-40%',
-    height: '55%',
-    borderRadius: theme.radii.pill,
-    backgroundColor: theme.colors.surface.glow,
+    top: 0,
+    left: 0,
+    right: 0,
+    height: '42%',
   },
   content: {
     flexGrow: 1,

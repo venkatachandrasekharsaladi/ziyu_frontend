@@ -11,6 +11,7 @@ export type TextVariant =
   | 'labelStrong'
   | 'footnote'
   | 'caption'
+  | 'captionAction'
   | 'countdown'
 
 export type TextTone =
@@ -67,6 +68,7 @@ const styles = StyleSheet.create((theme) => ({
         labelStrong: theme.typography.labelStrong,
         footnote: theme.typography.footnote,
         caption: theme.typography.caption,
+        captionAction: theme.typography.captionAction,
         countdown: theme.typography.countdown,
       },
       tone: {

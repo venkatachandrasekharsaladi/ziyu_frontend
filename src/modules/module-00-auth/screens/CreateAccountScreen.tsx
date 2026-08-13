@@ -54,11 +54,15 @@ export function CreateAccountScreen() {
   return (
     <AuthScreenLayout onBack={router.back}>
       <View style={styles.copy}>
-        {COPY.headingLines.map((line) => (
-          <Text key={line} variant="h2" tone="heading">
-            {line}
-          </Text>
-        ))}
+        {/*
+          One Text with a newline, NOT one Text per line. As separate children of
+          a gapped container the two lines sat 52pt apart (40pt line height plus
+          the 12pt gap), which read as two headings rather than one wrapped over
+          two lines. Joined, the line height alone governs the leading.
+        */}
+        <Text variant="h2" tone="heading">
+          {COPY.headingLines.join('\n')}
+        </Text>
         <Text variant="body" tone="body">
           {COPY.lede}
         </Text>

@@ -25,8 +25,9 @@ describe('CreateAccountScreen', () => {
   it('renders its blocks from copy', async () => {
     await renderScreen(<CreateAccountScreen />)
 
-    expect(screen.getByText(COPY.headingLines[0])).toBeTruthy()
-    expect(screen.getByText(COPY.headingLines[1])).toBeTruthy()
+    // Rendered as one Text with a newline, so the leading comes from the line
+    // height rather than a container gap.
+    expect(screen.getByText(COPY.headingLines.join('\n'))).toBeTruthy()
     expect(screen.getByText(COPY.lede)).toBeTruthy()
     expect(screen.getByText(COPY.requirementsTitle)).toBeTruthy()
     expect(screen.getByRole('button', { name: COPY.submit })).toBeTruthy()

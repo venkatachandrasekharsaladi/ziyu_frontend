@@ -70,6 +70,20 @@ export const typography = {
     fontSize: 14,
     lineHeight: 20,
   },
+  /**
+   * A small inline action sitting on a label row — M00-S02's "Forgot password?".
+   * Figma 522:85: 11/15 SemiBold, tracking 0.55, and NOT uppercase.
+   *
+   * Distinct from `caption` precisely because of the case. Rendering it through
+   * `caption` uppercased it, which put two shouting uppercase items on one row
+   * and made the action read as a second field label.
+   */
+  captionAction: {
+    fontFamily: fontFamily.semibold,
+    fontSize: 11,
+    lineHeight: 15,
+    letterSpacing: 0.55,
+  },
   /** Resend timer on M00-S04. Figma 522:263. */
   countdown: {
     fontFamily: fontFamily.regular,

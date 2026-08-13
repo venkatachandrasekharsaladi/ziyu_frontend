@@ -19,8 +19,14 @@ export function EnvelopeIllustration() {
       accessibilityElementsHidden
       importantForAccessibility="no-hide-descendants"
     >
-      <View style={styles.glow} />
-
+      {/*
+        Figma has a 192pt disc of rgba(56,19,132,.1) behind the card, blurred by
+        32pt. React Native cannot blur a View cross-platform, and unblurred the
+        disc renders as a hard grey-purple circle with a visible edge — worse
+        than no halo at all. The card's own two-layer purple shadow
+        (elevation.illustration) already supplies the halo, so the disc is
+        dropped rather than approximated badly.
+      */}
       <View style={styles.card}>
         <View style={[styles.flap, styles.flapLeft]} />
         <View style={[styles.flap, styles.flapRight]} />
@@ -40,13 +46,6 @@ const styles = StyleSheet.create((theme) => ({
     alignItems: 'center',
     justifyContent: 'center',
     alignSelf: 'center',
-  },
-  glow: {
-    position: 'absolute',
-    width: 192,
-    height: 192,
-    borderRadius: theme.radii.pill,
-    backgroundColor: 'rgba(56, 19, 132, 0.1)',
   },
   card: {
     width: 128,

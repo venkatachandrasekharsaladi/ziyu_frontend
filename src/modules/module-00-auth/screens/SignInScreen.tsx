@@ -88,7 +88,7 @@ export function SignInScreen() {
           secure
           autoComplete="current-password"
           labelTrailing={
-            <Text variant="caption" tone="brand" onPress={goToForgot} accessibilityRole="link">
+            <Text variant="captionAction" tone="brand" onPress={goToForgot} accessibilityRole="link">
               {COPY.forgotLink}
             </Text>
           }
