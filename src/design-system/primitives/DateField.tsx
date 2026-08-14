@@ -51,8 +51,14 @@ function split(value: string): { mm: string; dd: string; yyyy: string } {
  * type than to scroll to, and a date picker opening on today is the wrong
  * starting point for one.
  *
- * Emits `YYYY-MM-DD` only when all three segments form a real date, and `''`
- * otherwise, so a partially-typed date never reads as valid downstream.
+ * Emits `YYYY-MM-DD` as soon as all three segments are filled, and `''` while
+ * any of them is still incomplete.
+ *
+ * A COMPLETE but impossible date — 31 February, or a year in the future — is
+ * emitted rather than swallowed. Swallowing it makes "invalid" and "empty"
+ * the same value downstream, so the schema cannot tell them apart and the
+ * field silently submits blank instead of saying what is wrong. Validation is
+ * the schema's job; this field's job is to report what was typed.
  */
 export function DateField({ label, value, onChangeText, error }: DateFieldProps) {
   const [parts, setParts] = useState(() => split(value))
@@ -69,16 +75,9 @@ export function DateField({ label, value, onChangeText, error }: DateFieldProps)
 
       setParts(next)
 
-      const month = Number(next.mm)
-      const day = Number(next.dd)
-      const year = Number(next.yyyy)
       const complete = next.mm.length === 2 && next.dd.length === 2 && next.yyyy.length === 4
 
-      onChangeText(
-        complete && isValidBirthday(year, month, day)
-          ? `${next.yyyy}-${next.mm}-${next.dd}`
-          : '',
-      )
+      onChangeText(complete ? `${next.yyyy}-${next.mm}-${next.dd}` : '')
     },
     [parts, onChangeText],
   )

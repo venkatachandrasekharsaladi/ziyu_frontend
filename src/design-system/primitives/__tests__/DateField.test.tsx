@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react-native'
+import { render, screen, userEvent } from '@testing-library/react-native'
 
 import { DateField, isValidBirthday } from '@/design-system/primitives/DateField'
 
@@ -27,6 +27,46 @@ describe('isValidBirthday', () => {
 })
 
 describe('DateField', () => {
+  async function type(label: string, text: string) {
+    await userEvent.type(screen.getByLabelText(label), text)
+  }
+
+  it('stays empty while any segment is unfilled', async () => {
+    const onChangeText = jest.fn()
+    await render(<DateField label="Birthday" value="" onChangeText={onChangeText} />)
+
+    await type('Birthday month', '07')
+    await type('Birthday day', '21')
+
+    // The year is still missing, so there is no date to report yet.
+    expect(onChangeText).not.toHaveBeenCalledWith(expect.stringMatching(/^\d{4}-/))
+  })
+
+  it('emits a complete but impossible date rather than swallowing it', async () => {
+    // Swallowing 31 February would make "invalid" and "empty" the same value,
+    // so the schema could not tell them apart and the form would submit blank
+    // with no message. See spec section 10.
+    const onChangeText = jest.fn()
+    await render(<DateField label="Birthday" value="" onChangeText={onChangeText} />)
+
+    await type('Birthday month', '02')
+    await type('Birthday day', '31')
+    await type('Birthday year', '1994')
+
+    expect(onChangeText).toHaveBeenCalledWith('1994-02-31')
+  })
+
+  it('emits a real date', async () => {
+    const onChangeText = jest.fn()
+    await render(<DateField label="Birthday" value="" onChangeText={onChangeText} />)
+
+    await type('Birthday month', '07')
+    await type('Birthday day', '21')
+    await type('Birthday year', '1994')
+
+    expect(onChangeText).toHaveBeenCalledWith('1994-07-21')
+  })
+
   it('renders three segments with mm/dd/yyyy placeholders', async () => {
     await render(<DateField label="Birthday" value="" onChangeText={() => {}} />)
 
