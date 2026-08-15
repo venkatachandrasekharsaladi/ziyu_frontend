@@ -61,6 +61,11 @@ export function VerifyEmailScreen() {
     setRemaining(COPY.resendCooldownSeconds)
   }, [])
 
+  const goToOnboarding = useCallback(
+    () => router.replace('/(onboarding)/setup'),
+    [router],
+  )
+
   const isCoolingDown = remaining > 0
 
   return (
@@ -101,6 +106,15 @@ export function VerifyEmailScreen() {
             ) : undefined
           }
         />
+
+        {/*
+          The forward exit into M01. This screen used to be a dead end: the
+          only way on was backwards. There is still no session reporting
+          `emailVerified`, so this is the user asserting they followed the
+          link, and it replaces rather than pushes — returning to "check your
+          inbox" after pairing has begun is nonsense.
+        */}
+        <Button label={COPY.continue} onPress={goToOnboarding} />
 
         <Button label={COPY.changeEmail} onPress={router.back} variant="soft" />
       </View>

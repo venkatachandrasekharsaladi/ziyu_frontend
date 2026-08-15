@@ -5,15 +5,17 @@ import { VerifyEmailScreen } from '@/modules/module-00-auth/screens/VerifyEmailS
 import { renderScreen } from '@/test/renderScreen'
 
 const mockBack = jest.fn()
+const mockReplace = jest.fn()
 
 jest.mock('expo-router', () => ({
-  useRouter: () => ({ push: jest.fn(), back: mockBack, replace: jest.fn() }),
+  useRouter: () => ({ push: jest.fn(), back: mockBack, replace: mockReplace }),
 }))
 
 describe('VerifyEmailScreen', () => {
   beforeEach(() => {
     jest.useFakeTimers()
     mockBack.mockClear()
+    mockReplace.mockClear()
   })
 
   afterEach(() => {
@@ -65,6 +67,17 @@ describe('VerifyEmailScreen', () => {
       screen.getByRole('button', { name: COPY.resend }).props.accessibilityState,
     ).toMatchObject({ disabled: false })
     expect(screen.queryByText(/^\d\d:\d\d$/)).toBeNull()
+  })
+
+  it('leads on into onboarding instead of dead-ending', async () => {
+    const user = userEvent.setup({ advanceTimers: jest.advanceTimersByTime })
+    await renderScreen(<VerifyEmailScreen />)
+
+    await user.press(screen.getByRole('button', { name: COPY.continue }))
+
+    // replace, not push: returning to "check your inbox" after pairing has
+    // begun is nonsense.
+    expect(mockReplace).toHaveBeenCalledWith('/(onboarding)/setup')
   })
 
   it('goes back when Change Email is pressed', async () => {

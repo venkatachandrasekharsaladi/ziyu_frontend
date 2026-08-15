@@ -9,6 +9,11 @@ export const VERIFY_EMAIL_COPY = {
   lede: 'We sent a verification link to your email.',
   resend: 'Resend Email',
   changeEmail: 'Change Email',
+  /**
+   * The forward exit into M01. Until a real provider reports `emailVerified`,
+   * this is the user asserting they have followed the link.
+   */
+  continue: "I've Verified",
   /** Figma shows 00:59 — one tick into a 60-second cooldown. */
   resendCooldownSeconds: 60,
   errors: {
