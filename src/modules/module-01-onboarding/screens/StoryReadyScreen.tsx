@@ -18,10 +18,6 @@ import { formatStoryDate } from '@/utils/formatStoryDate'
  * A checklist of what was captured. Each row states plainly whether it was
  * added or skipped: a tick beside something the user never filled in would be
  * a lie, and skipping was allowed at every step.
- *
- * "Welcome Home" belongs to Cluster 4, which does not exist yet, so it is
- * disabled with the same treatment M01-S11 uses rather than routing into a
- * screen that would throw.
  */
 export function StoryReadyScreen() {
   const router = useRouter()
@@ -42,8 +38,7 @@ export function StoryReadyScreen() {
 
   const since = formatStoryDate(story.met)
 
-  // Cluster 4 does not exist. Same treatment as M01-S11: no dead navigation.
-  const noop = useCallback(() => {}, [])
+  const personalize = useCallback(() => router.push('/(onboarding)/personalize'), [router])
 
   return (
     <AuthScreenLayout centred>
@@ -81,7 +76,7 @@ export function StoryReadyScreen() {
       </Card>
 
       <View style={styles.actions}>
-        <Button label={COPY.submit} onPress={noop} disabled />
+        <Button label={COPY.submit} onPress={personalize} />
       </View>
     </AuthScreenLayout>
   )
