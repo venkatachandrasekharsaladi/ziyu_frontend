@@ -10,7 +10,7 @@ type AvatarProps = {
   uri?: string | null
   /** Used for initials and as the accessible label. */
   name: string
-  /** Draws a lavender ring — the "revealed partner" treatment on M01-S06. */
+  /** Draws a brand ring — the "revealed partner" treatment on M01-S06. */
   ring?: boolean
 }
 
@@ -67,7 +67,11 @@ const styles = StyleSheet.create((theme) => ({
     overflow: 'hidden',
     variants: {
       ring: {
-        true: { borderWidth: 3, borderColor: theme.colors.surface.soft },
+        // NOT surface.soft — that is this circle's own fill, so the ring drew
+        // lavender on lavender and was invisible on M01-S06, the one screen
+        // that asks for it. brand.primary is already in the set, so this adds
+        // no token (spec §5).
+        true: { borderWidth: 3, borderColor: theme.colors.brand.primary },
         false: {},
       },
     },
