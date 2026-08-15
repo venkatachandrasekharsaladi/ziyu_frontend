@@ -127,6 +127,36 @@ describe('Input', () => {
     expect(screen.getByLabelText('Email address').props.editable).toBe(false)
   })
 
+  it('is single-line by default', async () => {
+    await render(<Input label="Email address" value="" onChangeText={() => {}} />)
+
+    expect(screen.getByLabelText('Email address').props.multiline).toBeFalsy()
+  })
+
+  it('grows into a note box when asked', async () => {
+    // The same field, taller — it keeps the fill, radius, border and every
+    // focus/error state, so a note never reads as a different control.
+    await render(
+      <Input label="Memory" value="" onChangeText={() => {}} multiline />,
+    )
+
+    expect(screen.getByLabelText('Memory').props.multiline).toBe(true)
+  })
+
+  it('still reports errors when multiline', async () => {
+    await render(
+      <Input
+        label="Memory"
+        value=""
+        onChangeText={() => {}}
+        multiline
+        error="Say something about it"
+      />,
+    )
+
+    expect(screen.getByText('Say something about it')).toBeTruthy()
+  })
+
   it('calls onBlur when the field loses focus', async () => {
     const onBlur = jest.fn()
     await render(

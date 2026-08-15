@@ -44,6 +44,15 @@ type InputProps = {
   autoCapitalize?: TextInputProps['autoCapitalize']
   editable?: boolean
   onBlur?: () => void
+  /**
+   * Grows the field into a note-sized box for free text — M01-S13's memory and
+   * M01-S14's note.
+   *
+   * A multiline field is the SAME field, taller. It keeps the fill, radius,
+   * border and every focus/error state, so a note never reads as a different
+   * control from a name.
+   */
+  multiline?: boolean
 }
 
 /**
@@ -75,13 +84,14 @@ export function Input({
   autoCapitalize = 'none',
   editable = true,
   onBlur,
+  multiline = false,
 }: InputProps) {
   const [isFocused, setIsFocused] = useState(false)
   const [isRevealed, setIsRevealed] = useState(false)
 
   const state = !editable ? 'disabled' : error ? 'error' : isFocused ? 'focused' : 'rest'
 
-  styles.useVariants({ state })
+  styles.useVariants({ state, multiline })
 
   const { theme } = useUnistyles()
 
@@ -116,6 +126,7 @@ export function Input({
           autoComplete={autoComplete}
           autoCapitalize={autoCapitalize}
           editable={editable}
+          multiline={multiline}
           accessibilityLabel={label}
           accessibilityHint={error}
           style={[styles.textInput, WEB_SUPPRESS_OUTLINE]}
@@ -167,6 +178,18 @@ const styles = StyleSheet.create((theme) => ({
     borderWidth: 1,
     paddingHorizontal: theme.spacing.xl,
     variants: {
+      // Three lines of `label` (24pt each) plus the field's own vertical
+      // rhythm. `minHeight` rather than `height` so the box grows with the
+      // note instead of scrolling a fixed window.
+      multiline: {
+        true: {
+          height: undefined,
+          minHeight: theme.control.height * 2,
+          alignItems: 'flex-start',
+          paddingVertical: theme.spacing.lg,
+        },
+        false: {},
+      },
       state: {
         rest: {
           backgroundColor: theme.colors.surface.field,
@@ -200,6 +223,14 @@ const styles = StyleSheet.create((theme) => ({
     color: theme.colors.text.heading,
     // Android adds its own vertical padding, which would break the 56pt box.
     paddingVertical: 0,
+    variants: {
+      multiline: {
+        // Without this the first line sits vertically centred on Android and
+        // the note reads as a misaligned single-line field.
+        true: { textAlignVertical: 'top' },
+        false: {},
+      },
+    },
   },
   toggle: {
     width: 40,
