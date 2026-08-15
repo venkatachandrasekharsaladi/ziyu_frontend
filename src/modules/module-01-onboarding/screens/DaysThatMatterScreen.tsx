@@ -1,12 +1,10 @@
-import { Feather } from '@expo/vector-icons'
 import { useRouter } from 'expo-router'
 import { useCallback, useState } from 'react'
 import { View } from 'react-native'
-import { StyleSheet, useUnistyles } from 'react-native-unistyles'
+import { StyleSheet } from 'react-native-unistyles'
 
 import { DAYS_THAT_MATTER_COPY as COPY } from '@/copy/daysThatMatter'
 import { Button } from '@/design-system/primitives/Button'
-import { Card } from '@/design-system/primitives/Card'
 import { DateField } from '@/design-system/primitives/DateField'
 import { Text } from '@/design-system/primitives/Text'
 import { AuthScreenLayout } from '@/modules/module-00-auth/components/AuthScreenLayout'
@@ -19,15 +17,19 @@ type DateKey = (typeof COPY.fields)[number]['key']
  * M01-S17 — Days That Matter. Stitch screen c40a53a1.
  *
  * The design draws five tappable cards reading "Tap to set date", which implies
- * a picker the app does not have. Each card carries a `DateField` instead, so a
- * date is typed in place — the same control, and the same interaction, as every
- * other date in the flow.
+ * a picker the app does not have. Each is a `DateField` instead, so a date is
+ * typed in place — the same control and the same interaction as every other
+ * date in the flow.
+ *
+ * The fields are stacked plainly rather than wrapped in `Card`s. A card needs a
+ * title, and `DateField` already renders one, so every row showed its name
+ * twice. Stacked labelled fields is also exactly how M01-S02 and the auth forms
+ * present themselves.
  *
  * All five are optional. Nothing here blocks Continue.
  */
 export function DaysThatMatterScreen() {
   const router = useRouter()
-  const { theme } = useUnistyles()
   const setKeyDates = useStoryStore((state) => state.setKeyDates)
 
   const [dates, setDates] = useState<Record<DateKey, string>>({
@@ -66,22 +68,14 @@ export function DaysThatMatterScreen() {
         </Text>
       </View>
 
-      <View style={styles.list}>
+      <View style={styles.form}>
         {COPY.fields.map((field) => (
-          <Card key={field.key}>
-            <View style={styles.cardHead}>
-              <Feather name={field.icon} size={16} color={theme.colors.brand.primary} />
-              <Text variant="labelStrong" tone="heading">
-                {field.label}
-              </Text>
-            </View>
-
-            <DateField
-              label={field.label}
-              value={dates[field.key]}
-              onChangeText={(value) => update(field.key, value)}
-            />
-          </Card>
+          <DateField
+            key={field.key}
+            label={field.label}
+            value={dates[field.key]}
+            onChangeText={(value) => update(field.key, value)}
+          />
         ))}
       </View>
 
@@ -96,15 +90,10 @@ export function DaysThatMatterScreen() {
 const styles = StyleSheet.create((theme) => ({
   copy: {
     gap: theme.spacing.xs,
-    paddingBottom: theme.spacing.xxxl,
+    paddingBottom: theme.spacing.huge,
   },
-  list: {
+  form: {
     gap: theme.spacing.md,
-  },
-  cardHead: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: theme.spacing.sm,
   },
   actions: {
     gap: theme.spacing.md,

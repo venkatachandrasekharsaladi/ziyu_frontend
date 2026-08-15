@@ -89,6 +89,10 @@ const styles = StyleSheet.create((theme) => ({
   track: {
     flexDirection: 'row',
     width: '100%',
+    // Pinned, NOT derived from the segments. Letting the height fall out of
+    // content plus padding plus border rendered 58pt, which put this control
+    // 2pt out of step with every button and input in the app.
+    height: theme.control.height,
     padding: theme.spacing.xs,
     gap: theme.spacing.xs,
     borderRadius: theme.radii.field,
@@ -98,9 +102,8 @@ const styles = StyleSheet.create((theme) => ({
   },
   segment: {
     flex: 1,
-    // Sits inside the track's 4pt padding, so the control totals 56pt and
-    // matches every button and input on the screen.
-    height: theme.control.height - theme.spacing.sm,
+    // Stretches to whatever the pinned track leaves, so the 56pt total holds.
+    alignSelf: 'stretch',
     alignItems: 'center',
     justifyContent: 'center',
     borderRadius: theme.radii.field - 2,
