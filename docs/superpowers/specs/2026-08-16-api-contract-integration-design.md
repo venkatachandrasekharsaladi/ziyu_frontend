@@ -2,8 +2,9 @@
 
 Date: 2026-08-16
 Status: Approved, ready for planning
-Source contracts: `LoveOS-Authentication-API-Contracts-v1/` — 16 endpoint files, `schemas/common.md`,
-`README.md`. To be renamed `api-contracts/`; see §13.
+Contract version: **v2** (`LoveOS-Authentication-API-Contracts-v2/`) — 18 endpoint files,
+`schemas/ERROR_CODES.md`, `schemas/realtime-pairing.md`, `openapi.yaml`.
+Supersedes v1, which this design originally targeted; see §14 for what changed and why.
 
 ## 1. Why
 
@@ -12,7 +13,7 @@ interface backed by an in-memory mock, each with a documented one-line swap poin
 `index.ts`. Those boundaries were built deliberately so that a real provider could be dropped
 in without touching a screen.
 
-A backend contract now exists for authentication, profile, pairing and onboarding — 16
+A backend contract now exists for authentication, profile, pairing and onboarding — 18
 endpoints against `https://api.loveos.app/api/v1`. No server implements it yet. This design
 makes the client speak that contract exactly, while keeping the mocks as the default so the
 app continues to run and every existing test stays green.
@@ -25,21 +26,25 @@ variable and nothing else.
 ### In
 
 - A typed HTTP transport with response validation, error-envelope parsing and token attachment.
-- Token persistence (`expo-secure-store`) and a session store.
-- All 16 contract endpoints implemented across four service boundaries.
-- Contract-faithful error taxonomies and the copy to render them.
+- Token persistence (`expo-secure-store`), rotating refresh, and a session store.
+- All 18 contract endpoints implemented across four service boundaries.
+- Contract error codes adopted verbatim, and the copy to render them.
+- A realtime port for `couple:pairing-status-changed`, defined and left unimplemented (D12).
 - Rewiring the ten existing screens onto the new shapes.
 
 ### Out
 
-- **New screens.** Five endpoints have no UI to drive them (`verify-email` by token,
-  `password/reset` by token, both OAuth routes, `invitations/{id}/send`). They are implemented,
-  typed and tested, but left uncalled. Inventing screens without Figma is out of bounds.
-- **`GET /couples/status` polling.** The method is implemented; no screen polls it yet.
+- **New screens.** Six endpoints have no UI to drive them: `verify-email` by token,
+  `password/reset` by token, both OAuth routes, `invitations/{id}/send`, and `auth/logout` —
+  `module-05-profile` is still empty scaffolding, so there is nowhere to sign out from. All six
+  are implemented, typed and tested, but left uncalled. Inventing screens without Figma is out
+  of bounds.
+- **A realtime transport.** The contract names an event but not a wire protocol (§12.1).
+- **Polling `GET /couples/status`.** v2 explicitly forbids it: *"Use on startup/reconnect.
+  Do not continuously poll."*
 - **`@tanstack/react-query`.** Installed but unused. Adopting it is a separate migration
   touching every screen; the current `async`/`await` + `Result<T>` pattern is coherent and tested.
-- **`openapi.yaml`.** The supplied file is a stub (`paths: {}`). The 16 markdown files remain
-  the source of truth. Authoring the full spec is deferred; no codegen.
+- **OpenAPI codegen.** See D2.
 - **The `story`, `memories` and `home` services.** No contracts cover them.
 
 ## 3. Decisions
@@ -47,15 +52,18 @@ variable and nothing else.
 | # | Decision | Rationale |
 |---|---|---|
 | D1 | Mocks stay the default; HTTP activates on `EXPO_PUBLIC_API_URL` | No server exists. Zero-config today, one variable tomorrow. |
-| D2 | Hand-written client, not OpenAPI codegen | The supplied spec has no paths; authoring it creates a second source of truth to keep in sync with the `.md` files, and generated clients don't speak `Result<T>`. |
+| D2 | Hand-written client, not OpenAPI codegen | v2's `openapi.yaml` types every **request** but no **response** — each is `{description: "Created"}` with no `content`. Responses are what validation protects, so codegen would emit `any` for every return value. The endpoint `.md` files remain the only source of response shapes. |
 | D3 | Install `expo-secure-store` | The refresh token is a persistent credential. Reverses the earlier "no provider, so no storage" note in `relationshipStore.ts`, which that note anticipated. |
 | D4 | Access token in memory, refresh token in keychain | At `expiresIn: 3600` persisting the access token buys little and widens exposure. |
-| D5 | Full contract fidelity in error codes | Users get "that password is too weak", not "something went wrong". |
+| D5 | Adopt the published error enum verbatim | `ERROR_CODES.md` defines 24 codes. Using them as the app's own codes makes the mapping the identity function, so there is nothing to drift. |
 | D6 | Four service boundaries, not two | `PUT /users/me/profile` is a user resource; `POST /onboarding/complete` is neither user nor couple. |
 | D7 | Wire vocabulary stops at the boundary | The app keeps `name`/`photoUri`; the contract's `displayName`/`photoUrl` are mapped in the HTTP implementation. `photoUri` matches React Native's `source={{ uri }}`. |
-| D8 | Refresh fails closed | The contracts define no refresh endpoint (see §11). A 401 that cannot be refreshed clears the session and routes to sign-in. |
+| D8 | Real single-flight refresh against `POST /auth/refresh` | v2 adds the endpoint. Supersedes v1's fail-closed workaround. |
 | D9 | Sign-in routes on real `emailVerified` / `pairingStatus` | The existing unconditional push to verify-email is commented as deferred because `(app)` had no routes. It now has five. |
 | D10 | Shared error copy with per-screen overrides | Widening the unions would otherwise force ~15 keys into each of six copy files. |
+| D11 | Rotation is atomic; reuse is fatal | `/auth/refresh` rotates the refresh token. The new pair is persisted before the replayed request goes out. `REFRESH_TOKEN_REUSED` means the server suspects theft — the only safe response is an immediate local sign-out. |
+| D12 | Realtime as a port, not an implementation | The event is specified; the transport is not, and no realtime client is installed. The interface and its schema land now; the socket lands when the backend names one. |
+| D13 | Branch on `error.code`, never `message`/`details` | Mandated by the v2 README. The status-code table (§5.2) is a fallback for bodies that aren't conforming envelopes, not the primary path. |
 
 ## 4. Configuration
 
@@ -106,7 +114,7 @@ function request<T>(
 
 Responsibilities, in order: build `${API.baseUrl}${path}`; set `Content-Type` and `Accept`;
 attach `Authorization: Bearer <accessToken>` when `auth`; apply an `AbortController` timeout
-of `API.timeoutMs`; on 401 with `auth`, attempt refresh once and replay; parse the body;
+of `API.timeoutMs`; on 401 with `auth`, refresh once and replay (§5.5); parse the body;
 validate against `schema`; return.
 
 It **never throws** for an HTTP-level failure. Expected failure is a value, matching the
@@ -121,27 +129,35 @@ type ApiResult<T> =
 
 `status` is `null` when the request never reached the server (timeout, DNS, offline).
 
+Eleven of the eighteen endpoints declare `Auth: Bearer access token`. Everything under
+`/couples/*`, `/users/me/profile`, `/onboarding/complete` and `/auth/logout` is authenticated —
+including `invitations/lookup`, which means partner-code entry requires a live session.
+
 ### 5.2 Error envelope — `src/services/api/errors.ts`
 
-The contracts define one envelope:
+One envelope across every endpoint:
 
 ```json
-{"error":{"code":"ERROR_CODE","message":"Human-readable message","details":{}},"requestId":"req_123"}
+{"error":{"code":"ERROR_CODE","message":"Human-readable message","details":{}},"requestId":"req_123456"}
 ```
 
-Parsing is defensive. A 502 from a load balancer arrives as HTML; a crashed process may return
-an empty body. Any body that isn't a conforming envelope falls back to a status-derived code:
+Per D13, `error.code` is the only field branched on. It is matched against the published enum
+in `ERROR_CODES.md`; `message` is for logs and `details` is ignored entirely.
+
+Parsing is defensive, because a code-first rule only helps when there *is* a code. A 502 from a
+load balancer arrives as HTML; a crashed process may return an empty body. Any body that isn't
+a conforming envelope, or that carries a code outside the enum, falls back to the status:
 
 | Status | Fallback `ApiErrorCode` |
 |---|---|
-| 400 | `BAD_REQUEST` |
-| 401 | `UNAUTHENTICATED` |
-| 403 | `FORBIDDEN` |
-| 404 | `NOT_FOUND` |
-| 409 | `CONFLICT` |
-| 422 | `UNPROCESSABLE` |
+| 400 | `INVALID_REQUEST` |
+| 401 | `TOKEN_INVALID` |
+| 403 | `EMAIL_NOT_VERIFIED` on `/auth/login`, else `INVITATION_NOT_OWNED` |
+| 404 | `INVITATION_NOT_FOUND` |
+| 409 | `PAIRING_CONFLICT` |
+| 422 | `VALIDATION_ERROR` |
 | 429 | `RATE_LIMITED` |
-| 5xx | `SERVER_ERROR` |
+| 5xx | `INTERNAL_ERROR` |
 | no response | `NETWORK` |
 | body failed `schema` | `CONTRACT_VIOLATION` |
 
@@ -149,15 +165,18 @@ an empty body. Any body that isn't a conforming envelope falls back to a status-
 problem is traceable in backend logs.
 
 `CONTRACT_VIOLATION` is a transport-level code only. It never reaches a screen; each domain
-mapper collapses it to that domain's `UNKNOWN` after logging. Domain error codes are the
-user-facing vocabulary; transport codes are the diagnostic one.
+mapper collapses it to `UNKNOWN` after logging. Domain error codes are the user-facing
+vocabulary; transport codes are the diagnostic one.
 
 ### 5.3 Response validation — `src/services/api/schemas.ts`
 
 `zod` is already a dependency. Every endpoint gets a schema derived from its contract example.
 A response that fails validation becomes `CONTRACT_VIOLATION` rather than an `undefined` that
-surfaces three screens later as a blank name. This is the mechanism that makes the integration
-verifiable rather than hopeful.
+surfaces three screens later as a blank name.
+
+This carries more weight under v2 than it did under v1: because `openapi.yaml` specifies no
+response schemas (D2), these zod schemas are the *only* machine-checkable statement of what the
+server must return. They are the contract test.
 
 ### 5.4 Tokens — `src/services/api/tokens.ts`
 
@@ -183,18 +202,41 @@ Two adapters:
 **Installing `expo-secure-store` requires a dev-client rebuild.** Call this out in the plan;
 it is the one step that isn't pure JavaScript.
 
-### 5.5 Refresh
+### 5.5 Refresh and rotation
 
-Single-flight: concurrent 401s share one in-flight refresh rather than firing N of them.
-Behind a port:
+`POST /auth/refresh` takes `{refreshToken}` and returns a **new pair** plus `expiresIn`. The old
+refresh token is invalidated on success, so this is rotation, not renewal, and the ordering
+matters (D11):
 
-```ts
-type RefreshPort = (refreshToken: string) => Promise<ApiResult<Tokens>>
-```
+1. A 401 on an authenticated call suspends that call.
+2. Concurrent 401s join the same in-flight refresh — single-flight, never N refreshes. This is
+   not just efficiency: with rotation, two parallel refreshes would make the second one look
+   like token reuse and trip the server's theft detection.
+3. On success the new pair is written to storage **before** any suspended call is replayed. A
+   crash between exchange and persist otherwise strands the client holding a dead token.
+4. Each suspended call replays exactly once. A second 401 is terminal.
 
-Per D8 the shipped implementation returns `NOT_IMPLEMENTED` because no contract defines the
-endpoint (§11). The consequence is explicit: a 401 on an authenticated call clears the session
-and routes to sign-in. The seam is marked so that adding the endpoint is a one-function change.
+Failure handling is by code:
+
+| `error.code` | Meaning | Client behaviour |
+|---|---|---|
+| `TOKEN_EXPIRED` | Refresh token aged out | Clear session, route to sign-in |
+| `TOKEN_INVALID` | Malformed or unknown | Clear session, route to sign-in |
+| `REFRESH_TOKEN_REVOKED` | Session ended server-side | Clear session, route to sign-in |
+| `REFRESH_TOKEN_REUSED` | Server suspects theft | Clear session **immediately**, abandon all in-flight calls, route to sign-in |
+| `RATE_LIMITED` / `INTERNAL_ERROR` | Transient | Fail the original call; keep the session |
+
+The distinction in the last row matters: a 429 on refresh is not a reason to sign someone out.
+
+`REFRESH_TOKEN_REUSED` and `REFRESH_TOKEN_REVOKED` never reach a screen. They belong to an
+internal `RefreshErrorCode`, not to any domain union — no screen has a sensible message for
+"your refresh token was replayed" beyond "please sign in again."
+
+### 5.6 Sign-out
+
+`POST /auth/logout` takes the bearer token *and* `{refreshToken}` in the body, and returns 204.
+The client always clears local storage, whatever the server answers — a failed revocation must
+not leave a user apparently signed in. A non-2xx is logged with its `requestId` and swallowed.
 
 ## 6. Session — `src/state/sessionStore.ts`
 
@@ -220,6 +262,9 @@ Not persisted, matching `relationshipStore`. The only durable artefact is the re
 the keychain. `pendingEmail` is what removes the `resendVerification({ email: '' })` placeholder
 in `VerifyEmailScreen`.
 
+`signedOut` is called both by the user signing out and by the transport on a terminal refresh
+failure, so there is exactly one path that tears a session down.
+
 ## 7. Service interfaces
 
 Today each domain declares its own `Result<T>` bound to its own error type. That duplication
@@ -241,25 +286,28 @@ export type Result<T> = ApiResultShape<T, AuthErrorCode>
 its own error type on sight. In code they use the single-parameter domain alias — `Result<Session>`
 in `services/auth`, and so on.
 
+Every union below is a **subset of the published enum** (D5) plus exactly two client-only
+members, `NETWORK` and `UNKNOWN`, which describe conditions no server can report.
+
 ### 7.1 `services/auth`
 
 ```ts
 export type AuthErrorCode =
-  | 'INVALID_REQUEST'        // 400
-  | 'INVALID_CREDENTIALS'    // 401 login
-  | 'EMAIL_NOT_VERIFIED'     // 403 login
-  | 'EMAIL_ALREADY_EXISTS'   // 409 signup
-  | 'WEAK_PASSWORD'          // 422 signup, reset
-  | 'TOKEN_INVALID'          // 401 verify-email, reset
-  | 'TOKEN_EXPIRED'          // 401 where details identify expiry
-  | 'ALREADY_VERIFIED'       // 409 verify-email
-  | 'PROVIDER_FAILED'        // 401 oauth
-  | 'ACCOUNT_CONFLICT'       // 409 oauth
-  | 'RATE_LIMITED'           // 429
-  | 'UNAUTHENTICATED'        // 401 on an authenticated route
-  | 'SERVER_ERROR'           // 5xx
-  | 'NETWORK'
-  | 'UNKNOWN'
+  // published enum
+  | 'INVALID_REQUEST'         // 400
+  | 'INVALID_EMAIL'           // 400 resend, forgot
+  | 'INVALID_PROVIDER_TOKEN'  // 400 oauth
+  | 'INVALID_CREDENTIALS'     // 401 login, oauth
+  | 'TOKEN_INVALID'           // 401 verify-email, reset
+  | 'TOKEN_EXPIRED'           // 401 verify-email, reset
+  | 'EMAIL_NOT_VERIFIED'      // 403 login
+  | 'EMAIL_ALREADY_EXISTS'    // 409 signup, and verify-email when already verified
+  | 'ACCOUNT_CONFLICT'        // 409 oauth
+  | 'WEAK_PASSWORD'           // 422 signup, reset
+  | 'RATE_LIMITED'            // 429
+  | 'INTERNAL_ERROR'          // 500
+  // client-only
+  | 'NETWORK' | 'UNKNOWN'
 
 export type AuthUser = { id: string; email: string; emailVerified: boolean }
 
@@ -282,22 +330,32 @@ export type AuthService = {
   resetPassword: (input: { token: string; newPassword: string }) => Promise<Result<null, AuthErrorCode>>
   signInWithGoogle: (input: { idToken: string }) => Promise<Result<AuthSession, AuthErrorCode>>
   signInWithApple: (input: AppleCredentials) => Promise<Result<AuthSession, AuthErrorCode>>
+  /** Always clears locally, whatever the server answers (§5.6). */
+  signOut: () => Promise<void>
 }
 ```
 
 `requestPasswordReset` and `resendVerification` keep resolving `ok` for unknown addresses. The
-contracts state this explicitly ("never reveal whether an email exists"); the existing mock
+contracts state this explicitly ("never reveal whether the account exists"); the existing mock
 comment already defends it. Both remain 202-shaped: acknowledgement, not confirmation.
 
-`EMAIL_TAKEN` is renamed to `EMAIL_ALREADY_EXISTS` to match the contract's own vocabulary, so
-the mapping table is the identity function wherever it can be.
+Two v2 quirks worth naming, because they will otherwise look like bugs:
+
+- `EMAIL_ALREADY_EXISTS` is reused by `verify-email` for an already-verified address. Same code,
+  two meanings, so the copy is resolved per screen rather than globally (§8).
+- OAuth failure is plain `INVALID_CREDENTIALS` at 401; the provider-specific code
+  (`INVALID_PROVIDER_TOKEN`) sits at 400. Reading it the other way round is the natural mistake.
+
+`refresh` is deliberately absent from this interface. It is transport concern, driven by 401s
+inside the client, never called by a screen.
 
 ### 7.2 `services/profile` (new)
 
 ```ts
 export type ProfileErrorCode =
-  | 'INVALID_REQUEST' | 'VALIDATION_FAILED' | 'UNAUTHENTICATED'
-  | 'RATE_LIMITED' | 'SERVER_ERROR' | 'NETWORK' | 'UNKNOWN'
+  | 'INVALID_REQUEST' | 'TOKEN_INVALID' | 'TOKEN_EXPIRED'
+  | 'VALIDATION_ERROR' | 'RATE_LIMITED' | 'INTERNAL_ERROR'
+  | 'NETWORK' | 'UNKNOWN'
 
 export type Profile = {
   name: string
@@ -321,19 +379,20 @@ Moved off `pairingService`. `Profile` moves with it; `relationshipStore` updates
 
 ```ts
 export type PairingErrorCode =
-  | 'INVALID_REQUEST'         // 400
-  | 'CODE_INVALID'            // 400 bad format, 404 not found
-  | 'CODE_EXPIRED'            // 409 expired
-  | 'CODE_ALREADY_USED'       // 409 used or consumed
-  | 'CANNOT_PAIR_WITH_SELF'   // 409 where details identify self-pairing (§11)
-  | 'ALREADY_PAIRED'          // 409 create-invite, connections
-  | 'INVITATION_PENDING'      // 409 create-invite with one outstanding
-  | 'INVITATION_NOT_FOUND'    // 404
-  | 'INVITATION_NOT_VALID'    // 403 connections
-  | 'NOT_OWNER'               // 403 send, cancel
-  | 'CONFIRM_REQUIRED'        // 422 connections
-  | 'INVALID_DELIVERY'        // 422 create-invite
-  | 'RATE_LIMITED' | 'UNAUTHENTICATED' | 'SERVER_ERROR' | 'NETWORK' | 'UNKNOWN'
+  | 'INVALID_INVITATION_CODE'  // 400 lookup, connect
+  | 'INVALID_EMAIL'            // 400 send
+  | 'TOKEN_INVALID' | 'TOKEN_EXPIRED'   // 401
+  | 'INVITATION_NOT_OWNED'     // 403 send, cancel, connect
+  | 'INVITATION_NOT_FOUND'     // 404
+  | 'INVITATION_EXPIRED'       // 409
+  | 'INVITATION_ALREADY_USED'  // 409
+  | 'ALREADY_PAIRED'           // 409
+  | 'CANNOT_PAIR_WITH_SELF'    // 409 connect
+  | 'PAIRING_CONFLICT'         // 409
+  | 'VALIDATION_ERROR'         // 422 create
+  | 'CONFIRMATION_REQUIRED'    // 422 connect
+  | 'RATE_LIMITED' | 'INTERNAL_ERROR'
+  | 'NETWORK' | 'UNKNOWN'
 
 export type InvitationStatus = 'PENDING' | 'SENT' | 'CONSUMED' | 'CANCELLED' | 'EXPIRED'
 export type PairingStatus = 'NOT_PAIRED' | 'INVITATION_PENDING' | 'ACTIVE'
@@ -369,14 +428,17 @@ export type PairingSnapshot =
   | { status: 'ACTIVE'; coupleId: string; partner: Partner }
 
 export type PairingService = {
-  createInvite: (input: { delivery: 'SHARE_CODE' | 'EMAIL' }) => Promise<Result<Invitation, PairingErrorCode>>
+  /** `delivery` has one legal value; email delivery goes through `sendInvite`. */
+  createInvite: (input: { delivery: 'SHARE_CODE' }) => Promise<Result<Invitation, PairingErrorCode>>
   sendInvite: (input: { invitationId: string; email: string }) => Promise<Result<{ status: InvitationStatus }, PairingErrorCode>>
   /** Resolves the inviter behind a code without consuming it. */
   lookupCode: (input: { code: string }) => Promise<Result<InvitationLookup, PairingErrorCode>>
   /** Commits the relationship. */
   connectPartner: (input: { invitationCode: string; confirm: true }) => Promise<Result<Couple, PairingErrorCode>>
+  /** Startup and reconnect only — v2 forbids polling. */
   getStatus: () => Promise<Result<PairingSnapshot, PairingErrorCode>>
-  cancelInvite: (input: { invitationId: string }) => Promise<Result<{ status: InvitationStatus }, PairingErrorCode>>
+  /** 204, so there is nothing to return. */
+  cancelInvite: (input: { invitationId: string }) => Promise<Result<null, PairingErrorCode>>
 }
 ```
 
@@ -387,17 +449,16 @@ Two renames, both because the old names now misdescribe the contract:
 - `confirmPartner({ partnerId })` → `connectPartner({ invitationCode, confirm })`.
   `POST /couples/connections` keys on the invitation code. `partnerId` was never a contract concept.
 
-`confirm` is typed as the literal `true`, so the 422 "confirm must be true" case is unreachable
-from the client. `CONFIRM_REQUIRED` remains in the union for a server that disagrees.
+`confirm` is typed as the literal `true`, so the 422 case is unreachable from the client.
+`CONFIRMATION_REQUIRED` stays in the union for a server that disagrees.
 
 ### 7.4 `services/onboarding` (new)
 
 ```ts
 export type OnboardingErrorCode =
-  | 'INVALID_STATE'        // 400
-  | 'INCONSISTENT_STATE'   // 409
-  | 'SETUP_INCOMPLETE'     // 422
-  | 'UNAUTHENTICATED' | 'SERVER_ERROR' | 'NETWORK' | 'UNKNOWN'
+  | 'INVALID_REQUEST' | 'TOKEN_INVALID' | 'TOKEN_EXPIRED'
+  | 'PAIRING_CONFLICT' | 'VALIDATION_ERROR' | 'INTERNAL_ERROR'
+  | 'NETWORK' | 'UNKNOWN'
 
 export type OnboardingService = {
   complete: (input: { profileComplete: boolean; pairingStatus: PairingStatus })
@@ -408,10 +469,32 @@ export type OnboardingService = {
 `nextRoute` is **advisory**. The client validates it against a known route allowlist and falls
 back to `/(app)/home`. A server string is not permitted to drive navigation unchecked.
 
+### 7.5 Realtime — `src/services/pairing/realtime.ts` (D12)
+
+```ts
+export type PairingStatusChanged = { status: PairingStatus; coupleId: string | null; partner?: Partner }
+
+export type RealtimePort = {
+  /** Returns an unsubscribe function. */
+  onPairingStatusChanged: (handler: (event: PairingStatusChanged) => void) => () => void
+  connect: () => Promise<void>
+  disconnect: () => void
+}
+```
+
+Shipped implementation is `createNoopRealtime()`: `connect` resolves, `onPairingStatusChanged`
+registers nothing, `disconnect` is a no-op. The event's zod schema is written and tested now, so
+adding a transport is one file plus one line in `index.ts`.
+
+The contract's reconciliation rule — *"Client reconciles with `GET /couples/status` after
+reconnect"* — is honoured today by calling `getStatus()` on startup, which is correct behaviour
+whether or not a socket ever connects.
+
 ## 8. Error copy
 
-Widening the unions to 15–17 members would force every key into all six screen copy files,
-because screens index `COPY.errors[result.error.code]` and the records are `as const`.
+Adopting the published enum gives unions of 8–17 members. Because screens index
+`COPY.errors[result.error.code]` and the records are `as const`, every key would otherwise have
+to appear in all six screen copy files.
 
 Instead, `src/copy/errors.ts` holds one exhaustive `Record<Code, string>` per domain — the
 compiler enforces completeness in exactly one place — and each screen's copy file keeps only
@@ -427,18 +510,26 @@ export function authErrorMessage(code: AuthErrorCode, overrides?: Partial<Record
 (`INVALID_CREDENTIALS`); the rest come from the shared map. Existing bespoke wording is preserved
 as overrides, not discarded.
 
+Two codes need per-screen overrides rather than a single global string:
+
+- `EMAIL_ALREADY_EXISTS` — "that email is already registered" on sign-up, "this email is already
+  verified — you can sign in" on verify-email.
+- `TOKEN_INVALID` / `TOKEN_EXPIRED` — "this link has expired, request a new one" on
+  verify-email and reset-password, but "your session ended, please sign in again" anywhere the
+  code escapes the transport layer.
+
 ## 9. Screen changes
 
 | Screen | Change |
 |---|---|
-| `SignInScreen` | Persist tokens, populate `sessionStore`, then route on real data (below). |
+| `SignInScreen` | Persist tokens, populate `sessionStore`, then route on real data (§9.1). |
 | `CreateAccountScreen` | `signUp` returns no tokens; store `pendingEmail`; `verificationRequired` gates the push to verify-email. |
 | `VerifyEmailScreen` | `resendVerification({ email })` reads `pendingEmail ?? email` from session. Placeholder removed. The "Continue" button stays user-asserted — token verification needs a deep link, which is out of scope. |
-| `ForgotPasswordScreen` | No behaviour change; `RATE_LIMITED` becomes distinguishable, which matters here because repeated taps are the common real-world 429. |
+| `ForgotPasswordScreen` | No behaviour change; `RATE_LIMITED` and `INVALID_EMAIL` become distinguishable. Repeated taps are the common real-world 429. |
 | `CreateProfileScreen` | Imports `profileService.updateProfile`; now an authenticated call. |
 | `InvitePartnerScreen` | `createInvite({ delivery: 'SHARE_CODE' })`; stores the whole `Invitation`. |
-| `InvitationSentScreen` | `cancelInvite({ invitationId })`; shares `shareUrl` when the server supplies one, falling back to today's `COPY.shareMessage(code)`. |
-| `EnterPartnerCodeScreen` | `lookupCode`; stores partner **and** `invitationId` / `invitationCode`. |
+| `InvitationSentScreen` | `cancelInvite({ invitationId })` — now 204, so success is simply `ok`. Shares `shareUrl` when the server supplies one, falling back to today's `COPY.shareMessage(code)`. |
+| `EnterPartnerCodeScreen` | `lookupCode`; stores partner **and** `invitationId` / `invitationCode`. Requires a live session, since the endpoint is authenticated. |
 | `ConnectingScreen` | `connectPartner({ invitationCode, confirm: true })`; stores `coupleId`. |
 | `WelcomeHomeScreen` | Calls `onboardingService.complete()` before entering the app. It is the single crossing point into `(app)` — the only `router.replace('/(app)/home')` in the onboarding flow. A failure keeps the user on the screen with a retry rather than entering an app the server believes is unconfigured. |
 
@@ -473,34 +564,12 @@ coupleId: string | null
 
 `Profile` is re-imported from `@/services/profile/types`.
 
-## 11. Open questions for the backend team
+## 11. Testing
 
-These are gaps in the contract, not in this design. Each has a defined client behaviour so the
-work is not blocked.
-
-1. **No token refresh endpoint.** `POST /auth/login`, `/auth/oauth/google` and `/auth/oauth/apple`
-   all return a `refreshToken`, but no endpoint exchanges it. *Client behaviour until resolved:*
-   refresh fails closed; a 401 clears the session and routes to sign-in, meaning users are
-   signed out after `expiresIn` (one hour). This needs answering before any real deployment.
-2. **No sign-out endpoint.** Nothing revokes a refresh token server-side. *Client behaviour:*
-   sign-out clears local storage only.
-3. **Self-pairing is not distinguishable.** `POST /couples/connections` returns a generic 409
-   for it. *Client behaviour:* the HTTP mapper looks for a self-pairing marker in
-   `error.details` and falls back to `ALREADY_PAIRED`. A dedicated code would be better.
-4. **`error.code` values are unspecified.** The envelope defines the shape but only two literal
-   codes appear anywhere (`EMAIL_ALREADY_EXISTS`, `WEAK_PASSWORD`). *Client behaviour:* map on
-   HTTP status first, refine by `error.code` when it matches a known string. A published enum
-   would let the mapping be exact.
-5. **`openapi.yaml` is a stub** with `paths: {}`, so it cannot be used for codegen or validation.
-6. **`GET /couples/status` has no realtime channel.** Reaching `ACTIVE` requires the partner to
-   act. Polling is the only option available and no screen does it yet.
-
-## 12. Testing
-
-### 12.1 Conformance suite (the central guarantee)
+### 11.1 Conformance suite (the central guarantee)
 
 One file of assertions, executed twice — once against the mock, once against the HTTP
-implementation with `fetch` stubbed to return **the exact JSON literals from the 16 contract
+implementation with `fetch` stubbed to return **the exact JSON literals from the 18 contract
 files**. The contract examples are the fixtures.
 
 ```ts
@@ -513,23 +582,63 @@ describe.each([
 This is what stops the mock drifting from the contract, and stops the client drifting from
 either. Both implementations therefore accept their collaborators by injection.
 
-### 12.2 Client unit tests
+### 11.2 Client unit tests
 
 Timeout → `NETWORK`; offline → `NETWORK`; HTML error body → status-derived code; conforming
-envelope → its code and `requestId`; schema mismatch → `CONTRACT_VIOLATION`; 401 with `auth`
-→ one refresh attempt, then sign-out; concurrent 401s → exactly one refresh call.
+envelope → its code and `requestId`; a code outside the published enum → status fallback;
+schema mismatch → `CONTRACT_VIOLATION`.
 
-### 12.3 Token storage
+### 11.3 Refresh and rotation
+
+The highest-risk area in the design, and the least visible when it breaks:
+
+- A 401 triggers exactly one refresh, then one replay.
+- Ten concurrent 401s trigger **one** refresh, not ten — the rotation-safety property in D11.
+- The rotated pair is persisted before any replay is issued.
+- `REFRESH_TOKEN_REUSED` clears the session immediately and abandons in-flight calls.
+- `RATE_LIMITED` on refresh fails the original call but **keeps** the session.
+- A second 401 after a successful refresh is terminal, not an infinite loop.
+- Cold start with a refresh token but no access token refreshes before the first call.
+
+### 11.4 Token storage
 
 Round-trip, clear, and cold-start-with-no-access-token, all against `memoryTokenStorage`.
 
-### 12.4 Screen tests
+### 11.5 Realtime
+
+The event schema parses the contract's example payload; the no-op port satisfies the interface;
+`getStatus()` is called on startup.
+
+### 11.6 Screen tests
 
 The existing suites are updated for the new shapes. New assertions: resend sends the session
 address rather than `''`; sign-in routes to each of the three destinations; connect uses the
-redeemed code.
+redeemed code; cancel treats 204 as success.
 
 TDD throughout, matching how the auth and pairing clusters were built.
+
+## 12. Open questions for the backend team
+
+v2 closed every question raised against v1. These are what remain.
+
+1. **Realtime transport is unnamed.** `realtime-pairing.md` specifies an event and a payload but
+   not a protocol — WebSocket, SSE, or a vendor SDK — nor a URL or an auth handshake. *Client
+   behaviour:* the port ships as a no-op (D12) and `getStatus()` runs on startup.
+2. **`openapi.yaml` specifies no response schemas.** All 18 paths type their requests; every
+   response is a bare `description`. This blocks codegen (D2) and means the response shapes in
+   the `.md` files are unverifiable against the spec.
+3. **Three `openapi.yaml` / `.md` disagreements.** `verify-email` omits the 409 its `.md`
+   documents; `/couples/connections` describes 403 only as "Forbidden" where the `.md` names
+   `INVITATION_NOT_OWNED`; `AppleLoginRequest.name` is an untyped `object` where the `.md` shows
+   `{firstName, lastName}`. *Client behaviour:* the `.md` files win.
+4. **`EMAIL_ALREADY_EXISTS` is overloaded.** It means "that address is taken" on signup and
+   "already verified" on verify-email. Handled with per-screen copy (§8); a distinct
+   `EMAIL_ALREADY_VERIFIED` would be cleaner.
+5. **`INVITATION_NOT_OWNED` at 403 on `/couples/connections`** reads oddly — the connecting user
+   is by definition *not* the owner of the invitation. Possibly intended as "not valid for you".
+   Worth confirming the semantics.
+6. **No refresh-token TTL is published.** `expiresIn: 3600` covers the access token only, so the
+   client cannot pre-emptively warn before a session dies; it discovers expiry by being refused.
 
 ## 13. File manifest
 
@@ -541,16 +650,18 @@ src/services/api/client.ts
 src/services/api/errors.ts
 src/services/api/schemas.ts
 src/services/api/tokens.ts
+src/services/api/refresh.ts
 src/services/api/types.ts
 src/services/auth/http.ts
 src/services/pairing/http.ts
+src/services/pairing/realtime.ts
 src/services/profile/{types,mock,http,index}.ts
 src/services/onboarding/{types,mock,http,index}.ts
 src/state/sessionStore.ts
 src/copy/errors.ts
 ```
 
-Plus `__tests__` for the client, tokens, and a conformance suite per service.
+Plus `__tests__` for the client, refresh, tokens, realtime, and a conformance suite per service.
 
 **Modified**
 
@@ -569,6 +680,33 @@ src/copy/{signIn,createAccount,verifyEmail,forgotPassword,createProfile,
 `app/(app)/memories/` and the `AppScreenLayout` pattern. These should be committed before a
 refactor this wide lands on top of them.
 
-**Also:** rename `LoveOS-Authentication-API-Contracts-v1/` to `api-contracts/`. This is blocked
-by a filesystem lock (a process holds open directory handles; files inside rename fine,
-directories do not) and needs the holder closed first.
+**Also:** the repo holds both `LoveOS-Authentication-API-Contracts-v1/` and `-v2/`. v2 is the
+source of truth; v1 should be deleted and v2 renamed to `api-contracts/`. The v1 rename was
+blocked by a filesystem lock (a process holds open directory handles — files inside rename
+fine, directories do not) and needs the holder closed first.
+
+## 14. What changed from v1
+
+The design was written against v1 and reviewed with the backend team; v2 answers all six
+questions it raised. Recorded because the reasoning behind several decisions changed, not just
+the values.
+
+| v1 finding | v2 resolution | Design impact |
+|---|---|---|
+| No refresh endpoint | `POST /auth/refresh`, with rotation | D8 reversed: real single-flight refresh. New §5.5 and D11 — rotation makes single-flight a correctness requirement, not an optimisation |
+| No logout endpoint | `POST /auth/logout` (204) | New `signOut` (§5.6, §7.1) |
+| `error.code` values unspecified | `ERROR_CODES.md`, 24 codes | D5 rewritten: the enum is adopted verbatim, so the mapping is the identity function. Every union in §7 changed |
+| Self-pairing indistinguishable | Explicit `CANNOT_PAIR_WITH_SELF` | The `details`-sniffing workaround is deleted; D13 now forbids reading `details` at all |
+| `openapi.yaml` was a stub | Full 18-path spec, requests typed | D2 **unchanged** — responses are still unspecified, so codegen remains unviable. New open question §12.2 |
+| No realtime channel | `couple:pairing-status-changed` | D12: port defined, transport deferred (§7.5). Polling moves from "not needed" to "explicitly forbidden" |
+
+Corrections v2 forced that were not gaps in v1, but errors in the design's assumptions:
+
+- `delivery` is `enum: [SHARE_CODE]` — a single-member union, not `SHARE_CODE | EMAIL`.
+- `DELETE /couples/invitations/{id}` is **204**, not 200 with a body, so `cancelInvite` returns `null`.
+- The 500 code is `INTERNAL_ERROR`, not `SERVER_ERROR`.
+- There is no `UNAUTHENTICATED`; 401 is `TOKEN_INVALID` / `TOKEN_EXPIRED` everywhere.
+- Invitation errors are `INVITATION_EXPIRED` / `INVITATION_ALREADY_USED`, not `CODE_*`.
+- OAuth 401 is `INVALID_CREDENTIALS`; `INVALID_PROVIDER_TOKEN` is a 400.
+- `ALREADY_VERIFIED`, `INVITATION_PENDING` and `INVALID_DELIVERY` do not exist; the first is
+  `EMAIL_ALREADY_EXISTS`, the other two are `PAIRING_CONFLICT` and `VALIDATION_ERROR`.
