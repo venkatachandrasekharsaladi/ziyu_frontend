@@ -135,6 +135,15 @@ export function createMockAuthService({ latencyMs = 600 }: MockOptions = {}): Au
       return { ok: true, value: null }
     },
 
+    async signOut() {
+      await wait(latencyMs)
+
+      // Nothing to tear down yet: there is no token storage and no session
+      // store until the HTTP client lands. When it does, this clears the
+      // keychain and calls `POST /auth/logout`, in that order, and still
+      // resolves if the call fails.
+    },
+
     async resendVerification({ email }: EmailOnly) {
       await wait(latencyMs)
 

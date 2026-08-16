@@ -166,3 +166,33 @@ describe('mock auth service — resetPassword', () => {
     expect(Date.now() - started).toBeGreaterThanOrEqual(15)
   })
 })
+
+/**
+ * Sign out. Contract: `contracts/auth/10-logout.md`.
+ *
+ * Returns nothing and cannot fail from the caller's side. The contract's 204 is
+ * a courtesy: the session is gone locally whatever the server says, so there is
+ * no outcome for a screen to branch on and no `Result` to hand it.
+ */
+describe('mock auth service - signOut', () => {
+  const auth = createMockAuthService({ latencyMs: 0 })
+
+  it('resolves', async () => {
+    await expect(auth.signOut()).resolves.toBeUndefined()
+  })
+
+  it('resolves even with no session to end, so the caller needs no guard', async () => {
+    await auth.signOut()
+
+    await expect(auth.signOut()).resolves.toBeUndefined()
+  })
+
+  it('is asynchronous, so the button can show a loading state', async () => {
+    const slow = createMockAuthService({ latencyMs: 20 })
+    const started = Date.now()
+
+    await slow.signOut()
+
+    expect(Date.now() - started).toBeGreaterThanOrEqual(15)
+  })
+})

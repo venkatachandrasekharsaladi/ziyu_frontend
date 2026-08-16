@@ -80,4 +80,13 @@ export type AuthService = {
    */
   resetPassword: (input: ResetPassword) => Promise<Result<null>>
   resendVerification: (input: EmailOnly) => Promise<Result<null>>
+  /**
+   * Ends the session. Returns nothing on purpose.
+   *
+   * `POST /auth/logout` answers 204, but the local session is cleared whatever
+   * the server says — a failed revocation must never leave someone apparently
+   * signed in. That leaves no outcome for a screen to branch on, so there is no
+   * `Result` to hand it and no error state to design.
+   */
+  signOut: () => Promise<void>
 }
