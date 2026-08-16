@@ -7,6 +7,7 @@ import { View } from 'react-native'
 import { StyleSheet, useUnistyles } from 'react-native-unistyles'
 
 import { FormField } from '@/components/forms/FormField'
+import { authErrorMessage } from '@/copy/errors'
 import { SIGN_IN_COPY as COPY } from '@/copy/signIn'
 import { FooterPrompt } from '@/design-system/patterns/FooterPrompt'
 import { SocialButton } from '@/design-system/patterns/SocialButton'
@@ -49,7 +50,7 @@ export function SignInScreen() {
       return
     }
 
-    setFormError(COPY.errors[result.error.code])
+    setFormError(authErrorMessage(result.error.code))
     // The email is kept — retyping a correct address is pure friction.
     setValue('password', '')
   })

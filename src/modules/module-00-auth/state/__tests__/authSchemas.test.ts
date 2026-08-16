@@ -1,6 +1,7 @@
 import {
   emailOnlySchema,
   PASSWORD_RULES,
+  resetPasswordSchema,
   signInSchema,
   signUpSchema,
 } from '@/modules/module-00-auth/state/authSchemas'
@@ -46,11 +47,26 @@ describe('signUpSchema', () => {
   })
 
   it.each([
-    ['too short', 'ab1!'],
-    ['missing a number', 'abcdefgh!'],
-    ['missing a special character', 'abcdefg1'],
+    ['too short', 'ab1'],
+    ['missing a number', 'abcdefgh'],
+    ['missing a letter', '12345678'],
+    ['longer than the contract maximum', `${'a'.repeat(128)}1`],
   ])('rejects a password %s', (_why, password) => {
     expect(signUpSchema.safeParse({ email: 'a@example.com', password }).success).toBe(false)
+  })
+
+  /**
+   * The contract's policy is 8-128 characters with at least one letter and one
+   * number (`schemas/VALIDATION.md`). The client must not be stricter than that
+   * or it blocks passwords the server would accept.
+   */
+  it.each([
+    ['the contract signup example', 'LoveOS@123'],
+    ['the contract reset example', 'NewLoveOS@123'],
+    ['no special character, which the contract does not require', 'hunter22'],
+    ['exactly the contract maximum', `${'a'.repeat(127)}1`],
+  ])('accepts %s', (_why, password) => {
+    expect(signUpSchema.safeParse({ email: 'a@example.com', password }).success).toBe(true)
   })
 })
 
@@ -85,6 +101,56 @@ describe('PASSWORD_RULES', () => {
       expect(rule.label.length).toBeGreaterThan(0)
     },
   )
+})
+
+describe('resetPasswordSchema', () => {
+  it('accepts a valid password confirmed correctly', () => {
+    const result = resetPasswordSchema.safeParse({
+      newPassword: 'NewLoveOS@123',
+      confirmPassword: 'NewLoveOS@123',
+    })
+
+    expect(result.success).toBe(true)
+  })
+
+  it('rejects a mismatch, and says so on the confirm field', () => {
+    const result = resetPasswordSchema.safeParse({
+      newPassword: 'NewLoveOS@123',
+      confirmPassword: 'NewLoveOS@124',
+    })
+
+    expect(result.success).toBe(false)
+    if (!result.success) {
+      const issue = result.error.issues[0]
+
+      // On the confirm field, not the form: the user must know WHICH box to fix.
+      expect(issue?.path).toEqual(['confirmPassword'])
+      expect(issue?.message).toBe('Both passwords need to match.')
+    }
+  })
+
+  it('applies the same policy the rest of the app applies', () => {
+    const result = resetPasswordSchema.safeParse({
+      newPassword: '12345678',
+      confirmPassword: '12345678',
+    })
+
+    expect(result.success).toBe(false)
+  })
+
+  it('does not report a mismatch when the password itself is the problem', () => {
+    // Matching but weak. Telling someone their passwords disagree when they do
+    // not sends them hunting for a typo that is not there.
+    const result = resetPasswordSchema.safeParse({
+      newPassword: 'short1',
+      confirmPassword: 'short1',
+    })
+
+    expect(result.success).toBe(false)
+    if (!result.success) {
+      expect(result.error.issues.every((issue) => issue.path[0] !== 'confirmPassword')).toBe(true)
+    }
+  })
 })
 
 describe('emailOnlySchema', () => {

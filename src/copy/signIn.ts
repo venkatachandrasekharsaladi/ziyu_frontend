@@ -17,10 +17,6 @@ export const SIGN_IN_COPY = {
   dividerLabel: 'Or continue with',
   footerText: `New to ${BRAND.name}?`,
   footerLink: 'Create an account',
-  errors: {
-    INVALID_CREDENTIALS: 'That email and password do not match. Try again.',
-    EMAIL_TAKEN: 'Something went wrong. Try again.',
-    NETWORK: 'No connection. Check your network and try again.',
-    UNKNOWN: 'Something went wrong. Try again.',
-  },
+  // No `errors` record: every message this screen shows is the shared default in
+  // `copy/errors.ts`. A screen only carries copy it actually differs on.
 } as const

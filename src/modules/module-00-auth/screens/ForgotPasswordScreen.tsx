@@ -6,6 +6,7 @@ import { View } from 'react-native'
 import { StyleSheet } from 'react-native-unistyles'
 
 import { FormField } from '@/components/forms/FormField'
+import { authErrorMessage } from '@/copy/errors'
 import { FORGOT_PASSWORD_COPY as COPY } from '@/copy/forgotPassword'
 import { Button } from '@/design-system/primitives/Button'
 import { Text } from '@/design-system/primitives/Text'
@@ -43,7 +44,7 @@ export function ForgotPasswordScreen() {
     const result = await authService.requestPasswordReset({ email })
 
     if (!result.ok) {
-      setFormError(COPY.errors[result.error.code])
+      setFormError(authErrorMessage(result.error.code))
       return
     }
 
@@ -62,7 +63,7 @@ export function ForgotPasswordScreen() {
     setIsResending(false)
 
     if (!result.ok) {
-      setFormError(COPY.errors[result.error.code])
+      setFormError(authErrorMessage(result.error.code))
     }
   }, [sentTo])
 

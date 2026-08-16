@@ -14,11 +14,4 @@ export const FORGOT_PASSWORD_COPY = {
    */
   sentLede: (email: string) => `If ${email} has an account, a reset link is on its way.`,
   resend: 'Resend',
-
-  errors: {
-    NETWORK: 'No connection. Check your network and try again.',
-    INVALID_CREDENTIALS: 'Something went wrong. Try again.',
-    EMAIL_TAKEN: 'Something went wrong. Try again.',
-    UNKNOWN: 'Something went wrong. Try again.',
-  },
 } as const

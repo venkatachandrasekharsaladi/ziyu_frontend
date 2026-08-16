@@ -50,6 +50,17 @@ export const palette = {
   crimson600: '#A81E3C',
   green700: '#1F7A55',
 
+  /**
+   * Password-strength accents, read from the Stitch design system that draws
+   * M00-S06 (`rose-accent`, `peach-accent`).
+   *
+   * DECORATIVE ONLY, like `greyLavender300`. Both are far too light to carry
+   * text — the strength meter states its level in words, in an ink that clears
+   * AA, and uses these only to fill the bars beside it.
+   */
+  roseAccent: '#E9A4C7',
+  peachAccent: '#FFC7A8',
+
   /** Page background glow, top centre. Figma 522:54. */
   glowLavender: 'rgba(206, 189, 255, 0.4)',
 

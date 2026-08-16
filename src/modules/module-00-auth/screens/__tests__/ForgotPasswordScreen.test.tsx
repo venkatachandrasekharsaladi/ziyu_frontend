@@ -1,5 +1,6 @@
 import { screen, userEvent, waitFor } from '@testing-library/react-native'
 
+import { AUTH_ERROR_COPY } from '@/copy/errors'
 import { FORGOT_PASSWORD_COPY as COPY } from '@/copy/forgotPassword'
 import { ForgotPasswordScreen } from '@/modules/module-00-auth/screens/ForgotPasswordScreen'
 import { renderScreen } from '@/test/renderScreen'
@@ -83,7 +84,7 @@ describe('ForgotPasswordScreen', () => {
 
     await submit('offline@example.com')
 
-    expect(await screen.findByText(COPY.errors.NETWORK)).toBeTruthy()
+    expect(await screen.findByText(AUTH_ERROR_COPY.NETWORK)).toBeTruthy()
     expect(screen.queryByText(COPY.sentHeading)).toBeNull()
   })
 

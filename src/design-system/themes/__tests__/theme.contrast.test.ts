@@ -25,6 +25,8 @@ describe('theme contrast', () => {
     ['error on page', feedback.error, surface.page],
     ['error on field', feedback.error, surface.field],
     ['success on card', feedback.success, surface.card],
+    // M00-S06's strength meter states its level in these three inks.
+    ['success on page', feedback.success, surface.page],
     ['disabled button label', text.body, border.field],
   ])('%s meets AA', (_name, foreground, background) => {
     expect(contrast(foreground, background)).toBeGreaterThanOrEqual(AA)
@@ -41,6 +43,14 @@ describe('theme contrast', () => {
     // #CAC4D4 is decorative only. On the white card it scores ~1.7:1, which is
     // what made M00-S03's requirement rows unreadable. See D20.3.
     expect(contrast(text.muted, surface.card)).toBeLessThan(AA)
+  })
+
+  it('keeps the strength accents away from text', () => {
+    // The meter fills bars with these and says the level in words beside them.
+    // Both fail AA on the page by a wide margin, which is fine for a bar and
+    // never fine for a label — pinned so nobody promotes them to one.
+    expect(contrast(t.colors.strength.weak, surface.page)).toBeLessThan(AA)
+    expect(contrast(t.colors.strength.fair, surface.page)).toBeLessThan(AA)
   })
 
   it('uses one control height everywhere', () => {

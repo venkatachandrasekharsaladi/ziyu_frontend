@@ -59,6 +59,19 @@ export const lavenderTheme = {
       error: palette.crimson600,
       success: palette.green700,
     },
+    /**
+     * M00-S06's strength meter. Bar fills only — never text.
+     *
+     * `strong` reuses the brand purple rather than the success green: the Stitch
+     * design fills the last bar with the primary, and a green here would read as
+     * a different kind of signal from the rest of the screen.
+     */
+    strength: {
+      weak: palette.roseAccent,
+      fair: palette.peachAccent,
+      strong: palette.purple900,
+      track: palette.greyLavender200,
+    },
     shadow: palette.shadowSoft,
   },
   /** One height for buttons, social buttons and inputs alike. See spec D14. */

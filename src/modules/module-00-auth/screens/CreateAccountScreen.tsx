@@ -7,6 +7,7 @@ import { StyleSheet } from 'react-native-unistyles'
 
 import { FormField } from '@/components/forms/FormField'
 import { CREATE_ACCOUNT_COPY as COPY } from '@/copy/createAccount'
+import { authErrorMessage } from '@/copy/errors'
 import { FooterPrompt } from '@/design-system/patterns/FooterPrompt'
 import { SocialButton } from '@/design-system/patterns/SocialButton'
 import { Button } from '@/design-system/primitives/Button'
@@ -44,8 +45,8 @@ export function CreateAccountScreen() {
 
     // A taken address belongs on the field that caused it, not in a form-level
     // banner the user has to connect back to an input themselves.
-    setError(result.error.code === 'EMAIL_TAKEN' ? 'email' : 'root', {
-      message: COPY.errors[result.error.code],
+    setError(result.error.code === 'EMAIL_ALREADY_EXISTS' ? 'email' : 'root', {
+      message: authErrorMessage(result.error.code),
     })
   })
 

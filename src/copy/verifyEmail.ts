@@ -16,10 +16,4 @@ export const VERIFY_EMAIL_COPY = {
   continue: "I've Verified",
   /** Figma shows 00:59 — one tick into a 60-second cooldown. */
   resendCooldownSeconds: 60,
-  errors: {
-    NETWORK: 'No connection. Check your network and try again.',
-    INVALID_CREDENTIALS: 'Something went wrong. Try again.',
-    EMAIL_TAKEN: 'Something went wrong. Try again.',
-    UNKNOWN: 'Something went wrong. Try again.',
-  },
 } as const

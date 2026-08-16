@@ -3,6 +3,7 @@ import type {
   AuthService,
   Credentials,
   EmailOnly,
+  ResetPassword,
   Result,
   Session,
 } from '@/services/auth/types'
@@ -13,9 +14,40 @@ import type {
  */
 const RESERVED: Record<string, AuthErrorCode> = {
   'wrong@example.com': 'INVALID_CREDENTIALS',
-  'taken@example.com': 'EMAIL_TAKEN',
+  'taken@example.com': 'EMAIL_ALREADY_EXISTS',
   'offline@example.com': 'NETWORK',
   'broken@example.com': 'UNKNOWN',
+}
+
+/**
+ * Reserved reset tokens, so every documented failure of
+ * `POST /auth/password/reset` is reachable by hand on a device.
+ *
+ * Real tokens are opaque and arrive by email; these stand in for them until a
+ * server issues any.
+ */
+export const RESERVED_RESET_TOKENS = {
+  valid: 'valid-reset-token',
+  expired: 'expired-reset-token',
+  used: 'used-reset-token',
+  offline: 'offline-reset-token',
+} as const
+
+/**
+ * The contract's password policy, from `schemas/VALIDATION.md`.
+ *
+ * Deliberately duplicated rather than imported from `module-00-auth`: this
+ * stands in for the server, and a server that reused the client's validation
+ * would not be validating anything. The client checking first is a courtesy;
+ * this is the check that counts.
+ */
+function isPasswordAcceptable(password: string): boolean {
+  return (
+    password.length >= 8 &&
+    password.length <= 128 &&
+    /[A-Za-z]/.test(password) &&
+    /\d/.test(password)
+  )
 }
 
 const wait = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms))
@@ -78,6 +110,28 @@ export function createMockAuthService({ latencyMs = 600 }: MockOptions = {}): Au
       // Deliberately ok for unknown addresses. Confirming which addresses have
       // accounts is account enumeration. Recorded so it is not later "fixed"
       // into a leak.
+      return { ok: true, value: null }
+    },
+
+    async resetPassword({ token, newPassword }: ResetPassword) {
+      await wait(latencyMs)
+
+      // A missing token is a malformed request, not a rejected credential. The
+      // contract separates 400 from 401 and so does the copy the user sees.
+      if (!token.trim()) return fail('INVALID_REQUEST')
+
+      if (token === RESERVED_RESET_TOKENS.offline) return fail('NETWORK')
+      if (token === RESERVED_RESET_TOKENS.expired) return fail('TOKEN_EXPIRED')
+      // A consumed token is reported as invalid, not expired — the contract
+      // test cases are explicit, and telling an attacker which tokens once
+      // existed is a small leak worth not having.
+      if (token === RESERVED_RESET_TOKENS.used) return fail('TOKEN_INVALID')
+      if (token !== RESERVED_RESET_TOKENS.valid) return fail('TOKEN_INVALID')
+
+      // Checked after the token so a bad password cannot be used to probe which
+      // tokens are live.
+      if (!isPasswordAcceptable(newPassword)) return fail('WEAK_PASSWORD')
+
       return { ok: true, value: null }
     },
 

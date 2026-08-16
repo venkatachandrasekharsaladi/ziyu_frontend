@@ -18,10 +18,6 @@ export const CREATE_ACCOUNT_COPY = {
   dividerLabel: 'Or continue with',
   footerText: 'Already have an account?',
   footerLink: 'Sign In',
-  errors: {
-    EMAIL_TAKEN: 'That email already has an account. Sign in instead.',
-    INVALID_CREDENTIALS: 'Something went wrong. Try again.',
-    NETWORK: 'No connection. Check your network and try again.',
-    UNKNOWN: 'Something went wrong. Try again.',
-  },
+  // No `errors` record. `EMAIL_ALREADY_EXISTS` is a signup-only code per
+  // `ERROR_CODES.md`, so its shared default already says what this screen means.
 } as const

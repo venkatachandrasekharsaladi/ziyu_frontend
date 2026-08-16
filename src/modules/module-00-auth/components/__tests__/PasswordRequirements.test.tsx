@@ -22,8 +22,9 @@ describe('PasswordRequirements', () => {
   it('marks a rule met as soon as it passes', async () => {
     await render(<PasswordRequirements value="abcdefgh" />)
 
-    // Only the length rule passes: no digit, no special character.
-    expect(screen.getAllByTestId('rule-met')).toHaveLength(1)
+    // Length and letter pass; only the digit rule is outstanding.
+    expect(screen.getAllByTestId('rule-met')).toHaveLength(2)
+    expect(screen.getAllByTestId('rule-unmet')).toHaveLength(1)
   })
 
   it('marks every rule met on a fully valid password', async () => {

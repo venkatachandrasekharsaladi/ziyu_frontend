@@ -3,6 +3,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { View } from 'react-native'
 import { StyleSheet } from 'react-native-unistyles'
 
+import { authErrorMessage } from '@/copy/errors'
 import { VERIFY_EMAIL_COPY as COPY } from '@/copy/verifyEmail'
 import { Button } from '@/design-system/primitives/Button'
 import { Text } from '@/design-system/primitives/Text'
@@ -54,7 +55,7 @@ export function VerifyEmailScreen() {
     setIsSending(false)
 
     if (!result.ok) {
-      setError(COPY.errors[result.error.code])
+      setError(authErrorMessage(result.error.code))
       return
     }
 

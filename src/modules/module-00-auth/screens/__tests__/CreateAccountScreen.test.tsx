@@ -2,6 +2,7 @@ import { screen, userEvent, waitFor } from '@testing-library/react-native'
 
 import { BRAND } from '@/config/brand'
 import { CREATE_ACCOUNT_COPY as COPY } from '@/copy/createAccount'
+import { AUTH_ERROR_COPY } from '@/copy/errors'
 import { CreateAccountScreen } from '@/modules/module-00-auth/screens/CreateAccountScreen'
 import { renderScreen } from '@/test/renderScreen'
 
@@ -59,7 +60,7 @@ describe('CreateAccountScreen', () => {
 
     await fillAndSubmit('taken@example.com', 'hunter22!')
 
-    expect(await screen.findByText(COPY.errors.EMAIL_TAKEN)).toBeTruthy()
+    expect(await screen.findByText(AUTH_ERROR_COPY.EMAIL_ALREADY_EXISTS)).toBeTruthy()
     expect(mockPush).not.toHaveBeenCalled()
   })
 
@@ -72,7 +73,7 @@ describe('CreateAccountScreen', () => {
     // also rendered by the checklist, so a text query matches twice.
     await waitFor(() => {
       expect(screen.getByLabelText(COPY.passwordLabel).props.accessibilityHint).toBe(
-        '8+ characters long',
+        '8–128 characters',
       )
     })
     expect(mockPush).not.toHaveBeenCalled()

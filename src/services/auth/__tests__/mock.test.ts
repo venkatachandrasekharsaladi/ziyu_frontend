@@ -1,4 +1,4 @@
-import { createMockAuthService } from '@/services/auth/mock'
+﻿import { RESERVED_RESET_TOKENS, createMockAuthService } from '@/services/auth/mock'
 
 describe('mock auth service', () => {
   const auth = createMockAuthService({ latencyMs: 0 })
@@ -34,7 +34,7 @@ describe('mock auth service', () => {
   it('rejects the reserved taken address on sign up', async () => {
     const result = await auth.signUp({ email: 'taken@example.com', password: 'hunter2!' })
 
-    expect(result).toEqual({ ok: false, error: { code: 'EMAIL_TAKEN' } })
+    expect(result).toEqual({ ok: false, error: { code: 'EMAIL_ALREADY_EXISTS' } })
   })
 
   it('never reports wrong-credentials from sign up, which would be meaningless', async () => {
@@ -76,6 +76,92 @@ describe('mock auth service', () => {
     const started = Date.now()
 
     await slow.signIn({ email: 'a@example.com', password: 'hunter2!' })
+
+    expect(Date.now() - started).toBeGreaterThanOrEqual(15)
+  })
+})
+
+/**
+ * Reset password. Contract: `contracts/auth/08-reset-password.md`.
+ *
+ * The reserved tokens exist so every documented failure is reachable by hand on
+ * a device and deterministically here, the same trick the reserved addresses
+ * above play for sign in.
+ */
+describe('mock auth service — resetPassword', () => {
+  const auth = createMockAuthService({ latencyMs: 0 })
+
+  it('resets with the reserved valid token', async () => {
+    const result = await auth.resetPassword({
+      token: RESERVED_RESET_TOKENS.valid,
+      newPassword: 'NewLoveOS@123',
+    })
+
+    expect(result).toEqual({ ok: true, value: null })
+  })
+
+  it('reports an expired token distinctly from an invalid one', async () => {
+    const result = await auth.resetPassword({
+      token: RESERVED_RESET_TOKENS.expired,
+      newPassword: 'NewLoveOS@123',
+    })
+
+    expect(result).toEqual({ ok: false, error: { code: 'TOKEN_EXPIRED' } })
+  })
+
+  it('reports a consumed token as invalid, per the contract test cases', async () => {
+    // CONTRACT_TEST_CASES.md: "Used token -> 401 TOKEN_INVALID".
+    const result = await auth.resetPassword({
+      token: RESERVED_RESET_TOKENS.used,
+      newPassword: 'NewLoveOS@123',
+    })
+
+    expect(result).toEqual({ ok: false, error: { code: 'TOKEN_INVALID' } })
+  })
+
+  it('rejects an unknown token', async () => {
+    const result = await auth.resetPassword({
+      token: 'never-issued',
+      newPassword: 'NewLoveOS@123',
+    })
+
+    expect(result).toEqual({ ok: false, error: { code: 'TOKEN_INVALID' } })
+  })
+
+  it('rejects a missing token as a malformed request, not a bad token', async () => {
+    const result = await auth.resetPassword({ token: '', newPassword: 'NewLoveOS@123' })
+
+    expect(result).toEqual({ ok: false, error: { code: 'INVALID_REQUEST' } })
+  })
+
+  it('enforces the contract password policy server-side too', async () => {
+    // The client validates first, but a server that trusted the client would be
+    // no server at all.
+    const result = await auth.resetPassword({
+      token: RESERVED_RESET_TOKENS.valid,
+      newPassword: 'short1',
+    })
+
+    expect(result).toEqual({ ok: false, error: { code: 'WEAK_PASSWORD' } })
+  })
+
+  it('surfaces a network failure', async () => {
+    const result = await auth.resetPassword({
+      token: RESERVED_RESET_TOKENS.offline,
+      newPassword: 'NewLoveOS@123',
+    })
+
+    expect(result).toEqual({ ok: false, error: { code: 'NETWORK' } })
+  })
+
+  it('is asynchronous, so loading states are real', async () => {
+    const slow = createMockAuthService({ latencyMs: 20 })
+    const started = Date.now()
+
+    await slow.resetPassword({
+      token: RESERVED_RESET_TOKENS.valid,
+      newPassword: 'NewLoveOS@123',
+    })
 
     expect(Date.now() - started).toBeGreaterThanOrEqual(15)
   })

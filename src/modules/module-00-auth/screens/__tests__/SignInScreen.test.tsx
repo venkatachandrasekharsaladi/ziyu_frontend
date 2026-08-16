@@ -1,5 +1,6 @@
 import { screen, userEvent, waitFor } from '@testing-library/react-native'
 
+import { AUTH_ERROR_COPY } from '@/copy/errors'
 import { SIGN_IN_COPY as COPY } from '@/copy/signIn'
 import { SignInScreen } from '@/modules/module-00-auth/screens/SignInScreen'
 import { authService } from '@/services/auth'
@@ -65,7 +66,7 @@ describe('SignInScreen', () => {
 
     await fillAndSubmit('wrong@example.com', 'hunter2!')
 
-    expect(await screen.findByText(COPY.errors.INVALID_CREDENTIALS)).toBeTruthy()
+    expect(await screen.findByText(AUTH_ERROR_COPY.INVALID_CREDENTIALS)).toBeTruthy()
     // Retyping a correct email is pure friction.
     expect(screen.getByLabelText(COPY.emailLabel).props.value).toBe('wrong@example.com')
     expect(screen.getByLabelText(COPY.passwordLabel).props.value).toBe('')
@@ -77,7 +78,7 @@ describe('SignInScreen', () => {
 
     await fillAndSubmit('offline@example.com', 'hunter2!')
 
-    expect(await screen.findByText(COPY.errors.NETWORK)).toBeTruthy()
+    expect(await screen.findByText(AUTH_ERROR_COPY.NETWORK)).toBeTruthy()
   })
 
   it('navigates to forgot-password', async () => {
