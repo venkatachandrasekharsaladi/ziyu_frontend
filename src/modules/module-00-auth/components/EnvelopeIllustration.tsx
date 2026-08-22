@@ -87,8 +87,8 @@ const styles = StyleSheet.create((theme) => ({
     justifyContent: 'center',
     borderRadius: theme.radii.pill,
     borderWidth: 1,
-    borderColor: 'rgba(232, 221, 255, 0.5)',
+    borderColor: theme.colors.border.hairline,
     backgroundColor: theme.colors.surface.card,
-    boxShadow: '0px 1px 1px 0px rgba(0, 0, 0, 0.05)',
+    boxShadow: theme.elevation.field,
   },
 }))

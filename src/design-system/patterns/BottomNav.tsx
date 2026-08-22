@@ -27,6 +27,11 @@ type BottomNavProps = {
  * hidden. Hiding them would make the app look finished and then surprise the
  * user when the bar changes shape later; a visibly inactive tab says "coming",
  * which is true. Same rule M01-S11 and S19 follow for their unbuilt exits.
+ *
+ * The bar sits on the lavender field fill, not white: over a white card the
+ * active tab's pill was the only thing separating the bar from the content
+ * scrolling behind it, and it lost that job the moment a white card reached the
+ * bottom of the screen.
  */
 export function BottomNav({ tabs, activeKey, onSelect }: BottomNavProps) {
   const insets = useSafeAreaInsets()
@@ -69,10 +74,26 @@ function NavItem({
       accessibilityState={{ selected: active, disabled: !tab.live }}
       accessibilityLabel={tab.label}
     >
-      <Feather name={tab.icon} size={20} color={tint} />
-      <Text variant="captionAction" tone={active ? 'brand' : 'body'} align="center">
-        {tab.label}
-      </Text>
+      {/*
+        The pill wraps the icon AND the label. Behind the icon alone it read as a
+        button floating above an unrelated caption; around both, the tab is one
+        object and the selection is unambiguous. Every state carries the same
+        padding so lighting a tab up does not shift the row.
+      */}
+      <View style={styles.pill}>
+        <Feather name={tab.icon} size={24} color={tint} />
+
+        {/* One line always: a wrapped "Memories" would make that tab taller
+            than the four beside it. */}
+        <Text
+          variant="tabLabel"
+          tone={active ? 'brand' : 'body'}
+          align="center"
+          numberOfLines={1}
+        >
+          {tab.label}
+        </Text>
+      </View>
     </Pressable>
   )
 }
@@ -81,21 +102,34 @@ const styles = StyleSheet.create((theme) => ({
   bar: {
     flexDirection: 'row',
     width: '100%',
-    paddingTop: theme.spacing.md,
-    paddingHorizontal: theme.spacing.md,
-    backgroundColor: theme.colors.surface.card,
+    paddingTop: theme.spacing.sm,
+    paddingHorizontal: theme.spacing.sm,
+    backgroundColor: theme.colors.surface.field,
     borderTopWidth: 1,
     borderTopColor: theme.colors.border.subtle,
   },
   item: {
     flex: 1,
     alignItems: 'center',
-    gap: theme.spacing.xs,
     variants: {
       state: {
         active: {},
         rest: {},
         disabled: { opacity: 0.6 },
+      },
+    },
+  },
+  pill: {
+    alignItems: 'center',
+    gap: theme.spacing.xs,
+    paddingVertical: theme.spacing.sm,
+    paddingHorizontal: theme.spacing.sm,
+    borderRadius: theme.radii.tile,
+    variants: {
+      state: {
+        active: { backgroundColor: theme.colors.surface.soft },
+        rest: { backgroundColor: 'transparent' },
+        disabled: { backgroundColor: 'transparent' },
       },
     },
   },

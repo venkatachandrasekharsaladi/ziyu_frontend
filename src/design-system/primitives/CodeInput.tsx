@@ -118,7 +118,9 @@ const styles = StyleSheet.create((theme) => ({
   },
   boxCaret: {
     borderColor: theme.colors.brand.primary,
-    boxShadow: '0px 0px 0px 3px rgba(56, 19, 132, 0.12)',
+    // Built from a token, not written out: a ring keyed to the light brand is
+    // a purple halo on a dark field.
+    boxShadow: `0px 0px 0px 3px ${theme.colors.focusRing}`,
   },
   boxError: {
     borderColor: theme.colors.feedback.error,

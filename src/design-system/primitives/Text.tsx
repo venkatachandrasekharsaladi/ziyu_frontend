@@ -5,6 +5,7 @@ import { StyleSheet } from 'react-native-unistyles'
 export type TextVariant =
   | 'h1'
   | 'h2'
+  | 'h3'
   | 'wordmark'
   | 'body'
   | 'label'
@@ -12,6 +13,7 @@ export type TextVariant =
   | 'footnote'
   | 'caption'
   | 'captionAction'
+  | 'tabLabel'
   | 'countdown'
 
 export type TextTone =
@@ -62,6 +64,7 @@ const styles = StyleSheet.create((theme) => ({
       variant: {
         h1: theme.typography.h1,
         h2: theme.typography.h2,
+        h3: theme.typography.h3,
         wordmark: theme.typography.wordmark,
         body: theme.typography.body,
         label: theme.typography.label,
@@ -69,6 +72,7 @@ const styles = StyleSheet.create((theme) => ({
         footnote: theme.typography.footnote,
         caption: theme.typography.caption,
         captionAction: theme.typography.captionAction,
+        tabLabel: theme.typography.tabLabel,
         countdown: theme.typography.countdown,
       },
       tone: {

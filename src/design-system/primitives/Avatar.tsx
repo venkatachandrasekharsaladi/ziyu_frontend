@@ -1,6 +1,6 @@
 import { Image } from 'expo-image'
 import { View } from 'react-native'
-import { StyleSheet } from 'react-native-unistyles'
+import { StyleSheet, useUnistyles } from 'react-native-unistyles'
 
 import { Text } from '@/design-system/primitives/Text'
 
@@ -34,6 +34,7 @@ function initialsOf(name: string): string {
  * empty badge with no accessible name.
  */
 export function Avatar({ size, uri, name, ring = false }: AvatarProps) {
+  const { theme } = useUnistyles()
   const initials = initialsOf(name)
   const label = name.trim() || 'Avatar'
 
@@ -46,7 +47,15 @@ export function Avatar({ size, uri, name, ring = false }: AvatarProps) {
       accessibilityRole="image"
     >
       {uri ? (
-        <Image source={{ uri }} style={styles.image} contentFit="cover" testID="avatar-image" />
+        <Image
+          source={{ uri }}
+          // Plain style object, not `styles.image`: Unistyles styles do not
+          // reach expo-image, so the photo collapsed to zero height and every
+          // avatar fell back to looking empty.
+          style={{ width: '100%', height: size ?? theme.control.height }}
+          contentFit="cover"
+          testID="avatar-image"
+        />
       ) : (
         <Text variant="h2" tone="brand">
           {initials}

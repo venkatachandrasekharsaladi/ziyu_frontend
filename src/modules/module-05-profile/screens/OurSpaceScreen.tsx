@@ -3,8 +3,10 @@ import { useCallback, useState } from 'react'
 import { Alert, View } from 'react-native'
 import { StyleSheet } from 'react-native-unistyles'
 
+import { APPEARANCE_COPY } from '@/copy/appearance'
 import { OUR_SPACE_COPY as COPY } from '@/copy/ourSpace'
 import { AppScreenLayout } from '@/design-system/patterns/AppScreenLayout'
+import { ThemeToggle } from '@/design-system/patterns/ThemeToggle'
 import { Button } from '@/design-system/primitives/Button'
 import { Text } from '@/design-system/primitives/Text'
 import { authService } from '@/services/auth'
@@ -67,6 +69,19 @@ export function OurSpaceScreen() {
         </Text>
       </View>
 
+      {/*
+        Appearance lands here because this is the settings hub and the toggle had
+        nowhere else to live — the same reason sign-out is on this stub. Both are
+        one line to move once the rest of the hub exists.
+      */}
+      <View style={styles.section}>
+        <Text variant="h3" tone="heading">
+          {APPEARANCE_COPY.label}
+        </Text>
+
+        <ThemeToggle />
+      </View>
+
       <Button
         label={COPY.signOut}
         onPress={confirm}
@@ -79,6 +94,9 @@ export function OurSpaceScreen() {
 
 const styles = StyleSheet.create((theme) => ({
   copy: {
+    gap: theme.spacing.md,
+  },
+  section: {
     gap: theme.spacing.md,
   },
 }))

@@ -201,7 +201,7 @@ const styles = StyleSheet.create((theme) => ({
         focused: {
           backgroundColor: theme.colors.surface.field,
           borderColor: theme.colors.brand.primary,
-          boxShadow: '0px 0px 0px 3px rgba(56, 19, 132, 0.12)',
+          boxShadow: `0px 0px 0px 3px ${theme.colors.focusRing}`,
         },
         error: {
           backgroundColor: theme.colors.surface.field,

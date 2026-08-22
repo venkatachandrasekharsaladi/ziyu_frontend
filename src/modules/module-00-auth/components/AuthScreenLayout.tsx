@@ -1,11 +1,11 @@
 import { LinearGradient } from 'expo-linear-gradient'
-import { StatusBar } from 'expo-status-bar'
 import type { ReactNode } from 'react'
 import { KeyboardAvoidingView, Platform, ScrollView, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { StyleSheet, useUnistyles } from 'react-native-unistyles'
 
 import { AppHeader } from '@/design-system/patterns/AppHeader'
+import { ThemedStatusBar } from '@/design-system/patterns/ThemedStatusBar'
 
 type AuthScreenLayoutProps = {
   onBack?: () => void
@@ -31,7 +31,7 @@ export function AuthScreenLayout({ onBack, centred = false, children }: AuthScre
 
   return (
     <View style={styles.screen}>
-      <StatusBar style="dark" />
+      <ThemedStatusBar />
 
       <View style={{ paddingTop: insets.top }}>
         <AppHeader onBack={onBack} />
@@ -50,7 +50,7 @@ export function AuthScreenLayout({ onBack, centred = false, children }: AuthScre
           and leave a visible step.
         */}
         <LinearGradient
-          colors={[theme.colors.surface.glow, 'rgba(206, 189, 255, 0)']}
+          colors={[theme.colors.surface.glow, theme.colors.surface.glowFade]}
           style={styles.glow}
           pointerEvents="none"
         />

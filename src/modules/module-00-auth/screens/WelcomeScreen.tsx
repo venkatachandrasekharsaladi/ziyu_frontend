@@ -1,6 +1,5 @@
 import { LinearGradient } from 'expo-linear-gradient'
 import { useRouter } from 'expo-router'
-import { StatusBar } from 'expo-status-bar'
 import { useCallback } from 'react'
 import { View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
@@ -10,6 +9,7 @@ import { WELCOME_COPY } from '@/copy/welcome'
 import { Button } from '@/design-system/primitives/Button'
 import { Text } from '@/design-system/primitives/Text'
 import { AppHeader } from '@/design-system/patterns/AppHeader'
+import { ThemedStatusBar } from '@/design-system/patterns/ThemedStatusBar'
 import { AmbientLayer } from '@/modules/module-00-auth/components/AmbientLayer'
 import { HeroCollage } from '@/modules/module-00-auth/components/HeroCollage'
 import { PrivacyFooter } from '@/modules/module-00-auth/components/PrivacyFooter'
@@ -39,7 +39,7 @@ export function WelcomeScreen() {
       colors={[theme.colors.surface.gradientFrom, theme.colors.surface.gradientTo]}
       style={styles.screen}
     >
-      <StatusBar style="dark" />
+      <ThemedStatusBar />
 
       <View style={[styles.safeArea, { paddingTop: insets.top, paddingBottom: insets.bottom }]}>
         {/* No `onBack`: Welcome is the entry point, so there is nowhere back to. */}

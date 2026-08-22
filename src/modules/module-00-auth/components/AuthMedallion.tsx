@@ -22,7 +22,7 @@ export function AuthMedallion() {
     >
       <View style={styles.medallion}>
         <LinearGradient
-          colors={['rgba(56, 19, 132, 0.1)', 'rgba(56, 19, 132, 0)']}
+          colors={[theme.colors.surface.wash, theme.colors.surface.washFade]}
           start={{ x: 0, y: 1 }}
           end={{ x: 1, y: 0 }}
           style={styles.overlay}

@@ -34,6 +34,19 @@ export const typography = {
     lineHeight: 40,
     letterSpacing: 0,
   },
+  /**
+   * Section title on a dashboard panel — "Upcoming", "Coming up".
+   *
+   * Not `h2`: at 34 a section title outweighs the screen headline above it.
+   * Not `wordmark` either, which is 20/26 and reserved for the product name;
+   * a section title needs to outrank the 16pt row titles under it clearly.
+   */
+  h3: {
+    fontFamily: fontFamily.semibold,
+    fontSize: 22,
+    lineHeight: 28,
+    letterSpacing: -0.3,
+  },
   /** Product wordmark in the top bar. Figma 522:270. */
   wordmark: {
     fontFamily: fontFamily.semibold,
@@ -83,6 +96,19 @@ export const typography = {
     fontSize: 11,
     lineHeight: 15,
     letterSpacing: 0.55,
+  },
+  /**
+   * Bottom-bar tab label.
+   *
+   * Distinct from `captionAction`, which is 11/15 tracked out to 0.55 for an
+   * action sitting on a field label row. A tab label is read at a glance under
+   * a 24pt icon, so it takes a point more size and near-neutral tracking.
+   */
+  tabLabel: {
+    fontFamily: fontFamily.semibold,
+    fontSize: 12,
+    lineHeight: 16,
+    letterSpacing: 0.2,
   },
   /** Resend timer on M00-S04. Figma 522:263. */
   countdown: {

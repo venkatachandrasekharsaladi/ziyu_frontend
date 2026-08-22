@@ -5,12 +5,15 @@ import { Text, type TextTone, type TextVariant } from '@/design-system/primitive
 const VARIANTS: TextVariant[] = [
   'h1',
   'h2',
+  'h3',
   'wordmark',
   'body',
   'label',
   'labelStrong',
   'footnote',
   'caption',
+  'captionAction',
+  'tabLabel',
   'countdown',
 ]
 
