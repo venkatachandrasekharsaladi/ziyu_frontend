@@ -6,7 +6,7 @@
  * to tell which (spec §10).
  */
 export const ENTER_CODE_COPY = {
-  heading: "What's their code?",
+  heading: 'Your person invited you ❤️',
   lede: 'Enter the six characters your partner shared with you.',
   codeLabel: 'Partner code',
   submit: 'Connect',

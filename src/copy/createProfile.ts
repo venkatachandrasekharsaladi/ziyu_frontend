@@ -7,7 +7,7 @@
  * a form being built anyway — adding them later means migrating stored profiles.
  */
 export const CREATE_PROFILE_COPY = {
-  heading: 'Tell us about you.',
+  heading: "Let's make this yours.",
   lede: 'This is how your partner will see you.',
 
   photoLabel: 'Add Photo',

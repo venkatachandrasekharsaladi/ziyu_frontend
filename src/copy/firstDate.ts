@@ -7,7 +7,7 @@
  * deviation from it.
  */
 export const FIRST_DATE_COPY = {
-  heading: 'Then came the first date.',
+  heading: 'And your first date? ❤️',
   lede: 'The one you still bring up.',
   photoLabel: 'Add a Photo',
   dateLabel: 'Date',

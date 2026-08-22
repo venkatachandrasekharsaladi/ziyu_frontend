@@ -6,7 +6,7 @@
  * typed in place rather than behind a picker the app does not have.
  */
 export const DAYS_THAT_MATTER_COPY = {
-  heading: 'Some days deserve a place here.',
+  heading: 'Birthdays belong here too.',
   lede: "We'll remember them with you.",
   fields: [
     { key: 'anniversary' as const, label: 'Anniversary' },
