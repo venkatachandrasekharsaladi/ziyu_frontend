@@ -51,7 +51,7 @@
     "typescript": "~6.0.3"
   },
   "scripts": {
-    "predeploy": "expo export --platform web",
+    "predeploy": "expo export --platform web && copy dist\\index.html dist\\404.html",
     "deploy": "gh-pages -d dist",
     "start": "expo start",
     "reset-project": "node ./scripts/reset-project.js",
