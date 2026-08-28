@@ -51,8 +51,8 @@
     "typescript": "~6.0.3"
   },
   "scripts": {
-    "predeploy": "expo export --platform web && copy dist\\index.html dist\\404.html",
-    "deploy": "gh-pages -d dist",
+    "predeploy": "expo export --platform web && copy dist\\index.html dist\\404.html && type nul > dist\\.nojekyll",
+    "deploy": "gh-pages -d dist --dotfiles",
     "start": "expo start",
     "reset-project": "node ./scripts/reset-project.js",
     "android": "expo run:android",
