@@ -220,7 +220,9 @@ defects are corrected rather than reproduced:
 
 ## 10. Testing
 
-Per-layer, using the existing `src/test/renderScreen.tsx` and `contrast.ts`:
+### 10.1 Per layer
+
+Using the existing `src/test/renderScreen.tsx` and `contrast.ts`:
 
 - **Service** — `mock.test.ts`: send lifecycle, reactions, pin toggle, search,
   subscribe/unsubscribe, timer injection
@@ -231,7 +233,85 @@ Per-layer, using the existing `src/test/renderScreen.tsx` and `contrast.ts`:
 - **Screens** — a flow test per screen mirroring `MemoriesFlow.test.tsx`:
   every frame state must be reachable by user action
 
-## 11. QA agent
+### 10.2 A-Z journey test
+
+One end-to-end test, `screens/__tests__/ChatJourney.test.tsx`, walking the whole
+module in a single session the way a couple would use it — no remounting between
+steps, so state leaks between screens are caught:
+
+1. Land on Chat Home, see the conversation row and its preview
+2. Open the conversation; the seeded thread renders in order with day dividers
+3. Type and send text; assert `sending → sent → delivered → read`
+4. Partner typing indicator appears, then the reply lands
+5. Long-press a message; the reaction bar and context menu open
+6. React; the emoji attaches and persists in the thread
+7. Reply to a message; the quote shows in the composer and in the sent bubble
+8. Open the attachment sheet; assert the reaction overlay closed first
+9. Send a photo; the preview confirms, then the photo bubble renders
+10. Record and send a voice note; the player renders with a duration
+11. Save Memory from the context menu; assert it reaches `memoriesService`
+12. Pin a message; the pinned banner appears at thread top
+13. Open Pinned & Search; find the pinned message and a text match
+14. Start a Voice Moment, then end it; return to the thread
+15. Start a Video Moment, then end it; return to the thread
+16. Back out to Chat Home; the preview reflects the newest message
+
+Step 16 is the one that catches the most bugs — it proves the list and the
+thread read the same source.
+
+### 10.3 Test-case catalogue
+
+`docs/qa/chat-test-cases.md` — a written catalogue, IDs `CHAT-001` upward, each
+row carrying: id, screen, Figma node, precondition, steps, expected result,
+automated (yes/no), and the test file asserting it. Grouped by screen, with a
+final group for cross-screen journeys.
+
+Manual-only cases are marked as such rather than omitted — gesture-dependent
+behaviour (long-press duration, swipe-to-reply feel, haptics) and live media
+capture cannot be asserted in jest, and pretending otherwise hides real gaps.
+The catalogue is the checklist a human runs before release; the automated
+subset is what CI enforces.
+
+## 11. Design parity — Figma vs built UI
+
+Two halves, split along what each method can actually establish.
+
+### 11.1 Structural parity (automated)
+
+A script, `scripts/sync-figma-chat.mjs`, reads the Chat frames through the Figma
+REST API and writes `src/modules/module-03-chat/__fixtures__/figma-chat.json` —
+per frame: node id, name, frame size, and for every text and container node its
+characters, colour, font size, font weight, line height, corner radius, padding,
+and gap.
+
+`__tests__/DesignParity.test.tsx` asserts the built screens against that fixture:
+
+- Every string drawn in Figma appears in the built screen. The one documented
+  exception is the mid-word truncation (§9, item 2), which is asserted as the
+  corrected behaviour — the fixture records the frame's string, the test asserts
+  the word-boundary version.
+- Bubble fills, accents, and ink resolve to the same values the frame uses
+- Font sizes and weights match the frame's text nodes
+- Corner radii and the 4pt spacing steps match
+
+The fixture is committed. Re-running the script produces a diff, so a design
+change becomes a reviewable commit rather than a silent divergence. The script
+takes a Figma token from the environment and never hardcodes one.
+
+**What this cannot establish:** that the arrangement is right. Correct values in
+a wrong flex direction pass. §10.1's ordering assertions and §11.2 cover it.
+
+### 11.2 Visual review (agent-judged)
+
+The QA agent renders each built screen, opens the corresponding Figma PNG
+(`scripts/` writes them alongside the fixture), and reports differences in
+layout, hierarchy, and proportion that structural parity cannot see. Findings
+are reported with the frame's node id and a description, ranked by severity.
+
+This is deliberately a report, not a gate — a human decides whether a difference
+is a defect or an intentional correction from §9.
+
+## 12. QA agent
 
 `.claude/agents/qa-tester.md` — the repo's first subagent. Read-only plus test
 execution; it reports, it does not fix.
@@ -239,16 +319,23 @@ execution; it reports, it does not fix.
 Checks:
 
 1. `npm run typecheck`, `npm test`, `npm run lint`
-2. Contrast assertions via `src/test/contrast.ts` across both themes
-3. No hardcoded hex outside `design-system/tokens/`
-4. Every interactive element carries an `accessibilityLabel`
-5. Every frame state in §4 is reachable by user action in a flow test
-6. No component imports a service directly (the §3 rule)
+2. The A-Z journey test (§10.2) passes end to end
+3. Structural design parity (§11.1) passes against the committed fixture
+4. Contrast assertions via `src/test/contrast.ts` across both themes
+5. No hardcoded hex outside `design-system/tokens/`
+6. Every interactive element carries an `accessibilityLabel`
+7. Every frame state in §4 is reachable by user action in a flow test
+8. No component imports a service directly (the §3 rule)
+9. Every catalogue case (§10.3) marked automated names a test that exists and
+   actually asserts it — the check that stops the catalogue rotting
+10. Visual review (§11.2): built screen against Figma PNG, differences reported
+    with node ids
 
 Output: pass/fail per check with `file:line` evidence, ranked by severity. No
-"looks good" without a command and its output.
+"looks good" without a command and its output. A check that could not be run
+is reported as blocked, never as passed.
 
-## 12. Out of scope
+## 13. Out of scope
 
 Backlogged from the Chat section's requirements note (`3391:926`) — none are
 drawn, each needs its own design pass:
@@ -258,7 +345,7 @@ drawn, each needs its own design pass:
 - Calendar booking
 - Photo sharing widget, "mini version of snap"
 
-## 13. Known repo inconsistencies (flagged, not fixed here)
+## 14. Known repo inconsistencies (flagged, not fixed here)
 
 - `module-03-chat/` and `module-03-memories/` share the number 03; memories
   claims `M03-Sxx` in its screen doc comments. Chat screens therefore document
