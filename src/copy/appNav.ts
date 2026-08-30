@@ -9,7 +9,7 @@ export const APP_NAV = {
   tabs: [
     { key: 'home', label: 'Home', icon: 'home', live: true, href: '/(app)/home' },
     { key: 'memories', label: 'Memories', icon: 'book-open', live: true, href: '/(app)/memories' },
-    { key: 'chat', label: 'Chat', icon: 'message-circle', live: false, href: '' },
+    { key: 'chat', label: 'Chat', icon: 'message-circle', live: true, href: '/(app)/chat' },
     { key: 'timeline', label: 'Timeline', icon: 'clock', live: false, href: '' },
     { key: 'profile', label: 'Profile', icon: 'user', live: true, href: '/(app)/profile' },
   ],

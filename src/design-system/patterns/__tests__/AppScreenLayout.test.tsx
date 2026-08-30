@@ -86,7 +86,9 @@ describe('AppScreenLayout', () => {
 
     // Disabled, so a press never reaches the handler — and if the disabled
     // state ever regressed, `href: ''` would still stop the navigation.
-    expect(screen.getByLabelText('Chat').props.accessibilityState).toMatchObject({
+    // `Timeline`, not `Chat`: Task 10 flipped chat's tab live, so timeline is
+    // the one destination still without a screen behind it.
+    expect(screen.getByLabelText('Timeline').props.accessibilityState).toMatchObject({
       disabled: true,
     })
     expect(mockReplace).not.toHaveBeenCalled()
