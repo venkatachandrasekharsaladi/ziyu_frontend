@@ -4,6 +4,7 @@ import { StyleSheet } from 'react-native-unistyles'
 import { Text } from '@/design-system/primitives/Text'
 import { PhotoMessage } from '@/modules/module-03-chat/components/PhotoMessage'
 import { ReadReceipt } from '@/modules/module-03-chat/components/ReadReceipt'
+import { VoiceNotePlayer } from '@/modules/module-03-chat/components/VoiceNotePlayer'
 import type { Message } from '@/services/chat/types'
 
 type Props = {
@@ -41,8 +42,17 @@ export function MessageBubble({ message, onLongPress }: Props) {
             `Text` has no `style` prop by design, so that layout can't live
             on the `Text` itself. */}
         {message.kind === 'photo' && message.mediaUri ? (
-          <View style={styles.photo}>
+          <View style={styles.media}>
             <PhotoMessage uri={message.mediaUri} />
+            {message.body ? <Text tone="onChat">{message.body}</Text> : null}
+          </View>
+        ) : message.kind === 'voice' ? (
+          // Additive, same as the photo branch above: `body` on a voice
+          // message is a transcript (`services/chat/types.ts`'s `Message`),
+          // not a caption that replaces the player — a voice note WITH a
+          // transcript renders both, not one instead of the other.
+          <View style={styles.media}>
+            <VoiceNotePlayer durationMs={message.durationMs ?? 0} />
             {message.body ? <Text tone="onChat">{message.body}</Text> : null}
           </View>
         ) : message.body ? (
@@ -85,7 +95,7 @@ const styles = StyleSheet.create((theme) => ({
   },
   mine: { backgroundColor: theme.colors.chat.bubbleOutgoing },
   theirs: { backgroundColor: theme.colors.chat.bubbleIncoming },
-  photo: { gap: theme.spacing.sm },
+  media: { gap: theme.spacing.sm },
   reactions: { flexDirection: 'row', marginTop: -theme.spacing.sm },
   meta: {
     flexDirection: 'row',

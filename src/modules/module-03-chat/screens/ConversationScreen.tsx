@@ -14,6 +14,7 @@ import { MessageContextMenu } from '@/modules/module-03-chat/components/MessageC
 import { PhotoSharePreview } from '@/modules/module-03-chat/components/PhotoSharePreview'
 import { ReactionBar } from '@/modules/module-03-chat/components/ReactionBar'
 import { TypingIndicator } from '@/modules/module-03-chat/components/TypingIndicator'
+import { VoiceNoteRecorder } from '@/modules/module-03-chat/components/VoiceNoteRecorder'
 import { useChatStore } from '@/modules/module-03-chat/state/chatStore'
 
 /** Chat — Conversation. Figma `Ziyu` 3390:665 / 3390:521 / 3390:585. */
@@ -67,18 +68,32 @@ export function ConversationScreen() {
         {s.isPartnerTyping && <TypingIndicator />}
       </ScrollView>
 
-      <Composer
-        value={s.draft}
-        onChangeText={s.setDraft}
-        // Trimmed here, not in the store: `Composer` hands over the raw
-        // field value and `send()` does not trim, so a message typed with
-        // leading/trailing space would otherwise ship padded.
-        onSend={(v) => { void s.send(v.trim()) }}
-        onAttach={s.openAttachments}
-        onRecord={s.startRecording}
-        replyTo={replyBody}
-        onCancelReply={s.cancelReply}
-      />
+      {/* One or the other, never both: `VoiceNoteRecorder` replaces the
+          composer bar entirely while recording, same as the frame draws it
+          (Figma 3390:164), rather than floating over it. The placeholder uri
+          is staged here, not inside the recorder — components never import a
+          service, and `sendVoice` (not this screen) is what already handles
+          the optimistic bubble and its failure path; this screen only turns
+          "recording stopped with N ms elapsed" into that one call. */}
+      {s.isRecording ? (
+        <VoiceNoteRecorder
+          onCancel={s.stopRecording}
+          onSend={(durationMs) => { void s.sendVoice('file://voice-note.m4a', durationMs) }}
+        />
+      ) : (
+        <Composer
+          value={s.draft}
+          onChangeText={s.setDraft}
+          // Trimmed here, not in the store: `Composer` hands over the raw
+          // field value and `send()` does not trim, so a message typed with
+          // leading/trailing space would otherwise ship padded.
+          onSend={(v) => { void s.send(v.trim()) }}
+          onAttach={s.openAttachments}
+          onRecord={s.startRecording}
+          replyTo={replyBody}
+          onCancelReply={s.cancelReply}
+        />
+      )}
 
       {/* The long-press overlay: a full-screen scrim (dismiss-on-tap-outside)
           with the reaction bar and context menu floating above it. Rendered
