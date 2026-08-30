@@ -7,7 +7,7 @@ import type { Memory } from '@/services/memories/types'
 /**
  * Only `memoriesService` is mocked. `chatService` stays the real mock behind
  * `@/services/chat`, so `load()` seeds the actual thread — `m1` is "Are we
- * still going for coffee tonight? ☰❤️" (`services/chat/mock.ts`'s `seed()`).
+ * still going for coffee tonight? ❤️" (`services/chat/mock.ts`'s `seed()`).
  * That keeps this suite about the BRIDGE between the two services, not a
  * hand-built fixture standing in for either.
  *
@@ -27,7 +27,7 @@ const service = jest.mocked(memoriesService)
 
 const memoryFrom = (overrides: Partial<Memory> = {}): Memory => ({
   id: 'memory-9',
-  title: 'Are we still going for coffee tonight? ☰❤️',
+  title: 'Are we still going for coffee tonight? ❤️',
   date: '2026-08-30',
   tags: ['Little Things'],
   favorite: false,
@@ -52,9 +52,9 @@ describe('Save Memory', () => {
     })
 
     expect(memoriesService.create).toHaveBeenCalledWith({
-      title: 'Are we still going for coffee tonight? ☰❤️',
+      title: 'Are we still going for coffee tonight? ❤️',
       date: '2026-08-30',
-      note: 'Are we still going for coffee tonight? ☰❤️',
+      note: 'Are we still going for coffee tonight? ❤️',
       photoUri: undefined,
       tags: ['Little Things'],
     })

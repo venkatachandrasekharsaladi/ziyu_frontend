@@ -21,9 +21,9 @@ function seed(): Message[] {
   })
 
   return [
-    base('m1', 'partner', 'Are we still going for coffee tonight? ☰❤️', 42),
+    base('m1', 'partner', 'Are we still going for coffee tonight? ❤️', 42),
     base('m2', 'me', 'Obviously.', 43),
-    base('m3', 'partner', 'Good. I found a place you might actually like 😊', 44),
+    base('m3', 'partner', 'Good. I found a place you might actually like 😌', 44),
     base('m4', 'me', "That's a bold claim.", 45),
     base('m5', 'partner', 'Just trust me.', 45),
   ]

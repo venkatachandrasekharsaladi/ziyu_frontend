@@ -11,7 +11,7 @@ describe('mock chat service', () => {
 
     // Verify the exact conversation from Figma frame 3390:665 with alternating authors
     expect(messages[0]).toMatchObject({
-      body: 'Are we still going for coffee tonight? ☰❤️',
+      body: 'Are we still going for coffee tonight? ❤️',
       authorId: 'partner',
     })
     expect(messages[1]).toMatchObject({
@@ -19,7 +19,7 @@ describe('mock chat service', () => {
       authorId: 'me',
     })
     expect(messages[2]).toMatchObject({
-      body: 'Good. I found a place you might actually like 😊',
+      body: 'Good. I found a place you might actually like 😌',
       authorId: 'partner',
     })
     expect(messages[3]).toMatchObject({

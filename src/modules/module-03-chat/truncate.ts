@@ -1,13 +1,15 @@
 /**
  * Cuts a preview at the last whole word that fits, never mid-word.
  *
- * Figma's own Chat Home frame (3390:764) truncates its message preview as
- * "Are we still going for c…" — stopped dead in the middle of "coffee",
- * exactly at its character budget. That is a defect in the design, not a
- * shape to reproduce: a preview that stops mid-word reads as broken text,
- * not a hint that there is more to read. This walks the cut back from the
- * raw character boundary to the previous space instead, so the ellipsis
- * always lands after a whole word.
+ * Figma's own Chat Home frame (3390:764) does not truncate its message
+ * preview at all — the text node holds the full, untruncated line; the
+ * frame's fixed-height box just overflows and visually CLIPS it, mid-word,
+ * in the render (confirmed against the parity fixture: node 3390:792 carries
+ * the complete sentence). That clip is a defect to correct, not a shape to
+ * reproduce: a preview that stops mid-word reads as broken text, not a hint
+ * that there is more to read. This walks the cut back from the raw character
+ * boundary to the previous space instead, so the ellipsis always lands after
+ * a whole word.
  *
  * Edge cases this is built to survive without producing garbage:
  * - Text no longer than `max` is returned untouched — there is nothing to

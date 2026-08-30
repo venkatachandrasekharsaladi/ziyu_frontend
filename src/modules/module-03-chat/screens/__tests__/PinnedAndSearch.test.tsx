@@ -47,7 +47,7 @@ it('lists pinned messages', async () => {
 })
 
 /**
- * `m1` ("Are we still going for coffee tonight? ☰❤️") is exactly the case
+ * `m1` ("Are we still going for coffee tonight? ❤️") is exactly the case
  * Task 14's end-to-end journey hits: pinned, THEN searched for 'coffee'. A
  * fix that only filtered the Results list's failure mode, or forgot to
  * filter at all, renders `m1` once in Pinned and again in Results — this is

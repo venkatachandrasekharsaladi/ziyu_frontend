@@ -213,8 +213,10 @@ defects are corrected rather than reproduced:
 
 1. **Bubble leading-edge band** — incoming bubbles render a darker vertical strip
    on the leading edge. It is a misaligned overlay, not a design element. Dropped.
-2. **Mid-word truncation** — Chat Home preview cuts at "going for c…". Truncates
-   at a word boundary instead.
+2. **Preview clipping** — the Chat Home frame's text node holds the FULL preview
+   string; nothing in it is actually truncated. It overflows its fixed-width box
+   and is visually clipped by the render instead, mid-word. We truncate cleanly
+   at a word boundary rather than reproducing that clip.
 3. **Unlabelled icon controls** — video, call, overflow, `+`, emoji, and mic are
    icon-only. Every one gets an `accessibilityLabel`.
 
@@ -287,9 +289,9 @@ and gap.
 `__tests__/DesignParity.test.tsx` asserts the built screens against that fixture:
 
 - Every string drawn in Figma appears in the built screen. The one documented
-  exception is the mid-word truncation (§9, item 2), which is asserted as the
-  corrected behaviour — the fixture records the frame's string, the test asserts
-  the word-boundary version.
+  exception is the Chat Home preview clip (§9, item 2), which is asserted as the
+  corrected behaviour — the fixture records the frame's full, untruncated
+  string, and the test asserts the word-boundary-truncated version instead.
 - Bubble fills, accents, and ink resolve to the same values the frame uses
 - Font sizes and weights match the frame's text nodes
 - Corner radii and the 4pt spacing steps match

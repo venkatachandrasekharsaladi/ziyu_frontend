@@ -1,0 +1,1155 @@
+{
+  "file": "BDMFuyYb2I2ZMmaEz5gBAZ",
+  "node": "3390:3",
+  "frames": {
+    "3390:4": {
+      "name": "Media & Memories Bridge",
+      "text": [
+        {
+          "id": "3390:8",
+          "characters": "PHOTOS",
+          "fontSize": 11,
+          "fontWeight": 600,
+          "color": "#381384"
+        },
+        {
+          "id": "3390:11",
+          "characters": "VIDEOS",
+          "fontSize": 11,
+          "fontWeight": 600,
+          "color": "#494552"
+        },
+        {
+          "id": "3390:14",
+          "characters": "DOCUMENTS",
+          "fontSize": 11,
+          "fontWeight": 600,
+          "color": "#494552"
+        },
+        {
+          "id": "3390:30",
+          "characters": "Our memories",
+          "fontSize": 28,
+          "fontWeight": 700,
+          "color": "#381384"
+        },
+        {
+          "id": "3390:39",
+          "characters": "HOME",
+          "fontSize": 11,
+          "fontWeight": 600,
+          "color": "#494552"
+        },
+        {
+          "id": "3390:44",
+          "characters": "MEMORIES",
+          "fontSize": 11,
+          "fontWeight": 600,
+          "color": "#7C4463"
+        },
+        {
+          "id": "3390:49",
+          "characters": "CHAT",
+          "fontSize": 11,
+          "fontWeight": 600,
+          "color": "#494552"
+        },
+        {
+          "id": "3390:54",
+          "characters": "TIMELINE",
+          "fontSize": 11,
+          "fontWeight": 600,
+          "color": "#494552"
+        },
+        {
+          "id": "3390:59",
+          "characters": "PROFILE",
+          "fontSize": 11,
+          "fontWeight": 600,
+          "color": "#494552"
+        }
+      ],
+      "radii": [
+        8,
+        9999
+      ],
+      "gaps": [
+        14.899999618530273,
+        24,
+        54.599998474121094
+      ],
+      "width": 390,
+      "height": 884
+    },
+    "3390:60": {
+      "name": "Pinned & Search",
+      "text": [
+        {
+          "id": "3390:69",
+          "characters": "Did you see the place I sent\nearlier?",
+          "fontSize": 16,
+          "fontWeight": 400,
+          "color": "#1D1A21"
+        },
+        {
+          "id": "3390:71",
+          "characters": "10:42 AM",
+          "fontSize": 10,
+          "fontWeight": 400,
+          "color": "#7A7583"
+        },
+        {
+          "id": "3390:78",
+          "characters": "Yes! The menu looks amazing.\nShould we go for the tasting\nmenu?",
+          "fontSize": 16,
+          "fontWeight": 400,
+          "color": "#FFFFFF"
+        },
+        {
+          "id": "3390:80",
+          "characters": "10:45 AM",
+          "fontSize": 10,
+          "fontWeight": 400,
+          "color": "#CEBDFF"
+        },
+        {
+          "id": "3390:89",
+          "characters": "Absolutely. I just booked it.\nReservation confirmed for\nSaturday ❤️",
+          "fontSize": 16,
+          "fontWeight": 400,
+          "color": "#1D1A21"
+        },
+        {
+          "id": "3390:91",
+          "characters": "10:50 AM",
+          "fontSize": 10,
+          "fontWeight": 400,
+          "color": "#7A7583"
+        },
+        {
+          "id": "3390:102",
+          "characters": "Type a message...",
+          "fontSize": 16,
+          "fontWeight": 400,
+          "color": "#7A7583"
+        },
+        {
+          "id": "3390:117",
+          "characters": "Sarah",
+          "fontSize": 20,
+          "fontWeight": 600,
+          "color": "#381384"
+        },
+        {
+          "id": "3390:119",
+          "characters": "Active now",
+          "fontSize": 10,
+          "fontWeight": 400,
+          "color": "#7A7583"
+        },
+        {
+          "id": "3390:131",
+          "characters": "Reservation confirmed for Saturday ❤️",
+          "fontSize": 14,
+          "fontWeight": 400,
+          "color": "#1D1A21"
+        },
+        {
+          "id": "3390:139",
+          "characters": "HOME",
+          "fontSize": 11,
+          "fontWeight": 600,
+          "color": "#494552"
+        },
+        {
+          "id": "3390:145",
+          "characters": "MEMORIES",
+          "fontSize": 11,
+          "fontWeight": 600,
+          "color": "#494552"
+        },
+        {
+          "id": "3390:151",
+          "characters": "CHAT",
+          "fontSize": 11,
+          "fontWeight": 600,
+          "color": "#7C4463"
+        },
+        {
+          "id": "3390:157",
+          "characters": "TIMELINE",
+          "fontSize": 11,
+          "fontWeight": 600,
+          "color": "#494552"
+        },
+        {
+          "id": "3390:163",
+          "characters": "PROFILE",
+          "fontSize": 11,
+          "fontWeight": 600,
+          "color": "#494552"
+        }
+      ],
+      "radii": [
+        8,
+        9999
+      ],
+      "gaps": [
+        4,
+        7.199999809265137,
+        7.989999771118164,
+        8,
+        12,
+        16,
+        154.13999938964844
+      ],
+      "width": 390,
+      "height": 884
+    },
+    "3390:164": {
+      "name": "Recording Voice Note",
+      "text": [
+        {
+          "id": "3390:173",
+          "characters": "Remember that little cafe we found\nlast year? The one with the amazing\nlavender lattes?",
+          "fontSize": 16,
+          "fontWeight": 400,
+          "color": "#1D1A21"
+        },
+        {
+          "id": "3390:175",
+          "characters": "10:42 AM",
+          "fontSize": 10,
+          "fontWeight": 400,
+          "color": "#7A7583"
+        },
+        {
+          "id": "3390:179",
+          "characters": "Of course! I was just thinking about\nit. We should go back this weekend.",
+          "fontSize": 16,
+          "fontWeight": 400,
+          "color": "#BEA8FF"
+        },
+        {
+          "id": "3390:181",
+          "characters": "10:45 AM",
+          "fontSize": 10,
+          "fontWeight": 400,
+          "color": "#CEBDFF"
+        },
+        {
+          "id": "3390:189",
+          "characters": "RECORDING...",
+          "fontSize": 11,
+          "fontWeight": 600,
+          "color": "#BA1A1A"
+        },
+        {
+          "id": "3390:191",
+          "characters": "00:12",
+          "fontSize": 20,
+          "fontWeight": 600,
+          "color": "#1D1A21"
+        },
+        {
+          "id": "3390:220",
+          "characters": "Chat",
+          "fontSize": 28,
+          "fontWeight": 700,
+          "color": "#381384"
+        }
+      ],
+      "radii": [
+        9999
+      ],
+      "gaps": [
+        0.003800000064074993,
+        3,
+        4,
+        4.5,
+        12,
+        118.0999984741211
+      ],
+      "width": 390,
+      "height": 533
+    },
+    "3390:224": {
+      "name": "Multimedia Messages",
+      "text": [
+        {
+          "id": "3390:229",
+          "characters": "Today",
+          "fontSize": 10,
+          "fontWeight": 400,
+          "color": "#CAC4D4"
+        },
+        {
+          "id": "3390:253",
+          "characters": "0:38",
+          "fontSize": 10,
+          "fontWeight": 400,
+          "color": "#BEA8FF"
+        },
+        {
+          "id": "3390:255",
+          "characters": "10:42 AM",
+          "fontSize": 10,
+          "fontWeight": 400,
+          "color": "#BEA8FF"
+        },
+        {
+          "id": "3390:278",
+          "characters": "0:12",
+          "fontSize": 10,
+          "fontWeight": 400,
+          "color": "#7A7583"
+        },
+        {
+          "id": "3390:280",
+          "characters": "10:45 AM",
+          "fontSize": 10,
+          "fontWeight": 400,
+          "color": "#7A7583"
+        },
+        {
+          "id": "3390:299",
+          "characters": "0:15",
+          "fontSize": 10,
+          "fontWeight": 400,
+          "color": "#FFFFFF"
+        },
+        {
+          "id": "3390:302",
+          "characters": "Wait for it... 🐕",
+          "fontSize": 16,
+          "fontWeight": 400,
+          "color": "#33264A"
+        },
+        {
+          "id": "3390:304",
+          "characters": "11:02 AM",
+          "fontSize": 10,
+          "fontWeight": 400,
+          "color": "#7A7583"
+        },
+        {
+          "id": "3390:313",
+          "characters": "Message...",
+          "fontSize": 16,
+          "fontWeight": 400,
+          "color": "#CAC4D4"
+        },
+        {
+          "id": "3390:324",
+          "characters": "Chat",
+          "fontSize": 28,
+          "fontWeight": 700,
+          "color": "#381384"
+        }
+      ],
+      "radii": [
+        8,
+        12,
+        9999
+      ],
+      "gaps": [
+        4,
+        8,
+        12,
+        12.00183391571045,
+        16,
+        29.170000076293945,
+        42.65999984741211,
+        72.99593353271484
+      ],
+      "width": 390,
+      "height": 862
+    },
+    "3390:326": {
+      "name": "Photo Sharing",
+      "text": [
+        {
+          "id": "3390:331",
+          "characters": "Remember that little place near\nthe Spanish Steps?",
+          "fontSize": 16,
+          "fontWeight": 400,
+          "color": "#1D1A21"
+        },
+        {
+          "id": "3390:336",
+          "characters": "10:42 AM",
+          "fontSize": 10,
+          "fontWeight": 400,
+          "color": "#7A7583"
+        },
+        {
+          "id": "3390:349",
+          "characters": "ROME '23",
+          "fontSize": 11,
+          "fontWeight": 600,
+          "color": "#33264A"
+        },
+        {
+          "id": "3390:352",
+          "characters": "This looks perfect.",
+          "fontSize": 16,
+          "fontWeight": 400,
+          "color": "#33264A"
+        },
+        {
+          "id": "3390:355",
+          "characters": "10:45 AM",
+          "fontSize": 10,
+          "fontWeight": 400,
+          "color": "#7A7583"
+        },
+        {
+          "id": "3390:369",
+          "characters": "Message...",
+          "fontSize": 16,
+          "fontWeight": 400,
+          "color": "#CAC4D4"
+        },
+        {
+          "id": "3390:380",
+          "characters": "Elena",
+          "fontSize": 28,
+          "fontWeight": 700,
+          "color": "#381384"
+        }
+      ],
+      "radii": [
+        12,
+        16,
+        40,
+        9999
+      ],
+      "gaps": [
+        3.9980666637420654,
+        5.999556064605713,
+        8,
+        12,
+        12.00183391571045,
+        24,
+        62.434226989746094,
+        91.0999984741211
+      ],
+      "width": 390,
+      "height": 809
+    },
+    "3390:384": {
+      "name": "Attachment Menu",
+      "text": [
+        {
+          "id": "3390:392",
+          "characters": "Did you find the photos from last\nweekend?",
+          "fontSize": 16,
+          "fontWeight": 400,
+          "color": "#1D1A21"
+        },
+        {
+          "id": "3390:394",
+          "characters": "10:42 AM",
+          "fontSize": 10,
+          "fontWeight": 400,
+          "color": "#7A7583"
+        },
+        {
+          "id": "3390:398",
+          "characters": "Yes! They turned out so well. I'll\nsend them over now.",
+          "fontSize": 16,
+          "fontWeight": 400,
+          "color": "#BEA8FF"
+        },
+        {
+          "id": "3390:400",
+          "characters": "10:45 AM",
+          "fontSize": 10,
+          "fontWeight": 400,
+          "color": "#CEBDFF"
+        },
+        {
+          "id": "3390:408",
+          "characters": "Message...",
+          "fontSize": 16,
+          "fontWeight": 400,
+          "color": "#7A7583"
+        },
+        {
+          "id": "3390:421",
+          "characters": "Photo",
+          "fontSize": 11,
+          "fontWeight": 600,
+          "color": "#494552"
+        },
+        {
+          "id": "3390:426",
+          "characters": "Video",
+          "fontSize": 11,
+          "fontWeight": 600,
+          "color": "#494552"
+        },
+        {
+          "id": "3390:431",
+          "characters": "Document",
+          "fontSize": 11,
+          "fontWeight": 600,
+          "color": "#494552"
+        },
+        {
+          "id": "3390:436",
+          "characters": "Location",
+          "fontSize": 11,
+          "fontWeight": 600,
+          "color": "#494552"
+        },
+        {
+          "id": "3390:438",
+          "characters": "CANCEL",
+          "fontSize": 11,
+          "fontWeight": 600,
+          "color": "#1D1A21"
+        }
+      ],
+      "radii": [
+        9999
+      ],
+      "gaps": [
+        4,
+        12,
+        16,
+        24,
+        32
+      ],
+      "width": 390,
+      "height": 342
+    },
+    "3390:439": {
+      "name": "Reaction Picker",
+      "text": [
+        {
+          "id": "3390:448",
+          "characters": "Sarah",
+          "fontSize": 20,
+          "fontWeight": 600,
+          "color": "#33264A"
+        },
+        {
+          "id": "3390:456",
+          "characters": "Are we still on for coffee\ntomorrow? I found this cute new\nplace downtown.",
+          "fontSize": 16,
+          "fontWeight": 400,
+          "color": "#1D1A21"
+        },
+        {
+          "id": "3390:458",
+          "characters": "10:42 AM",
+          "fontSize": 10,
+          "fontWeight": 400,
+          "color": "#494552"
+        },
+        {
+          "id": "3390:463",
+          "characters": "Yes definitely! I can't wait. See\nyou at 10?",
+          "fontSize": 16,
+          "fontWeight": 400,
+          "color": "#FFFFFF"
+        },
+        {
+          "id": "3390:465",
+          "characters": "10:45 AM",
+          "fontSize": 10,
+          "fontWeight": 400,
+          "color": "#494552"
+        },
+        {
+          "id": "3390:471",
+          "characters": "Perfect! I'll bring the polaroid\ncamera 📸",
+          "fontSize": 16,
+          "fontWeight": 400,
+          "color": "#1D1A21"
+        },
+        {
+          "id": "3390:473",
+          "characters": "10:48 AM",
+          "fontSize": 10,
+          "fontWeight": 400,
+          "color": "#494552"
+        },
+        {
+          "id": "3390:479",
+          "characters": "❤️",
+          "fontSize": 28,
+          "fontWeight": 400,
+          "color": "#1D1A21"
+        },
+        {
+          "id": "3390:481",
+          "characters": "😂",
+          "fontSize": 28,
+          "fontWeight": 400,
+          "color": "#1D1A21"
+        },
+        {
+          "id": "3390:483",
+          "characters": "🥹",
+          "fontSize": 28,
+          "fontWeight": 400,
+          "color": "#1D1A21"
+        },
+        {
+          "id": "3390:485",
+          "characters": "😍",
+          "fontSize": 28,
+          "fontWeight": 400,
+          "color": "#1D1A21"
+        },
+        {
+          "id": "3390:487",
+          "characters": "👍",
+          "fontSize": 28,
+          "fontWeight": 400,
+          "color": "#1D1A21"
+        },
+        {
+          "id": "3390:489",
+          "characters": "✨",
+          "fontSize": 28,
+          "fontWeight": 400,
+          "color": "#1D1A21"
+        },
+        {
+          "id": "3390:501",
+          "characters": "Perfect! I'll bring the polaroid\ncamera 📸",
+          "fontSize": 18,
+          "fontWeight": 400,
+          "color": "#1D1A21"
+        },
+        {
+          "id": "3390:504",
+          "characters": "❤️",
+          "fontSize": 16,
+          "fontWeight": 400,
+          "color": "#1D1A21"
+        },
+        {
+          "id": "3390:509",
+          "characters": "Reply",
+          "fontSize": 16,
+          "fontWeight": 400,
+          "color": "#1D1A21"
+        },
+        {
+          "id": "3390:513",
+          "characters": "Copy",
+          "fontSize": 16,
+          "fontWeight": 400,
+          "color": "#1D1A21"
+        },
+        {
+          "id": "3390:517",
+          "characters": "Save Memory",
+          "fontSize": 16,
+          "fontWeight": 400,
+          "color": "#1D1A21"
+        }
+      ],
+      "radii": [
+        12,
+        9999
+      ],
+      "gaps": [
+        4,
+        12,
+        16,
+        24,
+        199.13999938964844
+      ],
+      "width": 390,
+      "height": 884
+    },
+    "3390:521": {
+      "name": "Conversation — Typing",
+      "text": [
+        {
+          "id": "3390:526",
+          "characters": "TODAY, 2:14 PM",
+          "fontSize": 10,
+          "fontWeight": 400,
+          "color": "#494552"
+        },
+        {
+          "id": "3390:535",
+          "characters": "I found that old polaroid from\nour trip to the coast. It made\nme smile so much.",
+          "fontSize": 16,
+          "fontWeight": 400,
+          "color": "#1D1A21"
+        },
+        {
+          "id": "3390:539",
+          "characters": "No way! I was just thinking about\nthat day. The wind was crazy.",
+          "fontSize": 16,
+          "fontWeight": 400,
+          "color": "#FFFFFF"
+        },
+        {
+          "id": "3390:547",
+          "characters": "Can you send a picture of it?",
+          "fontSize": 16,
+          "fontWeight": 400,
+          "color": "#33264A"
+        },
+        {
+          "id": "3390:567",
+          "characters": "Sarah",
+          "fontSize": 20,
+          "fontWeight": 600,
+          "color": "#381384"
+        },
+        {
+          "id": "3390:569",
+          "characters": "Typing...",
+          "fontSize": 10,
+          "fontWeight": 400,
+          "color": "#381384"
+        },
+        {
+          "id": "3390:581",
+          "characters": "Type a message...",
+          "fontSize": 16,
+          "fontWeight": 400,
+          "color": "#CAC4D4"
+        }
+      ],
+      "radii": [
+        9999
+      ],
+      "gaps": [
+        12,
+        24,
+        115.5999984741211
+      ],
+      "width": 390,
+      "height": 650
+    },
+    "3390:585": {
+      "name": "Conversation — Replying",
+      "text": [
+        {
+          "id": "3390:590",
+          "characters": "Today, 2:45 PM",
+          "fontSize": 10,
+          "fontWeight": 400,
+          "color": "#7A7583"
+        },
+        {
+          "id": "3390:600",
+          "characters": "I know it's a bit overwhelming right\nnow, but we've got this. Just trust\nme.",
+          "fontSize": 16,
+          "fontWeight": 400,
+          "color": "#1D1A21"
+        },
+        {
+          "id": "3390:602",
+          "characters": "2:46 PM",
+          "fontSize": 10,
+          "fontWeight": 400,
+          "color": "#7A7583"
+        },
+        {
+          "id": "3390:610",
+          "characters": "I know. It's just hard not to stress.",
+          "fontSize": 16,
+          "fontWeight": 400,
+          "color": "#FFFFFF"
+        },
+        {
+          "id": "3390:613",
+          "characters": "2:48 PM",
+          "fontSize": 10,
+          "fontWeight": 400,
+          "color": "#7A7583"
+        },
+        {
+          "id": "3390:627",
+          "characters": "Replying to Sarah",
+          "fontSize": 11,
+          "fontWeight": 600,
+          "color": "#381384"
+        },
+        {
+          "id": "3390:629",
+          "characters": "\"Just trust me.\"",
+          "fontSize": 14,
+          "fontWeight": 400,
+          "color": "#494552"
+        },
+        {
+          "id": "3390:641",
+          "characters": "I always do.",
+          "fontSize": 16,
+          "fontWeight": 400,
+          "color": "#1D1A21"
+        },
+        {
+          "id": "3390:654",
+          "characters": "Sarah",
+          "fontSize": 20,
+          "fontWeight": 600,
+          "color": "#381384"
+        },
+        {
+          "id": "3390:656",
+          "characters": "Online",
+          "fontSize": 10,
+          "fontWeight": 400,
+          "color": "#7A7583"
+        }
+      ],
+      "radii": [
+        16,
+        9999
+      ],
+      "gaps": [
+        3.990000009536743,
+        8,
+        12,
+        24,
+        93.5999984741211,
+        210.83999633789062
+      ],
+      "width": 390,
+      "height": 500
+    },
+    "3390:665": {
+      "name": "Conversation — Normal",
+      "text": [
+        {
+          "id": "3390:670",
+          "characters": "TODAY, 5:42 PM",
+          "fontSize": 11,
+          "fontWeight": 600,
+          "color": "#7A7583"
+        },
+        {
+          "id": "3390:676",
+          "characters": "Are we still going for coffee\ntonight? ❤️",
+          "fontSize": 16,
+          "fontWeight": 400,
+          "color": "#33264A"
+        },
+        {
+          "id": "3390:678",
+          "characters": "5:42 PM",
+          "fontSize": 10,
+          "fontWeight": 400,
+          "color": "#CAC4D4"
+        },
+        {
+          "id": "3390:682",
+          "characters": "Obviously.",
+          "fontSize": 16,
+          "fontWeight": 400,
+          "color": "#21005D"
+        },
+        {
+          "id": "3390:686",
+          "characters": "5:43 PM",
+          "fontSize": 10,
+          "fontWeight": 400,
+          "color": "#CAC4D4"
+        },
+        {
+          "id": "3390:695",
+          "characters": "Good. I found a place you might\nactually like 😌",
+          "fontSize": 16,
+          "fontWeight": 400,
+          "color": "#33264A"
+        },
+        {
+          "id": "3390:697",
+          "characters": "5:44 PM",
+          "fontSize": 10,
+          "fontWeight": 400,
+          "color": "#CAC4D4"
+        },
+        {
+          "id": "3390:702",
+          "characters": "That's a bold claim.",
+          "fontSize": 16,
+          "fontWeight": 400,
+          "color": "#21005D"
+        },
+        {
+          "id": "3390:706",
+          "characters": "5:45 PM",
+          "fontSize": 10,
+          "fontWeight": 400,
+          "color": "#CAC4D4"
+        },
+        {
+          "id": "3390:715",
+          "characters": "Just trust me.",
+          "fontSize": 16,
+          "fontWeight": 400,
+          "color": "#33264A"
+        },
+        {
+          "id": "3390:717",
+          "characters": "5:45 PM",
+          "fontSize": 10,
+          "fontWeight": 400,
+          "color": "#CAC4D4"
+        },
+        {
+          "id": "3390:731",
+          "characters": "Sarah",
+          "fontSize": 20,
+          "fontWeight": 600,
+          "color": "#33264A"
+        },
+        {
+          "id": "3390:735",
+          "characters": "Online",
+          "fontSize": 10,
+          "fontWeight": 400,
+          "color": "#7A7583"
+        },
+        {
+          "id": "3390:756",
+          "characters": "Message Sarah...",
+          "fontSize": 16,
+          "fontWeight": 400,
+          "color": "#7A7583"
+        }
+      ],
+      "radii": [
+        16,
+        9999
+      ],
+      "gaps": [
+        3.990000009536743,
+        4,
+        12,
+        24,
+        35.11000061035156
+      ],
+      "width": 390,
+      "height": 895
+    },
+    "3390:764": {
+      "name": "Chat Home",
+      "text": [
+        {
+          "id": "3390:768",
+          "characters": "Chat",
+          "fontSize": 44,
+          "fontWeight": 700,
+          "color": "#33264A"
+        },
+        {
+          "id": "3390:770",
+          "characters": "Your little conversations.",
+          "fontSize": 16,
+          "fontWeight": 400,
+          "color": "#7A7583"
+        },
+        {
+          "id": "3390:784",
+          "characters": "Chandu & Sarah",
+          "fontSize": 20,
+          "fontWeight": 600,
+          "color": "#33264A"
+        },
+        {
+          "id": "3390:787",
+          "characters": "7:42 PM",
+          "fontSize": 10,
+          "fontWeight": 500,
+          "color": "#381384"
+        },
+        {
+          "id": "3390:790",
+          "characters": "Sarah:",
+          "fontSize": 16,
+          "fontWeight": 500,
+          "color": "#4F319B"
+        },
+        {
+          "id": "3390:792",
+          "characters": "'Are we still going for coffee tonight? ❤️'",
+          "fontSize": 16,
+          "fontWeight": 500,
+          "color": "#1D1A21"
+        },
+        {
+          "id": "3390:801",
+          "characters": "DRAFTED NOTE",
+          "fontSize": 11,
+          "fontWeight": 600,
+          "color": "#7A7583"
+        },
+        {
+          "id": "3390:803",
+          "characters": "Thinking about\nthat time we\nwalked in the…",
+          "fontSize": 18,
+          "fontWeight": 400,
+          "color": "#33264A"
+        },
+        {
+          "id": "3390:812",
+          "characters": "LOVEOS AI",
+          "fontSize": 11,
+          "fontWeight": 600,
+          "color": "#381384"
+        },
+        {
+          "id": "3390:814",
+          "characters": "Suggesting a\ncoffee spot for\ntonight.",
+          "fontSize": 14,
+          "fontWeight": 400,
+          "color": "#1D1A21"
+        },
+        {
+          "id": "3390:820",
+          "characters": "HOME",
+          "fontSize": 11,
+          "fontWeight": 600,
+          "color": "#494552"
+        },
+        {
+          "id": "3390:825",
+          "characters": "MEMORIES",
+          "fontSize": 11,
+          "fontWeight": 600,
+          "color": "#494552"
+        },
+        {
+          "id": "3390:830",
+          "characters": "CHAT",
+          "fontSize": 11,
+          "fontWeight": 600,
+          "color": "#7C4463"
+        },
+        {
+          "id": "3390:835",
+          "characters": "TIMELINE",
+          "fontSize": 11,
+          "fontWeight": 600,
+          "color": "#494552"
+        },
+        {
+          "id": "3390:840",
+          "characters": "PROFILE",
+          "fontSize": 11,
+          "fontWeight": 600,
+          "color": "#494552"
+        }
+      ],
+      "radii": [
+        20,
+        24,
+        9999
+      ],
+      "gaps": [
+        0.5,
+        4.28000020980835,
+        6,
+        8,
+        16,
+        20,
+        32
+      ],
+      "width": 390,
+      "height": 885
+    },
+    "3391:842": {
+      "name": "Active Video Moment (Refined)",
+      "text": [
+        {
+          "id": "3391:852",
+          "characters": "Just a little moment\ntogether.",
+          "fontSize": 16,
+          "fontWeight": 400,
+          "color": "#FFFCF9"
+        },
+        {
+          "id": "3391:856",
+          "characters": "Chandu",
+          "fontSize": 11,
+          "fontWeight": 600,
+          "color": "#381384"
+        },
+        {
+          "id": "3391:862",
+          "characters": "Sarah",
+          "fontSize": 20,
+          "fontWeight": 600,
+          "color": "#381384"
+        },
+        {
+          "id": "3391:868",
+          "characters": "Together for\n05:20",
+          "fontSize": 32,
+          "fontWeight": 700,
+          "color": "#381384"
+        }
+      ],
+      "radii": [
+        16,
+        9999
+      ],
+      "gaps": [
+        8,
+        12,
+        211.1699981689453
+      ],
+      "width": 390,
+      "height": 884
+    },
+    "3391:884": {
+      "name": "Active Voice Moment (Refined)",
+      "text": [
+        {
+          "id": "3391:905",
+          "characters": "A little moment together",
+          "fontSize": 16,
+          "fontWeight": 400,
+          "color": "#854C6B"
+        },
+        {
+          "id": "3391:911",
+          "characters": "KEEP MOMENT",
+          "fontSize": 11,
+          "fontWeight": 600,
+          "color": "#494552"
+        },
+        {
+          "id": "3391:919",
+          "characters": "Sarah",
+          "fontSize": 20,
+          "fontWeight": 600,
+          "color": "#381384"
+        },
+        {
+          "id": "3391:921",
+          "characters": "Together for 08:42",
+          "fontSize": 16,
+          "fontWeight": 400,
+          "color": "#494552"
+        }
+      ],
+      "radii": [
+        12,
+        9999
+      ],
+      "gaps": [
+        8,
+        9.13969612121582,
+        68.0999984741211
+      ],
+      "width": 390,
+      "height": 884
+    }
+  }
+}
