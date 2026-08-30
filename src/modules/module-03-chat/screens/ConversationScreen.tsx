@@ -12,6 +12,7 @@ import { DayDivider } from '@/modules/module-03-chat/components/DayDivider'
 import { MessageBubble } from '@/modules/module-03-chat/components/MessageBubble'
 import { MessageContextMenu } from '@/modules/module-03-chat/components/MessageContextMenu'
 import { PhotoSharePreview } from '@/modules/module-03-chat/components/PhotoSharePreview'
+import { PinnedBanner } from '@/modules/module-03-chat/components/PinnedBanner'
 import { ReactionBar } from '@/modules/module-03-chat/components/ReactionBar'
 import { TypingIndicator } from '@/modules/module-03-chat/components/TypingIndicator'
 import { VoiceNoteRecorder } from '@/modules/module-03-chat/components/VoiceNoteRecorder'
@@ -34,6 +35,12 @@ export function ConversationScreen() {
   const replyBody = s.replyTarget
     ? s.messages.find((m) => m.id === s.replyTarget)?.body
     : undefined
+
+  // The banner shows exactly one pinned message even when several are
+  // pinned — the FIRST one in thread order, i.e. the oldest pin still
+  // sitting in `messages`. The rest of the pins are one tap away, on the
+  // screen this banner itself opens.
+  const firstPinned = s.messages.find((m) => m.pinned)
 
   return (
     <View style={styles.page}>
@@ -61,6 +68,16 @@ export function ConversationScreen() {
         contentContainerStyle={styles.thread}
         onContentSizeChange={() => scroll.current?.scrollToEnd({ animated: false })}
       >
+        {/* Only ever the top-of-thread banner from Task 11's brief — rendered
+            inside the `ScrollView` (not floating above it) so it scrolls
+            away with the rest of the thread rather than pinning itself over
+            the header, which nothing in the frame draws. */}
+        {firstPinned && (
+          <PinnedBanner
+            message={firstPinned}
+            onPress={() => router.push('/(app)/chat/search' as Href)}
+          />
+        )}
         <DayDivider label="TODAY, 5:42 PM" />
         {s.messages.map((m) => (
           <MessageBubble key={m.id} message={m} onLongPress={s.selectMessage} />

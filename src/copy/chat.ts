@@ -26,4 +26,22 @@ export const CHAT_COPY = {
       body: 'Ask LoveOS anything about the two of you.',
     },
   },
+  /**
+   * Pinned & Search — Figma `Ziyu` 3390:60.
+   *
+   * `search.label` is the exact string Task 14's end-to-end journey and this
+   * module's own accessibility contract query for
+   * (`getByLabelText('Search messages')`): `Input` mirrors its `label` prop
+   * straight onto the field's `accessibilityLabel`, so this one string does
+   * double duty as the visible caption above the field AND the a11y name.
+   * Do not reword it without updating both call sites.
+   */
+  search: {
+    label: 'Search messages',
+    placeholder: 'Search your conversation',
+    pinnedLabel: 'Pinned',
+    resultsLabel: 'Results',
+    /** Exact string the brief and Task 14 both assert on. */
+    empty: 'No messages found',
+  },
 } as const
