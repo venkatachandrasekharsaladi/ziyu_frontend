@@ -14,6 +14,10 @@ describe.each(THEMES)('chat colours — %s', (_name, theme) => {
     expect(contrast(chat.bubbleInk, chat.bubbleIncoming)).toBeGreaterThanOrEqual(4.5)
   })
 
+  it('puts readable ink on the accent-soft background', () => {
+    expect(contrast(chat.bubbleInk, chat.accentSoft)).toBeGreaterThanOrEqual(4.5)
+  })
+
   it('keeps the accent legible on the page', () => {
     expect(contrast(chat.accent, theme.colors.surface.page)).toBeGreaterThanOrEqual(4.5)
   })

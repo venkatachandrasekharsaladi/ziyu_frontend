@@ -34,6 +34,20 @@ module), say so and do not let it inflate this module's verdict either way.
    app, but a module verdict should be based on the module's own tests,
    not on failures elsewhere in the tree.
 
+   A suite reporting all green is not the end of this check — read the
+   console output too. If it contains React `act()` warnings or
+   "an update to X inside a test was not wrapped in act" /
+   overlapping-act-style warnings, do not let "N/N passed" wave them off:
+   chase each one to the specific call that caused it, even though the
+   suite is green. A concrete place to start is
+   `grep -rn "fireEvent\.\w\+(" src/modules/module-03-chat src/services/chat`
+   and checking which of those calls is not `await`ed. This matters
+   because this module's own footgun list (`docs/qa/chat-test-cases.md`)
+   documents that an unawaited async call like `fireEvent` can silently
+   corrupt a DIFFERENT test's render tree — so a warning surfacing here can
+   mean a broken assertion somewhere else in the run, not just noise in
+   the one test that printed it.
+
 3. **Lint, module-scoped** — `npx eslint src/modules/module-03-chat
    src/services/chat` (substitute the module's own paths). Do NOT use
    `npm run lint` for this — it is repo-wide (`expo lint`), and this repo
@@ -70,17 +84,33 @@ module), say so and do not let it inflate this module's verdict either way.
    whether it needs a new `DELIBERATE` entry (that decision is not yours
    to make — report it, do not add the entry yourself).
 
-8. **Accessibility labels** — find candidates with
+8. **Accessibility labels.** This check has two halves, and the second is
+   NOT scoped to `Pressable` — say so up front. First, find candidates with
    `grep -rn "<Pressable" src/modules/module-03-chat` (and any
    `PressableScale` usages — grep for that too) and read each one. Every
    pressable with no visible text child needs an `accessibilityLabel`.
-   Then check for collisions: `grep -rn "accessibilityLabel=" src/modules/module-03-chat`
-   and read enough of each file to know whether two elements that can be
-   on screen at the same time carry the same label — a static string
-   repeated across sibling instances (e.g. a label with no per-item
-   interpolation inside a `.map()`) is the usual shape of this bug, and it
-   makes accessibility-tree queries in tests and by screen readers
-   ambiguous about which element they found.
+   Second — and this covers EVERY `accessibilityLabel=` in the module, on
+   any element type, not only `Pressable` — check for collisions:
+   `grep -rn "accessibilityLabel=" src/modules/module-03-chat` and read
+   enough of each file to know whether two elements that can be on screen
+   at the same time carry the same label. A prior run found real duplicates
+   this way on a plain `View` (`ReadReceipt`) and an `Image`
+   (`PhotoMessage`) — neither is a `Pressable`, and a grep scoped to
+   `Pressable` would have missed both. A duplicate label makes
+   accessibility-tree queries in tests and by screen readers ambiguous
+   about which element they found.
+
+   The usual shape of this bug is NOT "a static string repeated across
+   sibling instances inside the label's own `.map()`" — none of the real
+   instances found so far had their own `.map()` in the same file. Instead,
+   a single-instance component (no loop, no map, in its own file) carries a
+   static or under-keyed `accessibilityLabel`, and a DIFFERENT file's
+   `.map()` mounts that component once per list item. So: for each
+   candidate, check whether some caller elsewhere mounts it once per item
+   in a list, and whether its label is keyed by anything other than that
+   item's own identity (an id, a timestamp, an index) — a label keyed only
+   by a role name ("Read", "Photo") or by nothing at all will collide the
+   moment two list items share that role.
 
 9. **Layering** — components must not import a service. Run
    `grep -rn "from '@/services/" src/modules/module-03-chat/components | grep -v "import type"`

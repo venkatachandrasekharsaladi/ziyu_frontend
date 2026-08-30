@@ -254,9 +254,8 @@ export const midnightPalette = {
   /**
    * CHAT — dark counterparts to the lavender palette's Fuschia and Iris.
    *
-   * `iris300` is lifted toward `lavender300`'s end of the scale rather than
-   * reusing the lavender palette's `iris100`, because here it has to work as
-   * text on the page rather than as a bubble fill.
+   * `iris300` reuses the lavender palette's `iris60` value as-is (not a new
+   * derivation) — it happens to double as the text-on-page tone needed here.
    */
   fuschia60Dark: '#3A2130',
   iris60Dark: '#282A57',

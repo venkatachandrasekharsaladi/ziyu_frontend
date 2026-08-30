@@ -243,6 +243,25 @@ action (CHAT-036..040), which writes through `memoriesService` — that is the
 actual bridge; building the frame literally would create a second, divergent
 Memories screen.
 
+7. **Copy does not copy.** `MessageContextMenu`'s Copy item dismisses the
+   overlay without copying anything — the same effect as tapping the scrim.
+   There is no clipboard dependency anywhere in this project's
+   `package.json`, and adding one was outside this task's scope. This is
+   commented in-file (`ConversationScreen.tsx`, where `onCopy` is wired) but
+   disclosed nowhere a reader would look until now.
+
+8. **Three of the four attachment tiles are inert.** `AttachmentSheet` draws
+   Photo / Camera / Voice note / Memory; only Photo wires to real behaviour
+   (`onPickPhoto`, staging the mock picker). Camera, Voice note, and Memory
+   all call `onClose` and do nothing else.
+
+9. **`MessageGroup` was specified but never built.** Design spec §7 names it
+   for shared spacing/avatar handling on consecutive same-author messages. It
+   does not appear in the implementation plan, in any task brief, or in the
+   code — it was dropped silently somewhere between spec and plan. The
+   decision at this point is to disclose the gap rather than build it this
+   late; this entry is that disclosure, not a sign-off on the omission.
+
 ## Test-harness footguns this module discovered
 
 Anyone adding a test to this module will hit these. All six are documented
