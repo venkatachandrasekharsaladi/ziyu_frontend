@@ -40,6 +40,15 @@ export function createMockChatService(timings: Partial<ChatTimings> = {}): ChatS
   const emit = (event: ChatEvent) => listeners.forEach((l) => l(event))
   const later = (fn: () => void, ms: number) => { setTimeout(fn, ms) }
 
+  /**
+   * Deep clone a message and its mutable reactions array so callers
+   * cannot corrupt service state by mutating the returned object.
+   */
+  const cloneMessage = (m: Message): Message => ({
+    ...m,
+    reactions: [...m.reactions],
+  })
+
   const replace = (next: Message): Message => {
     messages = messages.map((m) => (m.id === next.id ? next : m))
     return next
@@ -53,7 +62,7 @@ export function createMockChatService(timings: Partial<ChatTimings> = {}): ChatS
 
   return {
     async listMessages() {
-      return [...messages]
+      return messages.map(cloneMessage)
     },
 
     async sendMessage(input: SendInput) {
@@ -95,7 +104,7 @@ export function createMockChatService(timings: Partial<ChatTimings> = {}): ChatS
                 replyIndex += 1
                 messages = [...messages, reply]
                 emit({ type: 'typing', isTyping: false })
-                emit({ type: 'message', message: reply })
+                emit({ type: 'message', message: cloneMessage(reply) })
               }, t.replyDelayMs)
             }, t.typingDelayMs)
           }
@@ -124,7 +133,7 @@ export function createMockChatService(timings: Partial<ChatTimings> = {}): ChatS
     async search(query) {
       const q = query.trim().toLowerCase()
       if (!q) return []
-      return messages.filter((m) => (m.body ?? '').toLowerCase().includes(q))
+      return messages.filter((m) => (m.body ?? '').toLowerCase().includes(q)).map(cloneMessage)
     },
 
     subscribe(listener) {

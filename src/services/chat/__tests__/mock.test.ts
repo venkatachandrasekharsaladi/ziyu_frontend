@@ -8,10 +8,28 @@ describe('mock chat service', () => {
     const messages = await service.listMessages()
 
     expect(messages).toHaveLength(5)
-    expect(messages[0].body).toBe('Are we still going for coffee tonight? ☰❤️')
-    expect(messages[0].authorId).toBe('partner')
-    expect(messages[1].body).toBe('Obviously.')
-    expect(messages[1].authorId).toBe('me')
+
+    // Verify the exact conversation from Figma frame 3390:665 with alternating authors
+    expect(messages[0]).toMatchObject({
+      body: 'Are we still going for coffee tonight? ☰❤️',
+      authorId: 'partner',
+    })
+    expect(messages[1]).toMatchObject({
+      body: 'Obviously.',
+      authorId: 'me',
+    })
+    expect(messages[2]).toMatchObject({
+      body: 'Good. I found a place you might actually like 😊',
+      authorId: 'partner',
+    })
+    expect(messages[3]).toMatchObject({
+      body: "That's a bold claim.",
+      authorId: 'me',
+    })
+    expect(messages[4]).toMatchObject({
+      body: 'Just trust me.',
+      authorId: 'partner',
+    })
   })
 
   it('walks an outgoing message through every status', async () => {
