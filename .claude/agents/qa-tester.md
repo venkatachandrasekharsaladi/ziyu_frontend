@@ -43,10 +43,11 @@ module), say so and do not let it inflate this module's verdict either way.
    finding. If `npx eslint <module paths>` itself reports an error inside
    the module, that is real and belongs in your findings.
 
-4. **Conversation journey** — `npx jest ConversationFlow` passes end to
-   end. (There is no test literally named `ChatJourney` — if you are
-   pointed at a spec that calls for one, this is the closest thing that
-   exists; say so rather than silently substituting.)
+4. **Conversation journey** — `npx jest ChatJourney` passes end to end:
+   the A-to-Z session that walks Chat Home, into the thread, through
+   text, a reaction, a reply, attachments, a photo, a voice note, Save
+   Memory, and a pin, out to Pinned & Search, and back to Chat Home, all
+   inside one continuous `chatStore` rather than a fresh one per screen.
 
 5. **Design parity** — `npx jest DesignParity` passes against the
    committed Figma fixture (`src/modules/module-03-chat/__fixtures__/figma-chat.json`).
