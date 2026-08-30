@@ -103,9 +103,7 @@ export const SAMPLE_MEMORIES: WithPhotos[] = [
     title: 'Caught mid-laugh.',
     date: '2024-05-02',
     caption: 'Yesterday',
-    // No catalogue photo actually shows a candid caught-mid-laugh moment —
-    // reusing any key here would be exactly the mismatch this file exists to
-    // avoid, so this one runs as a text card instead of a wrong photo.
+    photoUri: samplePhoto('caughtLaughing'),
     tags: ['Us'],
     favorite: false,
     addedBy: 'Sarah',

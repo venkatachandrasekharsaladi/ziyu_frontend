@@ -97,6 +97,13 @@ const ID = {
   /** Dense red begonias in bloom, filling the frame. */
   flowers: 'photo-1519378058457-4c29a0a2efac',
 
+  /** Three friends on a street, genuinely mid-laugh, one doubled over. */
+  caughtLaughing: 'photo-1543807535-eceef0bc6599',
+  /** A couple embracing in silhouette, the sun setting between them. */
+  embraceSunset: 'photo-1494774157365-9e04c6720e47',
+  /** Two cyclists in silhouette at sunset, reaching to touch hands. */
+  cyclistsSunset: 'photo-1474552226712-ac0f0961a954',
+
   /** Whitewashed Santorini steps descending to a deep blue sea. */
   santorini: 'photo-1533105079780-92b9be482077',
   /** A couple at their wedding releasing white balloons, guests behind. */
