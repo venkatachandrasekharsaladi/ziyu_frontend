@@ -45,7 +45,7 @@ export function PinnedAndSearchScreen() {
   const loaded = useRef(false)
 
   const [query, setQuery] = useState('')
-  const [results, setResults] = useState<Message[] | null>(null)
+  const [searchResults, setSearchResults] = useState<Message[] | null>(null)
 
   useEffect(() => {
     // Same guard as `ChatHomeScreen`/`ConversationScreen`: Strict Mode runs
@@ -58,20 +58,17 @@ export function PinnedAndSearchScreen() {
   }, [load])
 
   useEffect(() => {
-    let cancelled = false
+    // An empty query has nothing to search — that case is handled below, at
+    // render, not here (see `results`). This effect's only job is the actual
+    // async search, so there is no synchronous `setState` left for React to
+    // warn about on the empty-query path.
+    if (!query.trim()) return
 
-    // An empty query has nothing to show — not even "No messages found",
-    // which is reserved for a query that came back with zero hits. Landing
-    // on this screen with the field untouched should read as "search
-    // something", not "we searched and found nothing."
-    if (!query.trim()) {
-      setResults(null)
-      return
-    }
+    let cancelled = false
 
     async function run() {
       const found = await chatService.search(query)
-      if (!cancelled) setResults(found)
+      if (!cancelled) setSearchResults(found)
     }
 
     void run()
@@ -80,6 +77,15 @@ export function PinnedAndSearchScreen() {
       cancelled = true
     }
   }, [query])
+
+  // An empty/whitespace query has nothing to show — not even "No messages
+  // found", which is reserved for a query that came back with zero hits.
+  // Landing on this screen with the field untouched should read as "search
+  // something", not "we searched and found nothing." Derived here, at
+  // render, rather than synced into state by the effect above: whether
+  // there is anything to show is entirely a function of `query` and
+  // `searchResults` already in hand, so there is nothing to synchronise.
+  const results = query.trim() ? searchResults : null
 
   const pinned = messages.filter((m) => m.pinned)
   const pinnedIds = new Set(pinned.map((m) => m.id))
