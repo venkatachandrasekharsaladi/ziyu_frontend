@@ -31,7 +31,21 @@ function seed(): Message[] {
 
 const REPLIES = ['Miss you.', 'Can\'t wait.', 'Tell me more.', 'You always say that.']
 
-export function createMockChatService(timings: Partial<ChatTimings> = {}): ChatService {
+export type ChatServiceOptions = {
+  /**
+   * Test-only lever mirroring a real network failure, in the same spirit as
+   * the injectable `timings`: when true, every `sendMessage` rejects instead
+   * of walking the status steps, so callers (the chat store's optimistic
+   * send/retry path) have something to fail against. Defaults to false, so
+   * every existing caller's behaviour is unchanged.
+   */
+  failSends?: boolean
+}
+
+export function createMockChatService(
+  timings: Partial<ChatTimings> = {},
+  options: ChatServiceOptions = {},
+): ChatService {
   const t = { ...CHAT_TIMINGS, ...timings }
   let messages = seed()
   let listeners: ((event: ChatEvent) => void)[] = []
@@ -66,6 +80,11 @@ export function createMockChatService(timings: Partial<ChatTimings> = {}): ChatS
     },
 
     async sendMessage(input: SendInput) {
+      // The failure never touches `messages` — a rejected send never made it
+      // to the server, so there is nothing here for the store to reconcile
+      // against except the rejection itself.
+      if (options.failSends) throw new Error('Failed to send message')
+
       const message: Message = {
         id: `m${messages.length + 1}-${Date.now()}`,
         authorId: 'me',

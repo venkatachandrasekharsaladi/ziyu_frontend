@@ -1,7 +1,7 @@
 import { create } from 'zustand'
 
 import { chatService } from '@/services/chat'
-import type { Message } from '@/services/chat/types'
+import type { Message, SendInput } from '@/services/chat/types'
 
 type ChatState = {
   messages: Message[]
@@ -17,6 +17,7 @@ type ChatState = {
   send(body: string): Promise<void>
   sendPhoto(uri: string): Promise<void>
   sendVoice(uri: string, durationMs: number): Promise<void>
+  retry(id: string): Promise<void>
   startReply(id: string): void
   cancelReply(): void
   selectMessage(id: string): void
@@ -57,81 +58,181 @@ const EMPTY = {
  */
 let unsubscribe: (() => void) | null = null
 
-export const useChatStore = create<ChatState>((set, get) => ({
-  ...EMPTY,
+/**
+ * Every locally-created outgoing message needs an id before the service has
+ * assigned one, so the bubble can be found again to reconcile or fail it. A
+ * counter (rather than only `Date.now()`) keeps two sends issued in the same
+ * millisecond from colliding.
+ */
+let tempIdCounter = 0
+const nextTempId = () => `local-${Date.now()}-${(tempIdCounter += 1)}`
 
-  async load() {
-    const messages = await chatService.listMessages()
-    set({ messages })
+export const useChatStore = create<ChatState>((set, get) => {
+  /**
+   * Resolves an outgoing message that is already sitting in `messages` under
+   * `tempId` (either a fresh optimistic bubble, or a `failed` one being
+   * retried). Never throws: a rejection from the service means the send
+   * genuinely failed, and the whole point of this path is to surface that in
+   * the thread — marking the existing entry `failed` — rather than let the
+   * rejection escape and silently drop the message.
+   */
+  const settle = async (tempId: string, input: SendInput) => {
+    try {
+      const sent = await chatService.sendMessage(input)
+      set({ messages: get().messages.map((m) => (m.id === tempId ? sent : m)) })
+    } catch {
+      set({
+        messages: get().messages.map((m) =>
+          (m.id === tempId ? { ...m, status: 'failed' } : m)),
+      })
+    }
+  }
 
-    if (unsubscribe) return
+  return {
+    ...EMPTY,
 
-    unsubscribe = chatService.subscribe((event) => {
-      if (event.type === 'typing') set({ isPartnerTyping: event.isTyping })
-      if (event.type === 'message') set({ messages: [...get().messages, event.message] })
-      if (event.type === 'status') {
-        set({
-          messages: get().messages.map((m) =>
-            m.id === event.messageId ? { ...m, status: event.status } : m),
+    async load() {
+      // Claim the subscription slot, and subscribe if it is still empty,
+      // BEFORE the only `await` in this function. Two `load()` calls issued
+      // without awaiting the first (e.g. `Promise.all([load(), load()])`)
+      // both run their synchronous prefix — including this check — before
+      // either one's `listMessages()` resolves. Checking after the await
+      // would let both calls observe `unsubscribe` as null and each
+      // subscribe, doubling every future event.
+      if (!unsubscribe) {
+        unsubscribe = chatService.subscribe((event) => {
+          if (event.type === 'typing') set({ isPartnerTyping: event.isTyping })
+          if (event.type === 'message') set({ messages: [...get().messages, event.message] })
+          if (event.type === 'status') {
+            set({
+              messages: get().messages.map((m) =>
+                m.id === event.messageId ? { ...m, status: event.status } : m),
+            })
+          }
         })
       }
-    })
-  },
 
-  setDraft(value) { set({ draft: value }) },
+      const messages = await chatService.listMessages()
+      set({ messages })
+    },
 
-  async send(body) {
-    const replyToId = get().replyTarget ?? undefined
-    set({ draft: '', replyTarget: null })
-    const optimistic = await chatService.sendMessage({ kind: 'text', body, replyToId })
-    set({ messages: [...get().messages.filter((m) => m.id !== optimistic.id), optimistic] })
-  },
+    setDraft(value) { set({ draft: value }) },
 
-  async sendPhoto(uri) {
-    set({ pendingPhotoUri: null, attachmentSheetOpen: false })
-    const sent = await chatService.sendMessage({ kind: 'photo', mediaUri: uri })
-    set({ messages: [...get().messages, sent] })
-  },
+    async send(body) {
+      const replyToId = get().replyTarget ?? undefined
+      const tempId = nextTempId()
+      const optimistic: Message = {
+        id: tempId,
+        authorId: 'me',
+        kind: 'text',
+        body,
+        replyToId,
+        reactions: [],
+        pinned: false,
+        sentAt: new Date().toISOString(),
+        status: 'sending',
+      }
+      // The bubble goes up immediately — before the service is even asked to
+      // send it — so the sender always sees their own message right away,
+      // whatever the network is doing.
+      set({ draft: '', replyTarget: null, messages: [...get().messages, optimistic] })
 
-  async sendVoice(uri, durationMs) {
-    set({ isRecording: false })
-    const sent = await chatService.sendMessage({ kind: 'voice', mediaUri: uri, durationMs })
-    set({ messages: [...get().messages, sent] })
-  },
+      await settle(tempId, { kind: 'text', body, replyToId })
+    },
 
-  startReply(id) { set({ replyTarget: id, selectedMessageId: null }) },
-  cancelReply() { set({ replyTarget: null }) },
+    async sendPhoto(uri) {
+      const tempId = nextTempId()
+      const optimistic: Message = {
+        id: tempId,
+        authorId: 'me',
+        kind: 'photo',
+        mediaUri: uri,
+        reactions: [],
+        pinned: false,
+        sentAt: new Date().toISOString(),
+        status: 'sending',
+      }
+      set({
+        pendingPhotoUri: null,
+        attachmentSheetOpen: false,
+        messages: [...get().messages, optimistic],
+      })
 
-  // The two overlays are mutually exclusive: opening one closes the other.
-  selectMessage(id) { set({ selectedMessageId: id, attachmentSheetOpen: false }) },
-  clearSelection() { set({ selectedMessageId: null }) },
-  openAttachments() { set({ attachmentSheetOpen: true, selectedMessageId: null }) },
-  closeAttachments() { set({ attachmentSheetOpen: false }) },
+      await settle(tempId, { kind: 'photo', mediaUri: uri })
+    },
 
-  async react(id, emoji) {
-    const updated = await chatService.react(id, emoji)
-    set({
-      messages: get().messages.map((m) => (m.id === id ? updated : m)),
-      selectedMessageId: null,
-    })
-  },
+    async sendVoice(uri, durationMs) {
+      const tempId = nextTempId()
+      const optimistic: Message = {
+        id: tempId,
+        authorId: 'me',
+        kind: 'voice',
+        mediaUri: uri,
+        durationMs,
+        reactions: [],
+        pinned: false,
+        sentAt: new Date().toISOString(),
+        status: 'sending',
+      }
+      set({ isRecording: false, messages: [...get().messages, optimistic] })
 
-  async togglePin(id) {
-    const updated = await chatService.togglePin(id)
-    set({
-      messages: get().messages.map((m) => (m.id === id ? updated : m)),
-      selectedMessageId: null,
-    })
-  },
+      await settle(tempId, { kind: 'voice', mediaUri: uri, durationMs })
+    },
 
-  startRecording() { set({ isRecording: true }) },
-  stopRecording() { set({ isRecording: false }) },
-  stagePhoto(uri) { set({ pendingPhotoUri: uri, attachmentSheetOpen: false }) },
-  clearPhoto() { set({ pendingPhotoUri: null }) },
+    async retry(id) {
+      const message = get().messages.find((m) => m.id === id)
+      // Only a message the thread already marked `failed` is retryable —
+      // retrying anything else (already sent, or mid-flight) would re-send
+      // it a second time.
+      if (!message || message.status !== 'failed') return
 
-  reset() {
-    unsubscribe?.()
-    unsubscribe = null
-    set({ ...EMPTY })
-  },
-}))
+      set({
+        messages: get().messages.map((m) => (m.id === id ? { ...m, status: 'sending' } : m)),
+      })
+
+      await settle(id, {
+        kind: message.kind,
+        body: message.body,
+        mediaUri: message.mediaUri,
+        durationMs: message.durationMs,
+        replyToId: message.replyToId,
+      })
+    },
+
+    startReply(id) { set({ replyTarget: id, selectedMessageId: null }) },
+    cancelReply() { set({ replyTarget: null }) },
+
+    // The two overlays are mutually exclusive: opening one closes the other.
+    selectMessage(id) { set({ selectedMessageId: id, attachmentSheetOpen: false }) },
+    clearSelection() { set({ selectedMessageId: null }) },
+    openAttachments() { set({ attachmentSheetOpen: true, selectedMessageId: null }) },
+    closeAttachments() { set({ attachmentSheetOpen: false }) },
+
+    async react(id, emoji) {
+      const updated = await chatService.react(id, emoji)
+      set({
+        messages: get().messages.map((m) => (m.id === id ? updated : m)),
+        selectedMessageId: null,
+      })
+    },
+
+    async togglePin(id) {
+      const updated = await chatService.togglePin(id)
+      set({
+        messages: get().messages.map((m) => (m.id === id ? updated : m)),
+        selectedMessageId: null,
+      })
+    },
+
+    startRecording() { set({ isRecording: true }) },
+    stopRecording() { set({ isRecording: false }) },
+    stagePhoto(uri) { set({ pendingPhotoUri: uri, attachmentSheetOpen: false }) },
+    clearPhoto() { set({ pendingPhotoUri: null }) },
+
+    reset() {
+      unsubscribe?.()
+      unsubscribe = null
+      set({ ...EMPTY })
+    },
+  }
+})

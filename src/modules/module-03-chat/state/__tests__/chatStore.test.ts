@@ -65,11 +65,56 @@ describe('chat store', () => {
     const before = useChatStore.getState().messages.length
 
     service.sendMessage.mockResolvedValue(message('m-sent', 'me', 'Hello'))
-    await act(async () => { await useChatStore.getState().send('Hello') })
+    // Deliberately NOT awaited: `send()` is only run up to its first `await`
+    // here, so this proves the bubble is appended in the synchronous part of
+    // `send()` — before `chatService.sendMessage` has had any chance to
+    // settle — rather than depending on the promise it returns.
+    let pending: Promise<void>
+    act(() => { pending = useChatStore.getState().send('Hello') })
+
+    const during = useChatStore.getState().messages
+    expect(during).toHaveLength(before + 1)
+    expect(during[during.length - 1]).toMatchObject({ body: 'Hello', status: 'sending' })
+
+    await act(async () => { await pending })
 
     const after = useChatStore.getState().messages
     expect(after).toHaveLength(before + 1)
-    expect(after[after.length - 1].body).toBe('Hello')
+    expect(after[after.length - 1]).toMatchObject({ id: 'm-sent', status: 'read' })
+  })
+
+  it('marks a failed send in place instead of dropping it, and lets retry recover it', async () => {
+    service.listMessages.mockResolvedValue([message('m1', 'partner', 'Are we still on?')])
+    await act(async () => { await useChatStore.getState().load() })
+    const before = useChatStore.getState().messages.length
+
+    service.sendMessage.mockRejectedValueOnce(new Error('network down'))
+    await act(async () => { await useChatStore.getState().send('Hello') })
+
+    const failed = useChatStore.getState().messages
+    expect(failed).toHaveLength(before + 1)
+    const failedMessage = failed[failed.length - 1]
+    // The text is still there to retry — nothing was silently dropped.
+    expect(failedMessage).toMatchObject({ body: 'Hello', status: 'failed' })
+
+    service.sendMessage.mockResolvedValueOnce(message('m-sent', 'me', 'Hello'))
+    await act(async () => { await useChatStore.getState().retry(failedMessage.id) })
+
+    const after = useChatStore.getState().messages
+    // Retry reconciles the SAME slot — it does not append a second bubble.
+    expect(after).toHaveLength(before + 1)
+    expect(after[after.length - 1]).toMatchObject({ id: 'm-sent', status: 'read' })
+  })
+
+  it('does nothing when asked to retry a message that is not marked failed', async () => {
+    service.listMessages.mockResolvedValue([message('m1', 'partner', 'Are we still on?')])
+    await act(async () => { await useChatStore.getState().load() })
+    const before = useChatStore.getState().messages
+
+    await act(async () => { await useChatStore.getState().retry('m1') })
+
+    expect(service.sendMessage).not.toHaveBeenCalled()
+    expect(useChatStore.getState().messages).toEqual(before)
   })
 
   it('clears the draft and the reply target on send', async () => {
@@ -114,6 +159,20 @@ describe('chat store', () => {
 
     const matches = useChatStore.getState().messages.filter((m) => m.id === 'm-incoming')
     expect(matches).toHaveLength(1)
+  })
+
+  // The guard used to check `unsubscribe` only AFTER awaiting
+  // `listMessages()`. Two `load()` calls fired without awaiting the first
+  // both run their synchronous prefix before either `listMessages()`
+  // settles, so a check placed after the await could let both pass it and
+  // each subscribe.
+  it('subscribes exactly once even when two load() calls race without awaiting the first', async () => {
+    await act(async () => {
+      await Promise.all([useChatStore.getState().load(), useChatStore.getState().load()])
+    })
+
+    expect(service.subscribe).toHaveBeenCalledTimes(1)
+    expect(listeners).toHaveLength(1)
   })
 
   it('tears down the subscription on reset, so a later load subscribes exactly once again', async () => {

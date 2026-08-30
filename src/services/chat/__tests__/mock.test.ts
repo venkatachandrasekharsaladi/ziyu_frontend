@@ -97,4 +97,21 @@ describe('mock chat service', () => {
 
     expect(count).toBe(0)
   })
+
+  it('rejects every send when configured to fail, without queuing anything', async () => {
+    const service = createMockChatService(instant, { failSends: true })
+
+    await expect(service.sendMessage({ kind: 'text', body: 'Hello' })).rejects.toThrow()
+
+    // The thread is untouched — a failed send never reached the server.
+    expect(await service.listMessages()).toHaveLength(5)
+  })
+
+  it('leaves failSends off by default, so every other test above still holds', async () => {
+    const service = createMockChatService(instant)
+
+    await expect(service.sendMessage({ kind: 'text', body: 'Hello' })).resolves.toMatchObject({
+      status: 'sending',
+    })
+  })
 })
