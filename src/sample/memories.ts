@@ -1,4 +1,5 @@
 import type { WithPhotos } from '@/modules/module-03-memories/photos'
+import { samplePhoto, samplePhotoSquare } from '@/sample/photos'
 
 /**
  * UI-ONLY SAMPLE CONTENT — Figma `Ziyu`, Memories Page + Home Dashboard.
@@ -13,25 +14,28 @@ import type { WithPhotos } from '@/modules/module-03-memories/photos'
  * lands, delete `src/sample/` and the fallbacks that reference it — every
  * consumer already prefers live data when it exists.
  *
- * Photos are seeded `picsum.photos` URLs: stable, deterministic, and no
- * invented asset IDs that would 404.
+ * Photos come from `@/sample/photos` — a small catalogue of hand-verified
+ * Unsplash photos, chosen so each memory's photo actually matches its
+ * caption. This used to build `picsum.photos/seed/loveos-<subject>` URLs
+ * instead: the seeds read like they meant something, but picsum does not
+ * search — it hashes the seed to an arbitrary photo, blind to the subject.
+ * That is how "Coffee, sunshine, and nowhere to be." ended up over a
+ * landscape. See `@/sample/photos` for the full story.
  */
-const photo = (seed: string, w = 800, h = 1000) =>
-  `https://picsum.photos/seed/loveos-${seed}/${w}/${h}`
 
 export const SAMPLE_MEMORIES: WithPhotos[] = [
   {
     id: 'sample-rome-coffee',
     photos: [
-      photo('rome-coffee'),
-      photo('rome-coffee-2'),
-      photo('rome-coffee-3'),
+      samplePhoto('coffeeTable'),
+      samplePhoto('coffeeToast'),
+      samplePhoto('cafeInterior'),
     ],
     title: 'Coffee, sunshine, and nowhere to be.',
     date: '2023-10-14',
     caption: 'Rome · Oct 14, 2023',
     location: 'Rome',
-    photoUri: photo('rome-coffee'),
+    photoUri: samplePhoto('coffeeTable'),
     note: 'You ordered for both of us in terrible Italian and it worked.',
     tags: ['Us', 'Dates'],
     favorite: true,
@@ -40,16 +44,16 @@ export const SAMPLE_MEMORIES: WithPhotos[] = [
   {
     id: 'sample-paris-notre-dame',
     photos: [
-      photo('paris'),
-      photo('paris-2'),
-      photo('paris-3'),
-      photo('paris-4'),
+      samplePhoto('parisDusk'),
+      samplePhoto('parisDay'),
+      samplePhoto('parisDusk'),
+      samplePhoto('parisDay'),
     ],
     title: 'First time seeing the Eiffel Tower.',
     date: '2023-08-14',
     caption: 'Paris',
     location: 'Paris',
-    photoUri: photo('paris'),
+    photoUri: samplePhoto('parisDusk'),
     tags: ['Trips', 'Us'],
     favorite: true,
     addedBy: 'Sarah',
@@ -57,15 +61,15 @@ export const SAMPLE_MEMORIES: WithPhotos[] = [
   {
     id: 'sample-coast-trip',
     photos: [
-      photo('coast'),
-      photo('coast-2'),
-      photo('coast-3'),
+      samplePhoto('coastSunset'),
+      samplePhoto('coastPalm'),
+      samplePhoto('coastSunset'),
     ],
     title: 'Our first trip to the coast, 2021',
     date: '2021-06-19',
     caption: 'The one where we missed the last train back.',
     location: 'Amalfi',
-    photoUri: photo('coast'),
+    photoUri: samplePhoto('coastSunset'),
     tags: ['Trips'],
     favorite: false,
     addedBy: 'Chandu',
@@ -75,6 +79,7 @@ export const SAMPLE_MEMORIES: WithPhotos[] = [
     title: '"Plane snacks were 10/10."',
     date: '2023-08-14',
     caption: 'Chandu ate all the Biscoff cookies before we even took off.',
+    photoUri: samplePhoto('planeWing'),
     tags: ['Trips', 'Little Things'],
     favorite: false,
     addedBy: 'Sarah',
@@ -82,13 +87,13 @@ export const SAMPLE_MEMORIES: WithPhotos[] = [
   {
     id: 'sample-night-market',
     photos: [
-      photo('market'),
-      photo('market-2'),
+      samplePhoto('market'),
+      samplePhoto('market'),
     ],
     title: 'The night market that never closed.',
     date: '2023-09-12',
     location: 'Bangkok',
-    photoUri: photo('market'),
+    photoUri: samplePhoto('market'),
     tags: ['Trips'],
     favorite: false,
     addedBy: 'Chandu',
@@ -98,7 +103,9 @@ export const SAMPLE_MEMORIES: WithPhotos[] = [
     title: 'Caught mid-laugh.',
     date: '2024-05-02',
     caption: 'Yesterday',
-    photoUri: photo('street-laugh'),
+    // No catalogue photo actually shows a candid caught-mid-laugh moment —
+    // reusing any key here would be exactly the mismatch this file exists to
+    // avoid, so this one runs as a text card instead of a wrong photo.
     tags: ['Us'],
     favorite: false,
     addedBy: 'Sarah',
@@ -107,7 +114,7 @@ export const SAMPLE_MEMORIES: WithPhotos[] = [
     id: 'sample-flowers',
     title: 'Because it was a Tuesday.',
     date: '2024-04-28',
-    photoUri: photo('flowers', 600, 600),
+    photoUri: samplePhotoSquare('flowers', 600),
     tags: ['Little Things'],
     favorite: true,
     addedBy: 'Chandu',
@@ -125,6 +132,7 @@ export const SAMPLE_MEMORIES: WithPhotos[] = [
     id: 'sample-coffee-shop-note',
     title: '"Can’t believe it’s been exactly 1,394 days since we first met at that terrible coffee shop."',
     date: '2024-04-26',
+    photoUri: samplePhoto('cafeInterior'),
     tags: ['Us'],
     favorite: false,
     addedBy: 'Chandu',
@@ -133,7 +141,7 @@ export const SAMPLE_MEMORIES: WithPhotos[] = [
     id: 'sample-birthday-candles',
     title: 'Twenty-nine, and still terrible at blowing out candles.',
     date: '2023-11-02',
-    photoUri: photo('candles'),
+    photoUri: samplePhoto('birthdayPlate'),
     tags: ['Birthdays'],
     favorite: false,
     addedBy: 'Sarah',
@@ -143,7 +151,7 @@ export const SAMPLE_MEMORIES: WithPhotos[] = [
     title: 'The beginning of everything.',
     date: '2022-04-16',
     caption: 'Apr 16, 2022',
-    photoUri: photo('first-date'),
+    photoUri: samplePhoto('heartHands'),
     note: 'Neither of us wanted to go home.',
     tags: ['Us', 'Dates'],
     favorite: true,
@@ -155,7 +163,7 @@ export const SAMPLE_MEMORIES: WithPhotos[] = [
     date: '2023-07-15',
     caption: 'Coffee, sunshine, and nowhere to be. Rome · Oct 14, 2023',
     location: 'Italy',
-    photoUri: photo('picnic'),
+    photoUri: samplePhoto('coffeeToast'),
     tags: ['Dates'],
     favorite: false,
     addedBy: 'Sarah',
@@ -165,6 +173,7 @@ export const SAMPLE_MEMORIES: WithPhotos[] = [
     title: 'First time making pasta from scratch together. Flour everywhere.',
     date: '2022-10-14',
     location: 'Apartment 4B',
+    photoUri: samplePhoto('cookingTogether'),
     tags: ['Us', 'Little Things'],
     favorite: true,
     addedBy: 'Sarah',
@@ -173,7 +182,7 @@ export const SAMPLE_MEMORIES: WithPhotos[] = [
     id: 'sample-rainy-coffees',
     title: 'Rainy day coffees.',
     date: '2021-10-14',
-    photoUri: photo('rainy-coffees'),
+    photoUri: samplePhoto('coffeeRain'),
     tags: ['Dates'],
     favorite: false,
     addedBy: 'Chandu',
