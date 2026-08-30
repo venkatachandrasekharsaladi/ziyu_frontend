@@ -2,6 +2,8 @@ import { create } from 'zustand'
 
 import { chatService } from '@/services/chat'
 import type { Message, SendInput } from '@/services/chat/types'
+import { memoriesService } from '@/services/memories'
+import type { NewMemory } from '@/services/memories/types'
 
 type ChatState = {
   messages: Message[]
@@ -26,6 +28,7 @@ type ChatState = {
   closeAttachments(): void
   react(id: string, emoji: string): Promise<void>
   togglePin(id: string): Promise<void>
+  saveAsMemory(id: string): Promise<void>
   startRecording(): void
   stopRecording(): void
   stagePhoto(uri: string): void
@@ -66,6 +69,53 @@ let unsubscribe: (() => void) | null = null
  */
 let tempIdCounter = 0
 const nextTempId = () => `local-${Date.now()}-${(tempIdCounter += 1)}`
+
+/**
+ * How much of a message body a Memory `title` field can carry. The Memories
+ * home grid and detail header size a title as a short phrase (see
+ * `MemoryDetailScreen` / the sample library's titles like `"Rome '23"` or
+ * `"First coffee"`) — not a whole chat bubble, which can run to several
+ * sentences. Chosen, not measured off a token: long enough that most chat
+ * one-liners survive whole, short enough that a title never wraps to three
+ * lines on the card that shows it.
+ */
+const MEMORY_TITLE_MAX = 60
+
+/**
+ * Turns a saved message into the `NewMemory` the Memories service actually
+ * takes (`src/services/memories/types.ts`) — NOT the `{ note, mediaUri }`
+ * shape this task's brief guessed at. `title`, `date` and `tags` are
+ * required there and there is no `mediaUri` field, only `photoUri`.
+ *
+ * - `title`: the body, trimmed to `MEMORY_TITLE_MAX` with an ellipsis, or a
+ *   placeholder for a message with no text (a bare photo/voice note).
+ * - `date`: sliced straight off the message's `sentAt` ISO string — it is
+ *   already UTC `YYYY-MM-DDTHH:mm:ss.sssZ`, so the first 10 characters ARE
+ *   the date the `Memory` type wants, with no timezone-dependent reparsing.
+ * - `note`: the full, untruncated body — this is the field the design calls
+ *   "Our Note", so nothing here should be cut for length.
+ * - `photoUri`: the message's `mediaUri` when it has one (a photo message),
+ *   else omitted.
+ * - `tags`: `['Little Things']` — the one sample album (`SAMPLE_ALBUMS`) built
+ *   for exactly this: small, in-the-moment captures rather than a trip, a
+ *   date, or a birthday, which a chat snippet is essentially never.
+ */
+function memoryFromMessage(message: Message): NewMemory {
+  const body = message.body?.trim()
+  const title = !body
+    ? 'From our chat'
+    : body.length > MEMORY_TITLE_MAX
+      ? `${body.slice(0, MEMORY_TITLE_MAX).trimEnd()}…`
+      : body
+
+  return {
+    title,
+    date: message.sentAt.slice(0, 10),
+    note: message.body,
+    photoUri: message.mediaUri,
+    tags: ['Little Things'],
+  }
+}
 
 export const useChatStore = create<ChatState>((set, get) => {
   /**
@@ -222,6 +272,32 @@ export const useChatStore = create<ChatState>((set, get) => {
         messages: get().messages.map((m) => (m.id === id ? updated : m)),
         selectedMessageId: null,
       })
+    },
+
+    /**
+     * The real "Media & Memories Bridge". The 16-task plan deliberately does
+     * NOT build Figma frame 3390:4 as a screen — it is a picker over the
+     * couple's existing memories, and would just duplicate the Memories home
+     * screen the M03 module already ships. This action IS the bridge instead:
+     * one message becomes one memory, through the same `memoriesService`
+     * every other memories screen writes through.
+     *
+     * `memoriesService.create` returns a `Result`, not a bare `Memory` — a
+     * network failure is a normal, expected outcome here, not an exception.
+     * On `ok: false` the overlay is deliberately left OPEN (nothing is
+     * cleared): the message is still selected, so a retry from the same menu
+     * is the recovery path, rather than the user having to long-press again.
+     * There is no toast/error surface for this failure yet — out of scope for
+     * this task — but the branch is real and covered, not dead code.
+     */
+    async saveAsMemory(id) {
+      const message = get().messages.find((m) => m.id === id)
+      if (!message) return
+
+      const result = await memoriesService.create(memoryFromMessage(message))
+      if (!result.ok) return
+
+      set({ selectedMessageId: null })
     },
 
     startRecording() { set({ isRecording: true }) },

@@ -1,6 +1,6 @@
 import { useRouter, type Href } from 'expo-router'
 import { useEffect, useRef } from 'react'
-import { ScrollView, View } from 'react-native'
+import { Pressable, ScrollView, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { StyleSheet } from 'react-native-unistyles'
 
@@ -9,6 +9,8 @@ import { ChatHeader } from '@/modules/module-03-chat/components/ChatHeader'
 import { Composer } from '@/modules/module-03-chat/components/Composer'
 import { DayDivider } from '@/modules/module-03-chat/components/DayDivider'
 import { MessageBubble } from '@/modules/module-03-chat/components/MessageBubble'
+import { MessageContextMenu } from '@/modules/module-03-chat/components/MessageContextMenu'
+import { ReactionBar } from '@/modules/module-03-chat/components/ReactionBar'
 import { TypingIndicator } from '@/modules/module-03-chat/components/TypingIndicator'
 import { useChatStore } from '@/modules/module-03-chat/state/chatStore'
 
@@ -75,6 +77,39 @@ export function ConversationScreen() {
         replyTo={replyBody}
         onCancelReply={s.cancelReply}
       />
+
+      {/* The long-press overlay: a full-screen scrim (dismiss-on-tap-outside)
+          with the reaction bar and context menu floating above it. Rendered
+          last so it draws over the composer too — the same stacking order
+          the frame gives it. */}
+      {s.selectedMessageId && (
+        <Pressable
+          style={styles.scrim}
+          onPress={s.clearSelection}
+          accessibilityLabel="Dismiss message actions"
+        >
+          <View style={styles.overlay}>
+            <ReactionBar
+              onReact={(emoji) => { void s.react(s.selectedMessageId!, emoji) }}
+              // No design for what "more reactions" opens yet (an emoji
+              // keyboard / full picker) — left a no-op rather than guessing,
+              // same call `ChatHeader`'s reserved `onMore` makes.
+              onMore={() => {}}
+            />
+            <MessageContextMenu
+              onReply={() => s.startReply(s.selectedMessageId!)}
+              // There is no clipboard package in this project (checked:
+              // nothing matching "clipboard" in package.json) and adding one
+              // is outside this task's scope. Real "Copy" needs that
+              // dependency; until then this only dismisses the overlay, same
+              // as tapping the scrim, so it does not silently pretend to
+              // have copied anything.
+              onCopy={s.clearSelection}
+              onSaveMemory={() => { void s.saveAsMemory(s.selectedMessageId!) }}
+            />
+          </View>
+        </Pressable>
+      )}
     </View>
   )
 }
@@ -82,4 +117,11 @@ export function ConversationScreen() {
 const styles = StyleSheet.create((theme) => ({
   page: { flex: 1, backgroundColor: theme.colors.surface.page },
   thread: { paddingHorizontal: theme.spacing.lg, paddingTop: theme.spacing.lg },
+  scrim: { ...StyleSheet.absoluteFillObject, backgroundColor: theme.colors.surface.scrim },
+  overlay: {
+    flex: 1,
+    justifyContent: 'center',
+    paddingHorizontal: theme.spacing.lg,
+    gap: theme.spacing.md,
+  },
 }))
