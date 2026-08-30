@@ -1,4 +1,4 @@
-import { useRouter, type Href } from 'expo-router'
+import { useRouter } from 'expo-router'
 import { useEffect, useRef } from 'react'
 import { Pressable, ScrollView, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
@@ -53,13 +53,8 @@ export function ConversationScreen() {
       <View style={{ paddingTop: insets.top }}>
         <ChatHeader
           onBack={router.back}
-          // Cast: `typedRoutes` builds its `Href` union from files that exist
-          // under `src/app/`, and Task 12 is what creates
-          // `chat/moment/{video,voice}.tsx` — until it lands, this is the one
-          // spot in the codebase pointing at a route the router doesn't know
-          // about yet. Drop the cast once Task 12 merges.
-          onVideoCall={() => router.push('/(app)/chat/moment/video' as Href)}
-          onVoiceCall={() => router.push('/(app)/chat/moment/voice' as Href)}
+          onVideoCall={() => router.push('/(app)/chat/moment/video')}
+          onVoiceCall={() => router.push('/(app)/chat/moment/voice')}
         />
       </View>
 
@@ -75,7 +70,7 @@ export function ConversationScreen() {
         {firstPinned && (
           <PinnedBanner
             message={firstPinned}
-            onPress={() => router.push('/(app)/chat/search' as Href)}
+            onPress={() => router.push('/(app)/chat/search')}
           />
         )}
         <DayDivider label="TODAY, 5:42 PM" />
