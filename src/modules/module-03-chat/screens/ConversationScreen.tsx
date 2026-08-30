@@ -1,9 +1,11 @@
 import { useRouter } from 'expo-router'
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Pressable, ScrollView, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { StyleSheet } from 'react-native-unistyles'
 
+import { FeedbackBanner, type FeedbackTone } from '@/components/feedback/FeedbackBanner'
+import { CHAT_COPY } from '@/copy/chat'
 import { ThemedStatusBar } from '@/design-system/patterns/ThemedStatusBar'
 import { AttachmentSheet } from '@/modules/module-03-chat/components/AttachmentSheet'
 import { ChatHeader } from '@/modules/module-03-chat/components/ChatHeader'
@@ -32,6 +34,32 @@ export function ConversationScreen() {
     void s.load()
   }, [s])
 
+  /**
+   * Save Memory's pass/fail report. Screen-local state, not the store's —
+   * `chatStore` resolves `saveAsMemory` with a plain boolean and moves on;
+   * turning that into a message the user actually sees is exactly the kind
+   * of wiring a screen owns, not the store. `key` is bumped on every attempt
+   * (not left at a fixed value) so pressing "Save Memory" again while a
+   * banner from the last attempt is still showing remounts `FeedbackBanner`
+   * with a fresh identity — its self-dismiss timer restarts and the new
+   * message gets its own screen-reader announcement, instead of the second
+   * result being silently absorbed by a component that already fired both.
+   */
+  const [feedback, setFeedback] = useState<{ key: number; tone: FeedbackTone; message: string } | null>(null)
+
+  const handleSaveMemory = () => {
+    const id = s.selectedMessageId
+    if (!id) return
+    void (async () => {
+      const ok = await s.saveAsMemory(id)
+      setFeedback({
+        key: Date.now(),
+        tone: ok ? 'success' : 'error',
+        message: ok ? CHAT_COPY.feedback.saveMemorySuccess : CHAT_COPY.feedback.saveMemoryError,
+      })
+    })()
+  }
+
   const replyBody = s.replyTarget
     ? s.messages.find((m) => m.id === s.replyTarget)?.body
     : undefined
@@ -55,8 +83,24 @@ export function ConversationScreen() {
           onBack={router.back}
           onVideoCall={() => router.push('/(app)/chat/moment/video')}
           onVoiceCall={() => router.push('/(app)/chat/moment/voice')}
+          isPartnerTyping={s.isPartnerTyping}
         />
       </View>
+
+      {/* Rendered in normal flow, not floating, so a shown/dismissed message
+          nudges the thread below it rather than needing its own absolute
+          layer — the simplest option for something this transient, and this
+          screen already gives every OTHER overlay (scrim, attachment sheet)
+          its own dedicated layer only because those genuinely must cover the
+          thread; this one does not. */}
+      {feedback && (
+        <FeedbackBanner
+          key={feedback.key}
+          tone={feedback.tone}
+          message={feedback.message}
+          onDismiss={() => setFeedback(null)}
+        />
+      )}
 
       <ScrollView
         ref={scroll}
@@ -147,7 +191,7 @@ export function ConversationScreen() {
               // as tapping the scrim, so it does not silently pretend to
               // have copied anything.
               onCopy={s.clearSelection}
-              onSaveMemory={() => { void s.saveAsMemory(s.selectedMessageId!) }}
+              onSaveMemory={handleSaveMemory}
             />
           </View>
         </Pressable>

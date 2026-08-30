@@ -44,4 +44,38 @@ export const CHAT_COPY = {
     /** Exact string the brief and Task 14 both assert on. */
     empty: 'No messages found',
   },
+  /**
+   * Conversation — the transient presence/annotation strings the Ziyu
+   * `3390:521` (Typing), `3390:585` (Replying) and `3390:164` (Recording)
+   * frames draw that Task 6's original build never wired up (documented as
+   * "Known design divergences" #3 in `docs/qa/chat-test-cases.md` until this
+   * fix closed it). Centralized here, not hardcoded inline in `ChatHeader` /
+   * `ReplyPreview` / `VoiceNoteRecorder` themselves, because this file
+   * already owns exactly this kind of Chat-module copy (see the header
+   * comment above).
+   *
+   * "Sarah" stays baked directly into the strings rather than taking a name
+   * parameter: every other reference to the partner in this module is the
+   * same kind of hardcode (`ChatHeader`'s own "Sarah" `Text`, `Composer`'s
+   * "Message Sarah…" placeholder) because there is still no store-backed
+   * partner profile to read a name from — a template function would be
+   * inventing a flexibility nothing here can actually use yet.
+   *
+   * The ellipses are the single typographic glyph (…), not three literal
+   * periods, matching this app's own convention (see `Composer`'s
+   * placeholder and `chatStore.ts`'s `memoryFromMessage`) rather than the
+   * Figma fixture's literal `"..."` — the same deliberate divergence
+   * `DesignParity.test.tsx` already calls out for the composer placeholder.
+   */
+  conversation: {
+    presenceOnline: 'Online',
+    presenceTyping: 'Typing…',
+    replyingToSarah: 'Replying to Sarah',
+    recording: 'RECORDING…',
+  },
+  /** Save Memory — the context-menu action's pass/fail report (`FeedbackBanner`). */
+  feedback: {
+    saveMemorySuccess: 'Saved to Memories.',
+    saveMemoryError: 'Could not save to Memories. Try again.',
+  },
 } as const

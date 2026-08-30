@@ -2,6 +2,7 @@ import { Feather } from '@expo/vector-icons'
 import { Pressable, View } from 'react-native'
 import { StyleSheet, useUnistyles } from 'react-native-unistyles'
 
+import { CHAT_COPY } from '@/copy/chat'
 import { Avatar } from '@/design-system/primitives/Avatar'
 import { Text } from '@/design-system/primitives/Text'
 
@@ -11,6 +12,13 @@ type Props = {
   onVoiceCall: () => void
   /** Reserved — see the control below. Optional so a caller can omit it. */
   onMore?: () => void
+  /**
+   * Swaps the presence line to "Typing…" — Figma `3390:521`. A prop, not a
+   * store read: components never import a service, and `useChatStore`
+   * already lives one layer up in `ConversationScreen`, which is where
+   * `isPartnerTyping` actually comes from.
+   */
+  isPartnerTyping?: boolean
 }
 
 /**
@@ -22,12 +30,15 @@ type Props = {
  * unreachable dead routes. The two call controls ARE the entry points to
  * those screens: pressing either is this app's only route into a Moment.
  *
- * "Sarah" / "Online" are hardcoded, matching `Composer`'s own
- * "Message Sarah…" placeholder — this app has exactly one partner and no
- * store yet exposes their live presence. Both would move onto a partner
- * profile the moment one exists.
+ * "Sarah" is hardcoded, matching `Composer`'s own "Message Sarah…"
+ * placeholder — this app has exactly one partner and no store yet exposes
+ * their identity. That would move onto a partner profile the moment one
+ * exists. The presence line underneath it is no longer a second hardcode:
+ * it swaps between `CHAT_COPY.conversation.presenceOnline` and
+ * `.presenceTyping` on `isPartnerTyping`, the one piece of live presence
+ * this store already tracks (see the prop's own comment above).
  */
-export function ChatHeader({ onBack, onVideoCall, onVoiceCall, onMore }: Props) {
+export function ChatHeader({ onBack, onVideoCall, onVoiceCall, onMore, isPartnerTyping = false }: Props) {
   const { theme } = useUnistyles()
 
   return (
@@ -48,7 +59,7 @@ export function ChatHeader({ onBack, onVideoCall, onVoiceCall, onMore }: Props) 
           Sarah
         </Text>
         <Text variant="footnote" tone="placeholder">
-          Online
+          {isPartnerTyping ? CHAT_COPY.conversation.presenceTyping : CHAT_COPY.conversation.presenceOnline}
         </Text>
       </View>
 
@@ -103,6 +114,6 @@ const styles = StyleSheet.create((theme) => ({
     justifyContent: 'center',
   },
   // The only flexed slot — it is what pushes the three trailing controls to
-  // the far edge regardless of how wide "Sarah" / "Online" render.
+  // the far edge regardless of how wide "Sarah" / the presence line render.
   identity: { flex: 1 },
 }))

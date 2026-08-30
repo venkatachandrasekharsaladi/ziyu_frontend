@@ -50,7 +50,7 @@ one test in a file is relevant, the test name.
 |---|---|---|---|---|---|---|---|
 | CHAT-023 | Conversation | 3390:521 | Thread loaded | Store sets `isPartnerTyping: true` | Typing indicator ("Partner is typing") appears | Yes | `screens/__tests__/ConversationFlow.test.tsx` — "shows the typing indicator while the partner types"; also `__tests__/DesignParity.test.tsx` — "mounts the typing indicator once the store says the partner is typing" |
 | CHAT-024 | Conversation | 3390:521 | Indicator showing | Store sets `isPartnerTyping: false` | Indicator disappears | Yes | `screens/__tests__/ChatJourney.test.tsx` — step 4 ("Partner typing") is the only file that exercises the off-transition |
-| CHAT-025 | Conversation | 3390:521 | Partner is typing | — | Header presence line stays "Online" (does **not** swap to "Typing…" the way the frame draws it) — this is a known, documented divergence, see below | Yes | `__tests__/DesignParity.test.tsx` — "mounts the typing indicator…" asserts `getByText('Online')` while typing |
+| CHAT-025 | Conversation | 3390:521 | Partner is typing | — | Header presence line swaps from "Online" to "Typing…", and back once `isPartnerTyping` clears — previously a known, documented divergence (the header hardcoded "Online" unconditionally); fixed, see `components/__tests__/ChatHeader.test.tsx` | Yes | `__tests__/DesignParity.test.tsx` — "mounts the typing indicator…" now asserts `getByText('Typing…')`; `components/__tests__/ChatHeader.test.tsx` — "swaps to \"Typing…\" while the partner is typing, and back once they stop" |
 
 ## Replying — `3390:585`
 
@@ -184,10 +184,18 @@ exists elsewhere in this module.
 
 Task 13 built a Figma-parity fixture (`__fixtures__/figma-chat.json`, synced
 from the Ziyu Chat frames) and a test suite against it
-(`__tests__/DesignParity.test.tsx`). The differences below are real, currently
-unfixed, and reported here rather than silently changed — each is a deliberate
-"report it, don't unilaterally fix it" decision, not an oversight. They are
-presented neutrally, for triage, not as a verdict.
+(`__tests__/DesignParity.test.tsx`). The differences below are real and
+reported here rather than silently changed — each is a deliberate "report it,
+don't unilaterally fix it" decision, not an oversight. They are presented
+neutrally, for triage, not as a verdict.
+
+This list originally ran nine items. Item 3 — "Three transient states are not
+built at all" (the header's "Typing…", `ReplyPreview`'s "Replying to Sarah",
+`VoiceNoteRecorder`'s "RECORDING…") — has since been fixed and is removed
+from the list below rather than left listed as still open; see "Fixes landed
+after this catalogue was written" at the end of this document for what
+replaced it. The remaining eight are renumbered here to close the gap, so
+none of the numbers below match an earlier reading of this file.
 
 1. **Reaction picker emoji.** The frame's six quick reactions (❤️😂🥹😍👍✨)
    and the built `ReactionBar`'s six (🖤❤️😂🥺😍👍) share only 4. *Reported as
@@ -201,18 +209,13 @@ presented neutrally, for triage, not as a verdict.
    "Memory" suit this app's two-person relationship use case better than
    "Document"/"Location" would.
 
-3. **Three transient states are not built at all.** The header never shows
-   "Typing…" (it hardcodes "Online" regardless of `isPartnerTyping` — see
-   CHAT-025); `ReplyPreview` never shows a "Replying to Sarah" attribution
-   line above the quote; `VoiceNoteRecorder` never renders the frame's
-   "RECORDING…" caption. *These are genuine gaps requiring new UI — new
-   scope, not a decision already made.*
-
-4. **Chat Home's preview line.** The frame wraps the preview in quotes and
+3. **Chat Home's preview line.** The frame wraps the preview in quotes and
    prefixes a "Sarah:" attribution; `ChatHomeScreen`'s row has neither.
-   *Genuine gap, new scope* — same category as item 3.
+   *Genuine gap, new scope*: new UI requiring new copy, not a decision
+   already made — the same category the removed "transient states" item used
+   to be, before a later fix closed it.
 
-5. **Composer placeholder text.** No frame's placeholder matches the built
+4. **Composer placeholder text.** No frame's placeholder matches the built
    app's `"Message Sarah…"` — the frames themselves disagree with each other
    ("Type a message...", "Message...", "Message Sarah..."), and even where a
    frame's wording is close, its ellipsis is three literal periods, while the
@@ -220,7 +223,7 @@ presented neutrally, for triage, not as a verdict.
    product/content decision*: the built copy was chosen deliberately; the
    frames were never internally consistent enough to match verbatim either way.
 
-6. **Type ramp.** Message body text renders at 18pt (`body` variant) where
+5. **Type ramp.** Message body text renders at 18pt (`body` variant) where
    every frame draws message text at 16pt (matching the `label` token
    instead); bubble timestamps render at 11pt/600 (`caption`) where the frame
    draws 10pt/400 (`countdown`); bottom-nav labels render at 12pt title-case
@@ -243,28 +246,49 @@ action (CHAT-036..040), which writes through `memoriesService` — that is the
 actual bridge; building the frame literally would create a second, divergent
 Memories screen.
 
-7. **Copy does not copy.** `MessageContextMenu`'s Copy item dismisses the
+6. **Copy does not copy.** `MessageContextMenu`'s Copy item dismisses the
    overlay without copying anything — the same effect as tapping the scrim.
    There is no clipboard dependency anywhere in this project's
    `package.json`, and adding one was outside this task's scope. This is
    commented in-file (`ConversationScreen.tsx`, where `onCopy` is wired) but
    disclosed nowhere a reader would look until now.
 
-8. **Three of the four attachment tiles are inert.** `AttachmentSheet` draws
+7. **Three of the four attachment tiles are inert.** `AttachmentSheet` draws
    Photo / Camera / Voice note / Memory; only Photo wires to real behaviour
    (`onPickPhoto`, staging the mock picker). Camera, Voice note, and Memory
    all call `onClose` and do nothing else.
 
-9. **`MessageGroup` was specified but never built.** Design spec §7 names it
+8. **`MessageGroup` was specified but never built.** Design spec §7 names it
    for shared spacing/avatar handling on consecutive same-author messages. It
    does not appear in the implementation plan, in any task brief, or in the
    code — it was dropped silently somewhere between spec and plan. The
    decision at this point is to disclose the gap rather than build it this
    late; this entry is that disclosure, not a sign-off on the omission.
 
+## Fixes landed after this catalogue was written
+
+Two problems surfaced by review of the completed module, fixed in one pass:
+the three transient states removed from "Known design divergences" above,
+and a Save Memory failure (or success) that previously left the user with no
+signal either way.
+
+| ID | Screen | Figma node | Precondition | Steps | Expected | Automated | Test |
+|---|---|---|---|---|---|---|---|
+| CHAT-084 | Conversation | 3390:521 | Partner is typing | — | `ChatHeader` reads `isPartnerTyping` (passed down from `ConversationScreen`) and swaps its presence line to "Typing…"; back to "Online" once it clears | Yes | `components/__tests__/ChatHeader.test.tsx` — "swaps to \"Typing…\" while the partner is typing, and back once they stop"; `__tests__/DesignParity.test.tsx` — "mounts the typing indicator…" |
+| CHAT-085 | Conversation | 3390:585 | Replying to a message | — | `ReplyPreview` (inside `Composer`) renders a "Replying to Sarah" attribution line above the quoted body | Yes | `components/__tests__/Composer.test.tsx` — "shows the quoted message when replying, attributed to who is being replied to"; `__tests__/DesignParity.test.tsx` — "shows the quoted reply preview the frame draws for its replying state" |
+| CHAT-086 | Conversation | 3390:164 | Recording in progress | — | `VoiceNoteRecorder` renders a "RECORDING…" caption alongside the pulsing dot and the elapsed timer | Yes | `components/__tests__/VoiceNote.test.tsx` — "shows the RECORDING… caption alongside the elapsed timer"; `__tests__/DesignParity.test.tsx` — "replaces the composer with the recorder's real controls" |
+| CHAT-087 | Conversation | — | Message selected, save succeeds | Save Memory | `FeedbackBanner` appears with "Saved to Memories.", announced via `AccessibilityInfo.announceForAccessibility`, and dismisses itself after ~3s | Yes | `screens/__tests__/SaveMemoryFeedback.test.tsx` — "confirms a successful save through the real context menu, and dismisses itself once its timer elapses"; "announces the save result to screen readers, not just draws it" |
+| CHAT-088 | Conversation | — | Message selected, save fails | Save Memory | `FeedbackBanner` appears with "Could not save to Memories. Try again."; the message stays selected (same no-optimistic-dismiss behaviour CHAT-039 already covered) | Yes | `screens/__tests__/SaveMemoryFeedback.test.tsx` — "reports failure through the same control, and leaves the message selected so a retry is possible" |
+| CHAT-089 | — | — | `FeedbackBanner` mounted with either tone | — | Banner is announced on mount (`AccessibilityInfo.announceForAccessibility`), carries `accessibilityRole="alert"`, and sets `accessibilityLiveRegion` to `assertive` for an error / `polite` for a success | Yes | `components/feedback/__tests__/FeedbackBanner.test.tsx` — "announces the message to screen readers on mount, not just draws it"; "is marked as an alert, with a live region matched to how urgent the tone is" |
+
+`FeedbackBanner` (`src/components/feedback/FeedbackBanner.tsx`) is the first
+component in `src/components/feedback/`, previously an empty directory
+(`.gitkeep` only). It takes no chat-specific prop, so a future screen with
+its own pass/fail moment to report can reuse it rather than rebuilding one.
+
 ## Test-harness footguns this module discovered
 
-Anyone adding a test to this module will hit these. All six are documented
+Anyone adding a test to this module will hit these. All seven are documented
 inline, with the discovering commit, in the files named below.
 
 1. **`fireEvent` is async in RNTL v14 — await every call.** It wraps the
@@ -304,6 +328,15 @@ inline, with the discovering commit, in the files named below.
    factory for the same reason (an outside `messages` variable would trip the
    same check) — and even a type annotation referencing an outer type alias
    trips it, so that file uses an inline structural type instead.
+
+7. **`render(...).rerender(...)` is ALSO async in RNTL v14**, the same as
+   `unmount()` (item 5) — easy to miss because `rerender` reads like a plain
+   synchronous re-invocation of the component. An un-awaited call commits the
+   new props on a later microtask than the assertions right after it expect,
+   so those assertions see the PREVIOUS render instead. Discovered building
+   `components/__tests__/ChatHeader.test.tsx`'s typing/online toggle test: the
+   Online-again assertion kept seeing "Typing…" until `rerender(...)` became
+   `await rerender(...)`.
 
 ## Commands run to build this catalogue
 

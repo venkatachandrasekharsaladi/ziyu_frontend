@@ -33,7 +33,7 @@ describe('Composer', () => {
     expect(queryByLabelText('Record voice note')).toBeNull()
   })
 
-  it('shows the quoted message when replying', async () => {
+  it('shows the quoted message when replying, attributed to who is being replied to', async () => {
     const { getByText } = await renderScreen(
       <Composer
         value=""
@@ -47,5 +47,17 @@ describe('Composer', () => {
     )
 
     expect(getByText('Just trust me.')).toBeTruthy()
+    // Figma `3390:585` node `3390:627` — the "Replying to Sarah" label above
+    // the quote. Previously missing entirely (see the divergence this closed
+    // in `docs/qa/chat-test-cases.md`); `ReplyPreview` now renders it.
+    expect(getByText('Replying to Sarah')).toBeTruthy()
+  })
+
+  it('does not show a reply attribution when there is no reply in progress', async () => {
+    const { queryByText } = await renderScreen(
+      <Composer value="" onChangeText={noop} onSend={noop} onAttach={noop} onRecord={noop} />,
+    )
+
+    expect(queryByText('Replying to Sarah')).toBeNull()
   })
 })

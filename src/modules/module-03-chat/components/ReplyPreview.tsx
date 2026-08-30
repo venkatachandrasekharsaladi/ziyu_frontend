@@ -2,6 +2,7 @@ import { Feather } from '@expo/vector-icons'
 import { Pressable, View } from 'react-native'
 import { StyleSheet, useUnistyles } from 'react-native-unistyles'
 
+import { CHAT_COPY } from '@/copy/chat'
 import { Text } from '@/design-system/primitives/Text'
 
 type Props = {
@@ -22,6 +23,13 @@ type Props = {
  * `TextProps` omits only `style`, not RN's other passthrough props — but the
  * flex that lets the body actually shrink to one line has to live on a
  * wrapping `View`: `Text` has no `style` prop to carry `flex: 1` itself.
+ *
+ * The attribution line above the quote (Figma `3390:585`'s "Replying to
+ * Sarah") is `CHAT_COPY.conversation.replyingToSarah` — a fixed string, not a
+ * prop, because nothing calling this component knows who authored the
+ * message it quotes either: `ConversationScreen` hands over only the quoted
+ * `body` (see `Composer`'s `replyTo`), and this app's one thread has exactly
+ * one partner to attribute a reply to regardless of whose bubble it was.
  */
 export function ReplyPreview({ body, onCancel }: Props) {
   const { theme } = useUnistyles()
@@ -30,6 +38,9 @@ export function ReplyPreview({ body, onCancel }: Props) {
     <View style={styles.wrap}>
       <View style={styles.bar} />
       <View style={styles.body}>
+        <Text variant="footnote" tone="placeholder" numberOfLines={1}>
+          {CHAT_COPY.conversation.replyingToSarah}
+        </Text>
         <Text numberOfLines={1}>{body}</Text>
       </View>
       <Pressable onPress={onCancel} accessibilityRole="button" accessibilityLabel="Cancel reply">

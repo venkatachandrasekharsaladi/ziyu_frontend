@@ -362,7 +362,7 @@ describe('design parity — Conversation, Typing (3390:521)', () => {
   it('mounts the typing indicator once the store says the partner is typing', async () => {
     await act(async () => { await useChatStore.getState().load() })
 
-    const { getByText, getByLabelText } = await renderScreen(<ConversationScreen />)
+    const { getByText, getByLabelText, queryByText } = await renderScreen(<ConversationScreen />)
     await waitFor(() => expect(getByText('Just trust me.')).toBeTruthy())
 
     // `await act(async () => ...)`, not a bare sync `act()` — an unawaited
@@ -373,11 +373,15 @@ describe('design parity — Conversation, Typing (3390:521)', () => {
     await act(async () => { useChatStore.setState({ isPartnerTyping: true }) })
     await waitFor(() => expect(getByLabelText('Partner is typing')).toBeTruthy())
 
-    // DISCOVERED: the frame's header ALSO swaps its presence line from
-    // "Online" to "Typing..." (node 3390:569) while the indicator shows.
-    // `ChatHeader` never reads `isPartnerTyping` — it hardcodes "Online"
-    // unconditionally. Real, additional finding.
-    expect(getByText('Online')).toBeTruthy()
+    // FIXED (was DISCOVERED): the frame's header also swaps its presence
+    // line from "Online" to "Typing..." (node 3390:569) while the indicator
+    // shows. `ChatHeader` now reads `isPartnerTyping` off the store (via
+    // `ConversationScreen`) and swaps to `CHAT_COPY.conversation.presenceTyping`
+    // — a single typographic ellipsis, not the fixture's three literal
+    // periods, the same deliberate divergence the composer placeholder test
+    // above documents.
+    expect(getByText('Typing…')).toBeTruthy()
+    expect(queryByText('Online')).toBeNull()
   })
 })
 
@@ -396,9 +400,12 @@ describe('design parity — Conversation, Replying (3390:585)', () => {
     const quoted = normalize('Are we still going for coffee tonight? ❤️')
     expect(getAllByText(quoted).length).toBeGreaterThanOrEqual(2)
 
-    // DISCOVERED: frame node 3390:627, "Replying to Sarah" — an attribution
-    // label above the quote — has no counterpart; `ReplyPreview` renders only
-    // the quoted body, no "Replying to X" line. Real, additional finding.
+    // FIXED (was DISCOVERED): frame node 3390:627, "Replying to Sarah" — an
+    // attribution label above the quote — now has a counterpart.
+    // `ReplyPreview` renders it verbatim (matches the fixture exactly, no
+    // ellipsis involved) above the quoted body.
+    expect(textNode('3390:585', '3390:627').characters).toBe('Replying to Sarah')
+    expect(getAllByText('Replying to Sarah').length).toBeGreaterThanOrEqual(1)
   })
 })
 
@@ -409,13 +416,16 @@ describe('design parity — Recording Voice Note (3390:164)', () => {
       useChatStore.getState().startRecording()
     })
 
-    const { getByLabelText, queryByText } = await renderScreen(<ConversationScreen />)
+    const { getByLabelText, getByText, queryByText } = await renderScreen(<ConversationScreen />)
     await waitFor(() => expect(getByLabelText('Cancel recording')).toBeTruthy())
     expect(getByLabelText('Send voice note')).toBeTruthy()
 
-    // DISCOVERED: the frame's "RECORDING..." caption (node 3390:189) has no
-    // counterpart at all — `VoiceNoteRecorder` shows only the pulsing dot and
-    // the elapsed clock, never that label. Real, additional finding.
+    // FIXED (was DISCOVERED): the frame's "RECORDING..." caption (node
+    // 3390:189) now has a counterpart — `VoiceNoteRecorder` renders it as
+    // `CHAT_COPY.conversation.recording`, again with a single typographic
+    // ellipsis rather than the fixture's three literal periods (same
+    // deliberate divergence as the composer placeholder and "Typing…" above).
+    expect(getByText('RECORDING…')).toBeTruthy()
     expect(queryByText('RECORDING...')).toBeNull()
   })
 })

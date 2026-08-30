@@ -10,6 +10,7 @@ import Animated, {
 } from 'react-native-reanimated'
 import { StyleSheet, useUnistyles } from 'react-native-unistyles'
 
+import { CHAT_COPY } from '@/copy/chat'
 import { Text } from '@/design-system/primitives/Text'
 import { clock } from '@/modules/module-03-chat/components/VoiceNotePlayer'
 
@@ -67,6 +68,15 @@ export function VoiceNoteRecorder({ onCancel, onSend }: Props) {
   return (
     <View style={styles.bar}>
       <Animated.View style={[styles.dot, dotStyle]} />
+
+      {/* Figma `3390:164` node `3390:189` — the caption the pulsing dot alone
+          never spelled out. `error` tone pairs it with the dot's own
+          `feedback.error` fill rather than a plain body colour, so the two
+          read as one "this is recording" signal instead of an unrelated
+          label sitting next to a red dot. */}
+      <Text variant="labelStrong" tone="error">
+        {CHAT_COPY.conversation.recording}
+      </Text>
 
       <Text variant="body" tone="body">
         {clock(elapsedMs)}

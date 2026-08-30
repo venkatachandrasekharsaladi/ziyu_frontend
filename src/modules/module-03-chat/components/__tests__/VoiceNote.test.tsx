@@ -12,6 +12,15 @@ describe('VoiceNoteRecorder', () => {
     expect(getByLabelText('Send voice note')).toBeTruthy()
   })
 
+  // Figma `3390:164` node `3390:189` — the "RECORDING…" caption alongside the
+  // elapsed timer. Previously missing entirely (see the divergence this
+  // closed in `docs/qa/chat-test-cases.md`).
+  it('shows the RECORDING… caption alongside the elapsed timer', async () => {
+    const { getByText } = await renderScreen(
+      <VoiceNoteRecorder onCancel={() => {}} onSend={() => {}} />)
+    expect(getByText('RECORDING…')).toBeTruthy()
+  })
+
   it('sends a duration', async () => {
     const onSend = jest.fn()
     const { getByLabelText } = await renderScreen(

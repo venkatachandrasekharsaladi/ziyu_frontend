@@ -28,7 +28,9 @@ type ChatState = {
   closeAttachments(): void
   react(id: string, emoji: string): Promise<void>
   togglePin(id: string): Promise<void>
-  saveAsMemory(id: string): Promise<void>
+  /** Resolves `true` on a successful save, `false` otherwise — the caller
+   *  (`ConversationScreen`) uses this to decide which `FeedbackBanner` to show. */
+  saveAsMemory(id: string): Promise<boolean>
   startRecording(): void
   stopRecording(): void
   stagePhoto(uri: string): void
@@ -313,17 +315,25 @@ export const useChatStore = create<ChatState>((set, get) => {
      * On `ok: false` the overlay is deliberately left OPEN (nothing is
      * cleared): the message is still selected, so a retry from the same menu
      * is the recovery path, rather than the user having to long-press again.
-     * There is no toast/error surface for this failure yet — out of scope for
-     * this task — but the branch is real and covered, not dead code.
+     *
+     * Returns a plain boolean rather than the raw `Result` (or throwing) —
+     * `ConversationScreen` is the caller that turns this into a
+     * `FeedbackBanner`, and a boolean is all it needs to pick "Saved to
+     * Memories." vs. the failure copy; leaking the service's own error
+     * shape up through the store would make the screen couple itself to a
+     * contract it has no other reason to know about. A message id that
+     * isn't in the thread at all also resolves `false` — nothing was saved,
+     * so there is nothing to call a success.
      */
     async saveAsMemory(id) {
       const message = get().messages.find((m) => m.id === id)
-      if (!message) return
+      if (!message) return false
 
       const result = await memoriesService.create(memoryFromMessage(message))
-      if (!result.ok) return
+      if (!result.ok) return false
 
       set({ selectedMessageId: null })
+      return true
     },
 
     startRecording() { set({ isRecording: true }) },
