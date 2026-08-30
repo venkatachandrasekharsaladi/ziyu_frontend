@@ -41,4 +41,15 @@ describe('MessageBubble', () => {
 
     expect(screen.getByText('❤️')).toBeTruthy()
   })
+
+  it('renders a photo message as PhotoMessage instead of a text body', async () => {
+    await renderScreen(
+      <MessageBubble
+        message={message({ kind: 'photo', body: undefined, mediaUri: 'file://a.jpg' })}
+      />,
+    )
+
+    expect(screen.getByLabelText('Photo')).toBeTruthy()
+    expect(screen.queryByText('Just trust me.')).toBeNull()
+  })
 })

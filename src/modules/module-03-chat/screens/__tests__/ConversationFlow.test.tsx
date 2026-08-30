@@ -173,4 +173,90 @@ describe('ConversationScreen', () => {
     expect(mockPush).not.toHaveBeenCalled()
     expect(mockBack).not.toHaveBeenCalled()
   })
+
+  // --- The long-press overlay's scrim (Task 7 review drive-by fix) ---
+
+  it('lets a reaction through the overlay instead of the scrim only dismissing it', async () => {
+    const user = userEvent.setup()
+    service.react.mockImplementation(async (id, emoji) => {
+      const target = SEED.find((m) => m.id === id)!
+      return { ...target, reactions: [...target.reactions, { emoji, authorId: 'me' }] }
+    })
+    await renderScreen(<ConversationScreen />)
+    await screen.findByText('Just trust me.')
+
+    // Harness footgun: a bare synchronous `act` stops re-rendering once a
+    // `userEvent` interaction has run earlier in this file — `userEvent.setup()`
+    // above already counts. Wrapped `await act(async () => ...)` instead.
+    await act(async () => { useChatStore.getState().selectMessage('m5') })
+
+    await user.press(screen.getByLabelText('React ❤️'))
+
+    // The real assertion: the tap reached `ReactionBar`'s own control and
+    // ran `react()`, not merely the scrim beneath it clearing the selection.
+    // A scrim-swallowed tap would leave `service.react` uncalled even though
+    // `selectedMessageId` ends up null either way (both paths clear it) — so
+    // the emoji actually landing on the message is the only way to tell them
+    // apart.
+    await waitFor(() => expect(service.react).toHaveBeenCalledWith('m5', '❤️'))
+    expect(await screen.findByText('❤️')).toBeTruthy()
+  })
+
+  // --- Attachments, photo share, photo message (Task 8) ---
+
+  it('opens the attachment sheet from the composer', async () => {
+    const user = userEvent.setup()
+    await renderScreen(<ConversationScreen />)
+    await screen.findByText('Obviously.')
+
+    await user.press(screen.getByLabelText('Add attachment'))
+
+    expect(await screen.findByText('Photo')).toBeTruthy()
+    expect(screen.getByText('Camera')).toBeTruthy()
+  })
+
+  it('stages the mock photo pick and hands it to the share preview', async () => {
+    const user = userEvent.setup()
+    await renderScreen(<ConversationScreen />)
+    await screen.findByText('Obviously.')
+
+    await user.press(screen.getByLabelText('Add attachment'))
+    await user.press(screen.getByLabelText('Choose photo'))
+
+    expect(await screen.findByLabelText('Send photo')).toBeTruthy()
+    // The two overlays are mutually exclusive, not merely one drawn over
+    // the other — the sheet itself is gone, not just hidden behind the
+    // preview.
+    expect(screen.queryByLabelText('Choose photo')).toBeNull()
+  })
+
+  it('sends the staged photo through the real send path', async () => {
+    const user = userEvent.setup()
+    service.sendMessage.mockResolvedValue({
+      id: 'm-photo',
+      authorId: 'me',
+      kind: 'photo',
+      mediaUri: 'file://sample.jpg',
+      reactions: [],
+      pinned: false,
+      sentAt: new Date().toISOString(),
+      status: 'sent',
+    })
+    await renderScreen(<ConversationScreen />)
+    await screen.findByText('Obviously.')
+
+    await user.press(screen.getByLabelText('Add attachment'))
+    await user.press(screen.getByLabelText('Choose photo'))
+    await user.press(await screen.findByLabelText('Send photo'))
+
+    await waitFor(() =>
+      expect(service.sendMessage).toHaveBeenCalledWith(
+        expect.objectContaining({ kind: 'photo', mediaUri: 'file://sample.jpg' }),
+      ),
+    )
+    // The preview is gone once the send has gone through — `sendPhoto`
+    // clears `pendingPhotoUri` itself (chatStore), this just confirms the
+    // screen doesn't hold its own stale copy of it.
+    expect(screen.queryByLabelText('Send photo')).toBeNull()
+  })
 })

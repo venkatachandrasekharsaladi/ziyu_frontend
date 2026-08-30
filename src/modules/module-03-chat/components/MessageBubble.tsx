@@ -2,6 +2,7 @@ import { Pressable, View } from 'react-native'
 import { StyleSheet } from 'react-native-unistyles'
 
 import { Text } from '@/design-system/primitives/Text'
+import { PhotoMessage } from '@/modules/module-03-chat/components/PhotoMessage'
 import { ReadReceipt } from '@/modules/module-03-chat/components/ReadReceipt'
 import type { Message } from '@/services/chat/types'
 
@@ -32,11 +33,19 @@ export function MessageBubble({ message, onLongPress }: Props) {
         accessibilityLabel={message.body ?? 'Message'}
         style={[styles.bubble, mine ? styles.mine : styles.theirs]}
       >
-        {/* `onChat` — the one ink value contrast-checked against both bubble
-            fills (`Text.tsx`'s tone map). `Text` has no `style` prop by
-            design, so a bespoke bubble colour has to be a tone, not an
-            inline override. */}
-        {message.body ? <Text tone="onChat">{message.body}</Text> : null}
+        {/* A photo message swaps the text body for `PhotoMessage` entirely —
+            `message.body` on a photo message (a caption) has no design yet
+            (see `PhotoSharePreview`'s WHY-comment on `sendPhoto`), so nothing
+            here silently drops one by rendering it underneath the image. */}
+        {message.kind === 'photo' && message.mediaUri ? (
+          <PhotoMessage uri={message.mediaUri} />
+        ) : message.body ? (
+          // `onChat` — the one ink value contrast-checked against both bubble
+          // fills (`Text.tsx`'s tone map). `Text` has no `style` prop by
+          // design, so a bespoke bubble colour has to be a tone, not an
+          // inline override.
+          <Text tone="onChat">{message.body}</Text>
+        ) : null}
       </Pressable>
 
       {message.reactions.length > 0 && (

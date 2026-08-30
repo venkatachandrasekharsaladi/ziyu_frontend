@@ -5,11 +5,13 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { StyleSheet } from 'react-native-unistyles'
 
 import { ThemedStatusBar } from '@/design-system/patterns/ThemedStatusBar'
+import { AttachmentSheet } from '@/modules/module-03-chat/components/AttachmentSheet'
 import { ChatHeader } from '@/modules/module-03-chat/components/ChatHeader'
 import { Composer } from '@/modules/module-03-chat/components/Composer'
 import { DayDivider } from '@/modules/module-03-chat/components/DayDivider'
 import { MessageBubble } from '@/modules/module-03-chat/components/MessageBubble'
 import { MessageContextMenu } from '@/modules/module-03-chat/components/MessageContextMenu'
+import { PhotoSharePreview } from '@/modules/module-03-chat/components/PhotoSharePreview'
 import { ReactionBar } from '@/modules/module-03-chat/components/ReactionBar'
 import { TypingIndicator } from '@/modules/module-03-chat/components/TypingIndicator'
 import { useChatStore } from '@/modules/module-03-chat/state/chatStore'
@@ -86,6 +88,7 @@ export function ConversationScreen() {
         <Pressable
           style={styles.scrim}
           onPress={s.clearSelection}
+          accessibilityRole="button"
           accessibilityLabel="Dismiss message actions"
         >
           <View style={styles.overlay}>
@@ -110,6 +113,51 @@ export function ConversationScreen() {
           </View>
         </Pressable>
       )}
+
+      {/* The attachment sheet's own scrim — mutually exclusive with the
+          selection overlay above (`openAttachments`/`selectMessage` already
+          close one another in the store), so only ever one of the two is on
+          screen. `justifyContent: 'flex-end'` is what pins the sheet to the
+          bottom rather than the overlay's own centred layout. */}
+      {s.attachmentSheetOpen && (
+        <Pressable
+          style={styles.scrim}
+          onPress={s.closeAttachments}
+          accessibilityRole="button"
+          accessibilityLabel="Dismiss attachments"
+        >
+          <View style={styles.attachmentLayer}>
+            <AttachmentSheet
+              // Real photo picking (`expo-image-picker`) is out of scope for
+              // this mock, same as `PhotoPicker.tsx` elsewhere in the app —
+              // this stages a placeholder uri so the rest of the send flow
+              // (preview → send → optimistic bubble) is real and testable
+              // today. Swap this for the real picker when it lands.
+              onPickPhoto={() => s.stagePhoto('file://sample.jpg')}
+              onClose={s.closeAttachments}
+            />
+          </View>
+        </Pressable>
+      )}
+
+      {/* Full-screen in its own right (`PhotoSharePreview` covers the screen
+          itself), so it renders as a plain sibling rather than inside a
+          styled wrapper here. */}
+      {s.pendingPhotoUri && (
+        <PhotoSharePreview
+          uri={s.pendingPhotoUri}
+          // The caption `PhotoSharePreview` collects has nowhere to go yet:
+          // `sendPhoto(uri)` (chatStore) takes only the uri — photo messages
+          // have no caption field wired through the service layer in this
+          // task. Extending that is outside Task 8's scope (the interfaces
+          // from earlier tasks are already built and reviewed); the caption
+          // is deliberately dropped here rather than this screen half-
+          // reimplementing `sendPhoto`'s optimistic-bubble logic to smuggle
+          // it in.
+          onSend={(uri) => { void s.sendPhoto(uri) }}
+          onCancel={s.clearPhoto}
+        />
+      )}
     </View>
   )
 }
@@ -123,5 +171,9 @@ const styles = StyleSheet.create((theme) => ({
     justifyContent: 'center',
     paddingHorizontal: theme.spacing.lg,
     gap: theme.spacing.md,
+  },
+  attachmentLayer: {
+    flex: 1,
+    justifyContent: 'flex-end',
   },
 }))
