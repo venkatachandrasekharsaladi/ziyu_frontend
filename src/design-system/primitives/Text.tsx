@@ -26,6 +26,15 @@ export type TextTone =
   | 'error'
   | 'success'
   | 'onPrimary'
+  /**
+   * Ink on top of a chat bubble or its accent pill — `theme.colors.chat.bubbleInk`.
+   *
+   * Not `heading` or `body`: those are only contrast-checked against
+   * `surface.page`. Chat text sits on `bubbleOutgoing` / `bubbleIncoming` /
+   * `accentSoft` instead, and `bubbleInk` is the one value `chatContrast.test.ts`
+   * checks against all of them. Added for Module 03 Chat's message bubble.
+   */
+  | 'onChat'
 
 type TextProps = Omit<RNTextProps, 'style'> & {
   variant?: TextVariant
@@ -85,6 +94,7 @@ const styles = StyleSheet.create((theme) => ({
         error: { color: theme.colors.feedback.error },
         success: { color: theme.colors.feedback.success },
         onPrimary: { color: theme.colors.text.onPrimary },
+        onChat: { color: theme.colors.chat.bubbleInk },
       },
       align: {
         left: { textAlign: 'left' },
