@@ -17,7 +17,7 @@ type ChatState = {
   load(): Promise<void>
   setDraft(value: string): void
   send(body: string): Promise<void>
-  sendPhoto(uri: string): Promise<void>
+  sendPhoto(uri: string, caption?: string): Promise<void>
   sendVoice(uri: string, durationMs: number): Promise<void>
   retry(id: string): Promise<void>
   startReply(id: string): void
@@ -190,13 +190,17 @@ export const useChatStore = create<ChatState>((set, get) => {
       await settle(tempId, { kind: 'text', body, replyToId })
     },
 
-    async sendPhoto(uri) {
+    async sendPhoto(uri, caption) {
       const tempId = nextTempId()
       const optimistic: Message = {
         id: tempId,
         authorId: 'me',
         kind: 'photo',
         mediaUri: uri,
+        // `body` doubles as the caption here, same field `send()` uses for a
+        // plain text message — `Message`/`SendInput` never carried a
+        // dedicated caption field, so there is nothing else for this to be.
+        body: caption,
         reactions: [],
         pinned: false,
         sentAt: new Date().toISOString(),
@@ -208,7 +212,7 @@ export const useChatStore = create<ChatState>((set, get) => {
         messages: [...get().messages, optimistic],
       })
 
-      await settle(tempId, { kind: 'photo', mediaUri: uri })
+      await settle(tempId, { kind: 'photo', mediaUri: uri, body: caption })
     },
 
     async sendVoice(uri, durationMs) {

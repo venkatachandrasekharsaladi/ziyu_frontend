@@ -131,6 +131,39 @@ describe('chat store', () => {
     expect(useChatStore.getState().replyTarget).toBeNull()
   })
 
+  it('carries a photo caption all the way to the service, as `body`', async () => {
+    service.sendMessage.mockResolvedValue(
+      { ...message('m-sent', 'me', 'us'), kind: 'photo', mediaUri: 'file://a.jpg' },
+    )
+
+    await act(async () => { await useChatStore.getState().sendPhoto('file://a.jpg', 'us') })
+
+    // `Message`/`SendInput` have no dedicated caption field — `body` doubles
+    // as one, the same field `send()` uses for a plain text message. Both the
+    // optimistic bubble AND the payload handed to the service carry it.
+    expect(service.sendMessage).toHaveBeenCalledWith({
+      kind: 'photo',
+      mediaUri: 'file://a.jpg',
+      body: 'us',
+    })
+    const sent = useChatStore.getState().messages.at(-1)
+    expect(sent).toMatchObject({ kind: 'photo', mediaUri: 'file://a.jpg', body: 'us' })
+  })
+
+  it('sends a bare photo with no caption at all', async () => {
+    service.sendMessage.mockResolvedValue(
+      { ...message('m-sent', 'me', ''), body: undefined, kind: 'photo', mediaUri: 'file://a.jpg' },
+    )
+
+    await act(async () => { await useChatStore.getState().sendPhoto('file://a.jpg') })
+
+    expect(service.sendMessage).toHaveBeenCalledWith({
+      kind: 'photo',
+      mediaUri: 'file://a.jpg',
+      body: undefined,
+    })
+  })
+
   it('never opens the attachment sheet and the reaction overlay together', () => {
     act(() => {
       useChatStore.getState().selectMessage('m1')

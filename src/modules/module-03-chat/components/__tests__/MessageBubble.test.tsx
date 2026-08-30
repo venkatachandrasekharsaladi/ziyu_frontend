@@ -42,7 +42,7 @@ describe('MessageBubble', () => {
     expect(screen.getByText('❤️')).toBeTruthy()
   })
 
-  it('renders a photo message as PhotoMessage instead of a text body', async () => {
+  it('renders a bare photo message with no caption underneath it', async () => {
     await renderScreen(
       <MessageBubble
         message={message({ kind: 'photo', body: undefined, mediaUri: 'file://a.jpg' })}
@@ -51,5 +51,19 @@ describe('MessageBubble', () => {
 
     expect(screen.getByLabelText('Photo')).toBeTruthy()
     expect(screen.queryByText('Just trust me.')).toBeNull()
+  })
+
+  // Boundary 2 of the caption fix: the photo and its caption are additive —
+  // a photo message WITH a body has to render both, not the image instead
+  // of the body.
+  it('renders a photo message with its caption underneath the image', async () => {
+    await renderScreen(
+      <MessageBubble
+        message={message({ kind: 'photo', body: 'us', mediaUri: 'file://a.jpg' })}
+      />,
+    )
+
+    expect(screen.getByLabelText('Photo')).toBeTruthy()
+    expect(screen.getByText('us')).toBeTruthy()
   })
 })

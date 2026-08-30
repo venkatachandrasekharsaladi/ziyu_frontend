@@ -259,4 +259,35 @@ describe('ConversationScreen', () => {
     // screen doesn't hold its own stale copy of it.
     expect(screen.queryByLabelText('Send photo')).toBeNull()
   })
+
+  // Boundary 1 of the caption fix: `PhotoSharePreview` hands the screen
+  // `(uri, caption)`, and this is the exact spot a caption used to be
+  // silently discarded (`onSend={(uri) => { void s.sendPhoto(uri) }}`).
+  it('carries a typed caption from the photo preview through to the service', async () => {
+    const user = userEvent.setup()
+    service.sendMessage.mockResolvedValue({
+      id: 'm-photo',
+      authorId: 'me',
+      kind: 'photo',
+      mediaUri: 'file://sample.jpg',
+      body: 'us',
+      reactions: [],
+      pinned: false,
+      sentAt: new Date().toISOString(),
+      status: 'sent',
+    })
+    await renderScreen(<ConversationScreen />)
+    await screen.findByText('Obviously.')
+
+    await user.press(screen.getByLabelText('Add attachment'))
+    await user.press(screen.getByLabelText('Choose photo'))
+    await user.type(await screen.findByLabelText('Caption'), 'us')
+    await user.press(screen.getByLabelText('Send photo'))
+
+    await waitFor(() =>
+      expect(service.sendMessage).toHaveBeenCalledWith(
+        expect.objectContaining({ kind: 'photo', mediaUri: 'file://sample.jpg', body: 'us' }),
+      ),
+    )
+  })
 })

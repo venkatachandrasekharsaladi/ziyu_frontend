@@ -33,12 +33,18 @@ export function MessageBubble({ message, onLongPress }: Props) {
         accessibilityLabel={message.body ?? 'Message'}
         style={[styles.bubble, mine ? styles.mine : styles.theirs]}
       >
-        {/* A photo message swaps the text body for `PhotoMessage` entirely —
-            `message.body` on a photo message (a caption) has no design yet
-            (see `PhotoSharePreview`'s WHY-comment on `sendPhoto`), so nothing
-            here silently drops one by rendering it underneath the image. */}
+        {/* A photo message renders `PhotoMessage` ADDITIVELY alongside its
+            body, not instead of it — `PhotoSharePreview`'s caption (`body` on
+            a `kind: 'photo'` message, same field `send()` uses for plain
+            text) has to actually reach the screen, not just the store. The
+            wrapping `View` carries the gap between image and caption:
+            `Text` has no `style` prop by design, so that layout can't live
+            on the `Text` itself. */}
         {message.kind === 'photo' && message.mediaUri ? (
-          <PhotoMessage uri={message.mediaUri} />
+          <View style={styles.photo}>
+            <PhotoMessage uri={message.mediaUri} />
+            {message.body ? <Text tone="onChat">{message.body}</Text> : null}
+          </View>
         ) : message.body ? (
           // `onChat` — the one ink value contrast-checked against both bubble
           // fills (`Text.tsx`'s tone map). `Text` has no `style` prop by
@@ -79,6 +85,7 @@ const styles = StyleSheet.create((theme) => ({
   },
   mine: { backgroundColor: theme.colors.chat.bubbleOutgoing },
   theirs: { backgroundColor: theme.colors.chat.bubbleIncoming },
+  photo: { gap: theme.spacing.sm },
   reactions: { flexDirection: 'row', marginTop: -theme.spacing.sm },
   meta: {
     flexDirection: 'row',

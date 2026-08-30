@@ -146,15 +146,7 @@ export function ConversationScreen() {
       {s.pendingPhotoUri && (
         <PhotoSharePreview
           uri={s.pendingPhotoUri}
-          // The caption `PhotoSharePreview` collects has nowhere to go yet:
-          // `sendPhoto(uri)` (chatStore) takes only the uri — photo messages
-          // have no caption field wired through the service layer in this
-          // task. Extending that is outside Task 8's scope (the interfaces
-          // from earlier tasks are already built and reviewed); the caption
-          // is deliberately dropped here rather than this screen half-
-          // reimplementing `sendPhoto`'s optimistic-bubble logic to smuggle
-          // it in.
-          onSend={(uri) => { void s.sendPhoto(uri) }}
+          onSend={(uri, caption) => { void s.sendPhoto(uri, caption) }}
           onCancel={s.clearPhoto}
         />
       )}
