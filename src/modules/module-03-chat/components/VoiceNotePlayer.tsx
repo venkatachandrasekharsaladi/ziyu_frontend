@@ -7,6 +7,13 @@ import { Text } from '@/design-system/primitives/Text'
 
 type Props = {
   durationMs: number
+  /**
+   * A formatted clock reading (`MessageBubble`'s own `clockTime(sentAt)`),
+   * folded into the play control's accessible name so two voice notes in
+   * the same thread don't share one fixed "Play voice note" name. Optional:
+   * a bare unit render with no message behind it keeps the plain name.
+   */
+  time?: string
 }
 
 /**
@@ -45,19 +52,20 @@ export function clock(ms: number): string {
  * a visual toggle, not real playback — which is why it takes no callback
  * prop at all.
  */
-export function VoiceNotePlayer({ durationMs }: Props) {
+export function VoiceNotePlayer({ durationMs, time }: Props) {
   const { theme } = useUnistyles()
   const [isPlaying, setIsPlaying] = useState(false)
+
+  // Not derived from `isPlaying` — Task 14 asserts on this exact prefix and
+  // there is no "Pause voice note" label in the contract for it to flip to.
+  const label = time ? `Play voice note, sent at ${time}` : 'Play voice note'
 
   return (
     <View style={styles.row}>
       <Pressable
         onPress={() => setIsPlaying((was) => !was)}
         accessibilityRole="button"
-        // Fixed string, not derived from `isPlaying` — Task 14 asserts on
-        // this exact label and there is no "Pause voice note" label in the
-        // contract for it to flip to.
-        accessibilityLabel="Play voice note"
+        accessibilityLabel={label}
         style={styles.playButton}
       >
         <Feather

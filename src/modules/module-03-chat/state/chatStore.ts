@@ -162,7 +162,29 @@ export const useChatStore = create<ChatState>((set, get) => {
         })
       }
 
-      const messages = await chatService.listMessages()
+      const serverMessages = await chatService.listMessages()
+
+      // A `failed` (or still-`sending`) message exists ONLY in this store's
+      // own state — `mock.ts` never adds a failed send to the list it hands
+      // back from `listMessages()`. Replacing `messages` wholesale with
+      // whatever the service returns, as this used to do unconditionally,
+      // would silently delete it the next time this screen (re)mounts,
+      // which is every navigation into the thread — the branch a couple's
+      // actual unsent text depends on. Keeping it means checking the
+      // service's own answer for it FIRST: if the service ever does learn
+      // about it (a retry that lands, or a real backend eventually
+      // returning it), that copy wins over the stale local one.
+      const serverIds = new Set(serverMessages.map((m) => m.id))
+      const localOnly = get().messages.filter(
+        (m) => (m.status === 'failed' || m.status === 'sending') && !serverIds.has(m.id),
+      )
+
+      // Merged and re-sorted by `sentAt`, not simply appended — a locally-
+      // failed message keeps its place in thread order instead of jumping
+      // to the end every time `load()` runs again.
+      const messages = [...serverMessages, ...localOnly].sort(
+        (a, b) => new Date(a.sentAt).getTime() - new Date(b.sentAt).getTime(),
+      )
       set({ messages })
     },
 

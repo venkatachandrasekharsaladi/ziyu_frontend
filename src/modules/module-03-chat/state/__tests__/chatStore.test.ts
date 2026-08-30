@@ -106,6 +106,58 @@ describe('chat store', () => {
     expect(after[after.length - 1]).toMatchObject({ id: 'm-sent', status: 'read' })
   })
 
+  // The branch a couple's actual unsent text depends on: `mock.ts` never
+  // adds a failed send to its own `listMessages()` answer, so a wholesale
+  // `set({ messages })` on the NEXT `load()` — which runs on every chat
+  // screen mount — would silently delete it. `load()` has to notice the
+  // failed message is missing from what the service just returned and keep
+  // it, rather than trust the service's list as the whole truth.
+  it('keeps a failed send across a reload the service never learned about', async () => {
+    service.listMessages.mockResolvedValue([message('m1', 'partner', 'Are we still on?')])
+    await act(async () => { await useChatStore.getState().load() })
+
+    service.sendMessage.mockRejectedValueOnce(new Error('network down'))
+    await act(async () => { await useChatStore.getState().send('Hello') })
+
+    const failed = useChatStore.getState().messages.find((m) => m.status === 'failed')
+    expect(failed).toBeDefined()
+
+    // The service's own answer is unchanged — it never knew about the
+    // failed send in the first place — but `load()` runs again anyway, the
+    // same as a screen remount.
+    service.listMessages.mockResolvedValue([message('m1', 'partner', 'Are we still on?')])
+    await act(async () => { await useChatStore.getState().load() })
+
+    const stillThere = useChatStore.getState().messages.find((m) => m.id === failed!.id)
+    expect(stillThere).toMatchObject({ body: 'Hello', status: 'failed' })
+  })
+
+  // A `sending` message reconciled by the SAME `load()` that raced it: once
+  // the service's own list catches up with a message, that copy is the
+  // authoritative one — the locally-held optimistic copy must not survive
+  // as a duplicate alongside it.
+  it('drops the local copy of a message once the service\'s own list includes it', async () => {
+    service.listMessages.mockResolvedValue([message('m1', 'partner', 'Are we still on?')])
+    await act(async () => { await useChatStore.getState().load() })
+
+    service.sendMessage.mockRejectedValueOnce(new Error('network down'))
+    await act(async () => { await useChatStore.getState().send('Hello') })
+    const failed = useChatStore.getState().messages.find((m) => m.status === 'failed')!
+
+    // The service now DOES know about it (e.g. it landed on a retry a
+    // second device drove) — `load()` should prefer that copy, not keep
+    // both.
+    service.listMessages.mockResolvedValue([
+      message('m1', 'partner', 'Are we still on?'),
+      { ...message(failed.id, 'me', 'Hello'), status: 'read' },
+    ])
+    await act(async () => { await useChatStore.getState().load() })
+
+    const matches = useChatStore.getState().messages.filter((m) => m.id === failed.id)
+    expect(matches).toHaveLength(1)
+    expect(matches[0]).toMatchObject({ status: 'read' })
+  })
+
   it('does nothing when asked to retry a message that is not marked failed', async () => {
     service.listMessages.mockResolvedValue([message('m1', 'partner', 'Are we still on?')])
     await act(async () => { await useChatStore.getState().load() })

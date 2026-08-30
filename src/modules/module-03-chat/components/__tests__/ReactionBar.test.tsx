@@ -13,7 +13,7 @@ describe('ReactionBar', () => {
   it('reports which emoji was chosen', async () => {
     const onReact = jest.fn()
     const { getByText } = await renderScreen(<ReactionBar onReact={onReact} onMore={() => {}} />)
-    fireEvent.press(getByText('❤️'))
+    await fireEvent.press(getByText('❤️'))
     expect(onReact).toHaveBeenCalledWith('❤️')
   })
 
@@ -22,7 +22,7 @@ describe('ReactionBar', () => {
     const { getByLabelText } = await renderScreen(
       <ReactionBar onReact={() => {}} onMore={onMore} />,
     )
-    fireEvent.press(getByLabelText('More reactions'))
+    await fireEvent.press(getByLabelText('More reactions'))
     expect(onMore).toHaveBeenCalled()
   })
 })
@@ -45,9 +45,9 @@ describe('MessageContextMenu', () => {
       <MessageContextMenu onReply={onReply} onCopy={onCopy} onSaveMemory={onSaveMemory} />,
     )
 
-    fireEvent.press(getByText('Reply'))
-    fireEvent.press(getByText('Copy'))
-    fireEvent.press(getByText('Save Memory'))
+    await fireEvent.press(getByText('Reply'))
+    await fireEvent.press(getByText('Copy'))
+    await fireEvent.press(getByText('Save Memory'))
 
     expect(onReply).toHaveBeenCalled()
     expect(onCopy).toHaveBeenCalled()

@@ -22,18 +22,34 @@ import { renderScreen } from '@/test/renderScreen'
  * happens on the device: the user does not get a fresh `chatStore` every
  * time they navigate.
  *
- * What only a same-session test can catch:
- *  - A screen that quietly re-subscribes to `chatService` on every mount
- *    (chatStore.ts's `unsubscribe` guard exists ONLY because of this test —
- *    see that file's own header comment) would double- or triple-apply
- *    every future event once two screens in one session had both mounted.
+ * What this file actually proves, and what it doesn't:
+ *  - This file's own `subscribe` mock (`jest.fn(() => () => {})`) never
+ *    emits anything, so it CANNOT catch a double-subscription bug — the
+ *    journey passes identically with `chatStore.ts`'s `unsubscribe` guard
+ *    deleted. That guard is genuinely covered, but by `chatStore.test.ts`
+ *    ("subscribes at most once across repeated loads" / "...even when two
+ *    load() calls race"), which drives it against a fake that actually
+ *    records and fires listeners. What THIS file proves instead is that two
+ *    screens sharing one store instance across a real navigation still see
+ *    the SAME `messages` / `isPartnerTyping` / etc. — continuity, not the
+ *    guard's own correctness.
  *  - A screen that reads a stale snapshot of `messages` instead of the live
  *    store would look correct in isolation (its own fixture matches its own
  *    assertions) and still show the couple yesterday's conversation once a
- *    second screen had moved the state on.
+ *    second screen had moved the state on. THAT is a bug only a same-session
+ *    test like this one catches.
  *  - Selection/overlay state (`selectedMessageId`, `attachmentSheetOpen`,
  *    `replyTarget`) leaking across a screen boundary — invisible to a test
  *    that resets the store before every single case.
+ *
+ * Steps 8-12 (attachments/overlay exclusivity, photo, voice, Save Memory,
+ * pin) drive `chatStore` actions directly rather than through a user
+ * gesture on the rendered screen — this file's job is session continuity
+ * across those actions, not re-proving the user-facing path that triggers
+ * them. No coverage is lost by that: the user path is already exercised
+ * per-screen in `ConversationFlow.test.tsx` (attachments/photo/voice),
+ * `SaveMemory.test.tsx`, and `PinnedAndSearch.test.tsx` — it just doesn't
+ * live here too.
  *
  * So this file deliberately does the opposite of every sibling suite: ONE
  * `chatStore`, reset exactly once (`beforeEach`, before anything is
@@ -261,12 +277,29 @@ it('walks the whole module A to Z in one continuous session', async () => {
   await waitFor(() => expect(app.getByText('❤️')).toBeTruthy())
   expect(service.react).toHaveBeenCalledWith('m5', '❤️')
 
-  // 7. Reply — the composer quotes the target, so the same body renders
-  // twice: once as the live bubble, once as the reply preview above it.
+  // 7. Reply — starting one quotes the target in the composer, so the same
+  // body renders twice: once as the live bubble, once as the reply preview
+  // above it. Then actually SEND it (this used to `cancelReply()` instead,
+  // which meant nothing here ever exercised the quote landing anywhere but
+  // the composer): per spec §7/§10.2 the quote also has to show up in the
+  // newly sent bubble.
   await act(async () => { useChatStore.getState().startReply('m5') })
   await waitFor(() => expect(app.getAllByText('Just trust me.').length).toBe(2))
-  await act(async () => { useChatStore.getState().cancelReply() })
+
+  await fireEvent.changeText(app.getByLabelText('Message'), 'Okay, trusting you')
+  await fireEvent.press(app.getByLabelText('Send message'))
+
+  await waitFor(() => expect(app.getByText('Okay, trusting you')).toBeTruthy())
+  expect(service.sendMessage).toHaveBeenCalledWith(
+    expect.objectContaining({ kind: 'text', body: 'Okay, trusting you', replyToId: 'm5' }),
+  )
   expect(useChatStore.getState().replyTarget).toBeNull()
+  // The composer's own reply preview is gone now that sending cleared the
+  // reply target — but the quote itself didn't vanish, it MOVED: the
+  // quoted body still appears exactly twice (the original message, and the
+  // new bubble quoting it), not once, which is what would happen if the
+  // sent bubble dropped the quote on the floor.
+  await waitFor(() => expect(app.getAllByText('Just trust me.').length).toBe(2))
 
   // 8. Opening attachments closes the reaction/selection overlay — the two
   // are mutually exclusive in `chatStore`, not merely two panels that
@@ -280,7 +313,7 @@ it('walks the whole module A to Z in one continuous session', async () => {
 
   // 9. Photo.
   await act(async () => { await useChatStore.getState().sendPhoto('file://a.jpg') })
-  await waitFor(() => expect(app.getByLabelText('Photo')).toBeTruthy())
+  await waitFor(() => expect(app.getByLabelText(/^Photo,/)).toBeTruthy())
   expect(useChatStore.getState().attachmentSheetOpen).toBe(false)
 
   // 10. Voice note.

@@ -3,6 +3,14 @@ import { useUnistyles } from 'react-native-unistyles'
 
 type Props = {
   uri: string
+  /**
+   * A formatted clock reading (`MessageBubble`'s own `clockTime(sentAt)`),
+   * folded into the accessible name so two photo messages in the same
+   * thread — a captionless photo is the normal path, and nothing else about
+   * a bare image differs — don't share one fixed "Photo" name. Optional: a
+   * bare unit render with no message behind it keeps the plain name.
+   */
+  time?: string
 }
 
 /**
@@ -16,7 +24,7 @@ type Props = {
  * only a `mediaUri` string (`services/chat/types.ts`), no width or height, so
  * there is nothing else to preserve it FROM.
  */
-export function PhotoMessage({ uri }: Props) {
+export function PhotoMessage({ uri, time }: Props) {
   const { theme } = useUnistyles()
 
   return (
@@ -31,7 +39,7 @@ export function PhotoMessage({ uri }: Props) {
         backgroundColor: theme.colors.surface.field,
       }}
       contentFit="cover"
-      accessibilityLabel="Photo"
+      accessibilityLabel={time ? `Photo, sent at ${time}` : 'Photo'}
       transition={150}
     />
   )

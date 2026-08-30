@@ -9,19 +9,12 @@ import { PressableScale } from '@/design-system/patterns/PressableScale'
 import { Avatar } from '@/design-system/primitives/Avatar'
 import { Card } from '@/design-system/primitives/Card'
 import { Text } from '@/design-system/primitives/Text'
+import { clockTime } from '@/modules/module-03-chat/clockTime'
 import { truncateWords } from '@/modules/module-03-chat/truncate'
 import { useChatStore } from '@/modules/module-03-chat/state/chatStore'
 
 /** How much of the newest message's body the row preview shows. */
 const PREVIEW_MAX = 34
-
-/** `2026-08-30T12:45:00.000Z` -> `12:45 PM`. Same shape as `MessageBubble`'s
- * own `clockTime` — not shared, because that one lives beside the bubble it
- * times and this is the only other spot in the module that needs a clock
- * face rather than a calendar date. */
-function clockTime(iso: string): string {
-  return new Date(iso).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })
-}
 
 /**
  * M03-S?? — Chat Home. Figma `Ziyu` 3390:764.

@@ -109,6 +109,55 @@ describe('ConversationScreen', () => {
     expect(screen.getByLabelText('Message').props.value).toBe('')
   })
 
+  // The offer, not just the mark (spec §6): `retry()` used to be reachable
+  // only by poking the store directly in a test — nothing in the UI called
+  // it. This drives it as an actual user gesture: type, send, watch it
+  // fail, press the bubble's own retry control.
+  it('lets the user retry a failed send from its own bubble', async () => {
+    const user = userEvent.setup()
+    service.sendMessage.mockRejectedValueOnce(new Error('network down'))
+    await renderScreen(<ConversationScreen />)
+    await screen.findByText('Obviously.')
+
+    await user.type(screen.getByLabelText('Message'), 'Hello')
+    await user.press(screen.getByLabelText('Send message'))
+
+    await waitFor(() => expect(screen.getByLabelText('Retry sending')).toBeTruthy())
+
+    service.sendMessage.mockResolvedValueOnce(message('m-sent', 'me', 'Hello'))
+    await user.press(screen.getByLabelText('Retry sending'))
+
+    await waitFor(() => expect(screen.queryByLabelText('Retry sending')).toBeNull())
+    expect(useChatStore.getState().messages.find((m) => m.body === 'Hello')).toMatchObject({
+      status: 'read',
+    })
+  })
+
+  // Regression guard for the label collision a captionless photo/voice note
+  // used to cause: `MessageBubble`'s own fallback accessible name (for a
+  // bodyless message) used to be the bare literal `'Message'` — the exact
+  // same string `Composer`'s `TextInput` is labelled, and both are mounted
+  // here at once.
+  it('keeps the composer field the only thing labelled "Message" even with a captionless photo in the thread', async () => {
+    service.listMessages.mockResolvedValue([
+      ...SEED,
+      {
+        id: 'm-photo',
+        authorId: 'partner',
+        kind: 'photo',
+        mediaUri: 'file://a.jpg',
+        reactions: [],
+        pinned: false,
+        sentAt: new Date().toISOString(),
+        status: 'read',
+      },
+    ])
+    await renderScreen(<ConversationScreen />)
+    await screen.findByText('Obviously.')
+
+    expect(screen.getAllByLabelText('Message')).toHaveLength(1)
+  })
+
   it('shows the typing indicator while the partner types', async () => {
     await renderScreen(<ConversationScreen />)
     await screen.findByText('Obviously.')

@@ -75,7 +75,19 @@ export function ConversationScreen() {
         )}
         <DayDivider label="TODAY, 5:42 PM" />
         {s.messages.map((m) => (
-          <MessageBubble key={m.id} message={m} onLongPress={s.selectMessage} />
+          <MessageBubble
+            key={m.id}
+            message={m}
+            onLongPress={s.selectMessage}
+            onRetry={s.retry}
+            // The quoted message's own body, looked up here (not inside
+            // `MessageBubble` — components never import a service, and this
+            // screen already holds `messages`) so a reply bubble can render
+            // what it quotes alongside what it says.
+            quotedBody={
+              m.replyToId ? s.messages.find((x) => x.id === m.replyToId)?.body : undefined
+            }
+          />
         ))}
         {s.isPartnerTyping && <TypingIndicator />}
       </ScrollView>
