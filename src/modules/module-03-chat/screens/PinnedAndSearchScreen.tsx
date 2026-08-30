@@ -22,6 +22,17 @@ import type { Message } from '@/services/chat/types'
  * history, pinned or not — pinning a message doesn't make it the only thing
  * findable, and searching doesn't touch what's pinned.
  *
+ * The one place they are NOT independent: rendering. A message that is both
+ * pinned and a search hit is still ONE message, and it already has a home in
+ * the Pinned section above — the Results list below excludes anything
+ * `pinned` so nothing on screen ever renders the same bubble twice. This
+ * does not change what "found" means: `results` (and whether the raw search
+ * came back empty) is computed from the UNFILTERED search response, so
+ * "No messages found" only ever appears when the search itself found
+ * nothing — never when every hit happened to already be pinned. Get that
+ * backwards and a query matching only a pinned message shows "No messages
+ * found" directly under the very message it means.
+ *
  * `chatService.search` is called directly here, not through a store action.
  * `chatStore` never grew a `search` action (see its own file) and the task
  * brief calling for this screen explicitly allows a screen to reach the
@@ -71,6 +82,12 @@ export function PinnedAndSearchScreen() {
   }, [query])
 
   const pinned = messages.filter((m) => m.pinned)
+  const pinnedIds = new Set(pinned.map((m) => m.id))
+  // What the Results LIST shows — excludes anything already sitting in the
+  // Pinned section above, so no message ever renders twice on this screen.
+  // Deliberately NOT what decides whether "No messages found" appears: that
+  // reads `results` itself (see the doc comment above).
+  const visibleResults = results?.filter((m) => !pinnedIds.has(m.id)) ?? null
 
   return (
     <AppScreenLayout activeTab="chat" onBack={router.back}>
@@ -94,24 +111,27 @@ export function PinnedAndSearchScreen() {
         </View>
       )}
 
-      {results !== null && (
+      {results !== null && results.length === 0 && (
         <View style={styles.section}>
-          {results.length === 0 ? (
-            <Text variant="footnote" tone="body" align="center">
-              {COPY.search.empty}
-            </Text>
-          ) : (
-            <>
-              <Text variant="caption" tone="muted">
-                {COPY.search.resultsLabel}
-              </Text>
-              <View style={styles.list}>
-                {results.map((message) => (
-                  <MessageBubble key={message.id} message={message} />
-                ))}
-              </View>
-            </>
-          )}
+          <Text variant="footnote" tone="body" align="center">
+            {COPY.search.empty}
+          </Text>
+        </View>
+      )}
+
+      {/* Nothing rendered at all when the search found hits but every one
+          of them is already pinned above — not the empty state (the search
+          did not come back empty) and not an empty results list either. */}
+      {visibleResults !== null && visibleResults.length > 0 && (
+        <View style={styles.section}>
+          <Text variant="caption" tone="muted">
+            {COPY.search.resultsLabel}
+          </Text>
+          <View style={styles.list}>
+            {visibleResults.map((message) => (
+              <MessageBubble key={message.id} message={message} />
+            ))}
+          </View>
         </View>
       )}
     </AppScreenLayout>

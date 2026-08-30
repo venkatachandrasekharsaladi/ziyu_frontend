@@ -45,3 +45,43 @@ it('lists pinned messages', async () => {
   const { getByText } = await renderScreen(<PinnedAndSearchScreen />)
   await waitFor(() => expect(getByText(/coffee tonight/)).toBeTruthy())
 })
+
+/**
+ * `m1` ("Are we still going for coffee tonight? ☰❤️") is exactly the case
+ * Task 14's end-to-end journey hits: pinned, THEN searched for 'coffee'. A
+ * fix that only filtered the Results list's failure mode, or forgot to
+ * filter at all, renders `m1` once in Pinned and again in Results — this is
+ * the test that must fail if that filtering is reverted: it asserts a
+ * SINGLE match, not merely "at least one."
+ */
+it('renders a message that is both pinned and a search hit exactly once', async () => {
+  await act(async () => {
+    await useChatStore.getState().load()
+    await useChatStore.getState().togglePin('m1')
+  })
+
+  const { getByLabelText, getAllByText } = await renderScreen(<PinnedAndSearchScreen />)
+
+  await fireEvent.changeText(getByLabelText('Search messages'), 'coffee')
+
+  await waitFor(() => expect(getAllByText(/coffee tonight/)).toHaveLength(1))
+})
+
+it('does not say "No messages found" when a query matches only a pinned message', async () => {
+  await act(async () => {
+    await useChatStore.getState().load()
+    await useChatStore.getState().togglePin('m1')
+  })
+
+  const { getByLabelText, getByText, queryByText } = await renderScreen(
+    <PinnedAndSearchScreen />,
+  )
+
+  await fireEvent.changeText(getByLabelText('Search messages'), 'coffee')
+
+  // The match is real and rendered (proves the search actually ran) — it is
+  // simply the Pinned section showing it, not Results, and that must not
+  // read as "nothing found."
+  await waitFor(() => expect(getByText(/coffee tonight/)).toBeTruthy())
+  expect(queryByText('No messages found')).toBeNull()
+})
