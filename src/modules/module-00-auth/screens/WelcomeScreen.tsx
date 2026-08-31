@@ -48,12 +48,12 @@ export function WelcomeScreen() {
         <View style={styles.main}>
           <AmbientLayer />
 
-          <View style={styles.content}>
+          <View testID="welcome-content" style={styles.content}>
             <View style={styles.heroBlock}>
               <HeroCollage />
             </View>
 
-            <View style={styles.copyBlock}>
+            <View testID="welcome-copy-block" style={styles.copyBlock}>
               {WELCOME_COPY.headlineLines.map((line) => (
                 <Text key={line} variant="h1" tone="heading" align="center">
                   {line}
@@ -69,7 +69,7 @@ export function WelcomeScreen() {
               </View>
             </View>
 
-            <View style={styles.actions}>
+            <View testID="welcome-actions" style={styles.actions}>
               <Button label={WELCOME_COPY.primaryCta} onPress={goToSignUp} variant="primary" />
               <View style={styles.secondaryWrap}>
                 <Button label={WELCOME_COPY.secondaryCta} onPress={goToSignIn} variant="link" />
@@ -99,8 +99,10 @@ const styles = StyleSheet.create((theme) => ({
     flex: 1,
     width: '100%',
     // Phone is the primary target; on a tablet the column stops growing and
-    // centres rather than stretching to the full width.
-    maxWidth: 480,
+    // centres rather than stretching to the full width. Wider than
+    // `theme.layout.column` (see `columnWide`'s comment in `tokens/layout.ts`)
+    // because this wraps the hero collage too, not just the copy below it.
+    maxWidth: theme.layout.columnWide,
     alignSelf: 'center',
     justifyContent: 'flex-end',
   },
@@ -115,14 +117,20 @@ const styles = StyleSheet.create((theme) => ({
     gap: theme.spacing.md,
     paddingBottom: theme.spacing.xxl,
     alignSelf: 'center',
-    maxWidth: 448,
+    // The same column cap `AppScreenLayout` and `AuthScreenLayout` use, so the
+    // headline lines up with every other screen's content once it is wide
+    // enough to matter.
+    maxWidth: theme.layout.column,
   },
   subtitleWrap: {
     paddingHorizontal: theme.spacing.md,
   },
   actions: {
     width: '100%',
-    maxWidth: 384,
+    // Narrower than `theme.layout.column` on purpose — see `columnNarrow`'s
+    // comment in `tokens/layout.ts`. Figma draws the CTAs tighter than the
+    // copy above them.
+    maxWidth: theme.layout.columnNarrow,
     alignSelf: 'center',
     paddingHorizontal: theme.spacing.xl,
     paddingBottom: theme.spacing.xxl,

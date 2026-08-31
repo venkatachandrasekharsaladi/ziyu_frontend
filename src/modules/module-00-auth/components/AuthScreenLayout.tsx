@@ -72,7 +72,9 @@ export function AuthScreenLayout({ onBack, centred = false, children }: AuthScre
             // keyboard and the user has to tap twice.
             keyboardShouldPersistTaps="handled"
           >
-            <View style={styles.column}>{children}</View>
+            <View testID="auth-screen-column" style={styles.column}>
+              {children}
+            </View>
           </ScrollView>
         </KeyboardAvoidingView>
       </View>
@@ -109,8 +111,10 @@ const styles = StyleSheet.create((theme) => ({
   column: {
     width: '100%',
     // Phone is the primary target; on a tablet the column stops growing and
-    // centres rather than stretching.
-    maxWidth: 448,
+    // centres rather than stretching. The cap itself lives in
+    // `tokens/layout.ts` — the same value `AppScreenLayout` uses, so moving
+    // from onboarding into the app is not a change of column width either.
+    maxWidth: theme.layout.column,
     alignSelf: 'center',
   },
 }))

@@ -1,5 +1,6 @@
 import { midnightPalette as dark, palette } from '@/design-system/tokens/colors'
 import { elevation } from '@/design-system/tokens/elevation'
+import { layout } from '@/design-system/tokens/layout'
 import { radii } from '@/design-system/tokens/radii'
 import { spacing } from '@/design-system/tokens/spacing'
 import { typography } from '@/design-system/tokens/typography'
@@ -143,6 +144,14 @@ const shared = {
   radii,
   typography,
   elevation,
+  /**
+   * Sizing, not colour — same reason `spacing` and `radii` sit here rather
+   * than under a theme. A phone's content column does not get wider when the
+   * user switches from lavender to midnight, so there is exactly one `layout`
+   * object and both themes point at it. See `tokens/layout.ts` for why the
+   * group exists at all.
+   */
+  layout,
 } as const
 
 /**

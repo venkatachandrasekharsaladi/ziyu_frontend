@@ -1,4 +1,5 @@
 import { render, screen, userEvent } from '@testing-library/react-native'
+import { Dimensions } from 'react-native'
 
 import { CodeInput } from '@/design-system/primitives/CodeInput'
 
@@ -85,5 +86,57 @@ describe('CodeInput', () => {
 
     expect(screen.getByText('Nope')).toBeTruthy()
     expect(screen.getAllByTestId('code-box')).toHaveLength(6)
+  })
+
+  /**
+   * The bug this guards against: six boxes at a FIXED 44pt plus five 8pt gaps
+   * come to 304pt, which does not fit inside a 320pt phone once the screen's
+   * own horizontal padding is subtracted (280pt left) — an overflow real
+   * hardware would clip or scroll sideways, and a test that only ever renders
+   * at one width would never catch.
+   */
+  describe('at a 320pt phone', () => {
+    beforeEach(() => {
+      Dimensions.set({ window: { width: 320, height: 844, scale: 2, fontScale: 1 } })
+    })
+
+    it('makes the boxes fluid instead of a fixed width that could overflow', async () => {
+      await render(<CodeInput label="Partner code" value="" onChangeText={() => {}} />)
+
+      const boxes = screen.getAllByTestId('code-box')
+
+      for (const box of boxes) {
+        const style = Array.isArray(box.props.style)
+          ? Object.assign({}, ...box.props.style.filter(Boolean))
+          : box.props.style
+
+        // `flex: 1`, not a fixed `width` — the row shrinks its boxes together
+        // to whatever space it actually has. `maxWidth` only ever stops them
+        // growing past their normal size on a wider phone.
+        expect(style.flex).toBe(1)
+        expect(style.width).toBeUndefined()
+        expect(style.maxWidth).toBe(44)
+      }
+    })
+  })
+
+  describe('at a tablet-width frame', () => {
+    beforeEach(() => {
+      Dimensions.set({ window: { width: 800, height: 1024, scale: 2, fontScale: 1 } })
+    })
+
+    it('widens the boxes rather than leaving them lost on a much bigger screen', async () => {
+      await render(<CodeInput label="Partner code" value="" onChangeText={() => {}} />)
+
+      const boxes = screen.getAllByTestId('code-box')
+
+      for (const box of boxes) {
+        const style = Array.isArray(box.props.style)
+          ? Object.assign({}, ...box.props.style.filter(Boolean))
+          : box.props.style
+
+        expect(style.maxWidth).toBe(56)
+      }
+    })
   })
 })

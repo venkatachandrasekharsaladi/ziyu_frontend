@@ -3,6 +3,7 @@ import { Text } from 'react-native'
 
 import { APP_NAV } from '@/copy/appNav'
 import { AppScreenLayout } from '@/design-system/patterns/AppScreenLayout'
+import { lavenderTheme } from '@/design-system/themes/theme'
 import { renderScreen } from '@/test/renderScreen'
 
 const mockReplace = jest.fn()
@@ -108,5 +109,27 @@ describe('AppScreenLayout', () => {
     await user.press(screen.getByRole('button', { name: 'Go back' }))
 
     expect(onBack).toHaveBeenCalled()
+  })
+
+  // The single lever, proven: `column` never carries a raw pixel `width` that
+  // could outrun a phone's frame. `width: '100%'` is what a 320pt device
+  // actually leans on — `maxWidth` only ever engages once the frame is wider
+  // than `theme.layout.column`, which is what "fluid, then capped" means.
+  it.each([320, 430])('keeps the content column fluid at a %dpt frame', async (width) => {
+    await renderScreen(
+      <AppScreenLayout activeTab="home">
+        <Text>Days Together</Text>
+      </AppScreenLayout>,
+      { width },
+    )
+
+    const column = screen.getByTestId('app-screen-column')
+
+    expect(column.props.style.width).toBe('100%')
+    expect(column.props.style.maxWidth).toBe(lavenderTheme.layout.column)
+    // A raw pixel width here — rather than '100%' — is exactly the kind of
+    // regression this guards against: it would hold at 430pt and overflow at
+    // 320pt, and nothing about rendering only at one width would catch it.
+    expect(typeof column.props.style.width).not.toBe('number')
   })
 })
