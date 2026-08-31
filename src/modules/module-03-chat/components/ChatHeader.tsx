@@ -10,7 +10,11 @@ type Props = {
   onBack: () => void
   onVideoCall: () => void
   onVoiceCall: () => void
-  /** Reserved — see the control below. Optional so a caller can omit it. */
+  /**
+   * Reserved — see the control below. Optional so a caller can omit it;
+   * omitting it (rather than a no-op) renders the control `disabled`, the
+   * same "honestly unavailable" rule `SocialButton` follows for OAuth.
+   */
   onMore?: () => void
   /**
    * Swaps the presence line to "Typing…" — Figma `3390:521`. A prop, not a
@@ -40,6 +44,7 @@ type Props = {
  */
 export function ChatHeader({ onBack, onVideoCall, onVoiceCall, onMore, isPartnerTyping = false }: Props) {
   const { theme } = useUnistyles()
+  const moreDisabled = !onMore
 
   return (
     <View style={styles.bar}>
@@ -82,15 +87,21 @@ export function ChatHeader({ onBack, onVideoCall, onVoiceCall, onMore, isPartner
       </Pressable>
 
       {/* Reserved for a message-search / mute-thread / block menu — no design
-          for its contents exists yet, so this stays a labelled no-op rather
-          than guessing at one. */}
+          for its contents exists yet, so this renders `disabled` rather than
+          guessing at one, same rule `SocialButton` follows for OAuth. */}
       <Pressable
         onPress={onMore}
+        disabled={moreDisabled}
         accessibilityRole="button"
         accessibilityLabel="More options"
+        accessibilityState={{ disabled: moreDisabled }}
         style={styles.control}
       >
-        <Feather name="more-vertical" size={20} color={theme.colors.text.heading} />
+        <Feather
+          name="more-vertical"
+          size={20}
+          color={moreDisabled ? theme.colors.border.field : theme.colors.text.heading}
+        />
       </Pressable>
     </View>
   )

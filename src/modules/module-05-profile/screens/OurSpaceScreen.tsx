@@ -1,8 +1,9 @@
 import { useRouter } from 'expo-router'
 import { useCallback, useState } from 'react'
-import { Alert, View } from 'react-native'
+import { View } from 'react-native'
 import { StyleSheet } from 'react-native-unistyles'
 
+import { ConfirmDialog } from '@/components/feedback/ConfirmDialog'
 import { APPEARANCE_COPY } from '@/copy/appearance'
 import { OUR_SPACE_COPY as COPY } from '@/copy/ourSpace'
 import { AppScreenLayout } from '@/design-system/patterns/AppScreenLayout'
@@ -26,12 +27,17 @@ import { useRelationshipStore } from '@/state/relationshipStore'
  * rest of the hub grows into it, and the sign-out stays where it is.
  *
  * Sign-out is the only action on this screen a user will not want to hit by
- * accident, so it is `outline` rather than `primary` and it asks first.
+ * accident, so it is `outline` rather than `primary` and it asks first — via
+ * `ConfirmDialog`, not `Alert.alert`. `Alert` has no implementation in
+ * react-native-web, so on web the confirmation never appeared and this whole
+ * control was unreachable: the sign-out logic below was always correct, it
+ * just had no way to ever run. See `ConfirmDialog`'s own header comment.
  */
 export function OurSpaceScreen() {
   const router = useRouter()
   const reset = useRelationshipStore((state) => state.reset)
   const [isSigningOut, setIsSigningOut] = useState(false)
+  const [isConfirmingSignOut, setIsConfirmingSignOut] = useState(false)
 
   const signOut = useCallback(async () => {
     setIsSigningOut(true)
@@ -43,6 +49,12 @@ export function OurSpaceScreen() {
       // call failed, because they are signed out locally either way, and a
       // message here would imply they are not. The transport logs it with its
       // requestId.
+    } finally {
+      // Cleared unconditionally, whether the call resolved or rejected.
+      // `router.replace` below unmounts this screen in the common case, but
+      // if navigation is ever interrupted — a guard blocks it, the call
+      // hangs — the button must not be left stuck mid-spin with no way back.
+      setIsSigningOut(false)
     }
 
     // Cleared whichever way the call went, and cleared BEFORE navigating: the
@@ -51,11 +63,11 @@ export function OurSpaceScreen() {
     router.replace('/(auth)/welcome')
   }, [reset, router])
 
-  const confirm = useCallback(() => {
-    Alert.alert(COPY.confirmTitle, COPY.confirmBody, [
-      { text: COPY.confirmKeep, style: 'cancel' },
-      { text: COPY.confirmSignOut, style: 'destructive', onPress: () => void signOut() },
-    ])
+  const askToSignOut = useCallback(() => setIsConfirmingSignOut(true), [])
+  const keepSignedIn = useCallback(() => setIsConfirmingSignOut(false), [])
+  const confirmSignOut = useCallback(() => {
+    setIsConfirmingSignOut(false)
+    void signOut()
   }, [signOut])
 
   return (
@@ -84,9 +96,19 @@ export function OurSpaceScreen() {
 
       <Button
         label={COPY.signOut}
-        onPress={confirm}
+        onPress={askToSignOut}
         variant="outline"
         loading={isSigningOut}
+      />
+
+      <ConfirmDialog
+        visible={isConfirmingSignOut}
+        title={COPY.confirmTitle}
+        body={COPY.confirmBody}
+        cancelLabel={COPY.confirmKeep}
+        confirmLabel={COPY.confirmSignOut}
+        onCancel={keepSignedIn}
+        onConfirm={confirmSignOut}
       />
     </AppScreenLayout>
   )

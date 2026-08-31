@@ -1,9 +1,11 @@
-import { fireEvent, screen } from '@testing-library/react-native'
+import { fireEvent, screen, userEvent } from '@testing-library/react-native'
 
 import { AttachmentSheet } from '@/modules/module-03-chat/components/AttachmentSheet'
 import { PhotoMessage } from '@/modules/module-03-chat/components/PhotoMessage'
 import { PhotoSharePreview } from '@/modules/module-03-chat/components/PhotoSharePreview'
 import { renderScreen } from '@/test/renderScreen'
+
+const noop = () => {}
 
 /**
  * Every `fireEvent` call below is awaited, unlike the brief's own literal
@@ -22,14 +24,14 @@ import { renderScreen } from '@/test/renderScreen'
 describe('AttachmentSheet', () => {
   it('offers the four sources the frame draws', async () => {
     const { getByText } = await renderScreen(
-      <AttachmentSheet onPickPhoto={() => {}} onClose={() => {}} />)
+      <AttachmentSheet onPickPhoto={noop} onVoiceNote={noop} onMemory={noop} onClose={noop} />)
     for (const l of ['Photo', 'Camera', 'Voice note', 'Memory']) expect(getByText(l)).toBeTruthy()
   })
 
   it('reports a photo pick', async () => {
     const onPickPhoto = jest.fn()
     const { getByText } = await renderScreen(
-      <AttachmentSheet onPickPhoto={onPickPhoto} onClose={() => {}} />)
+      <AttachmentSheet onPickPhoto={onPickPhoto} onVoiceNote={noop} onMemory={noop} onClose={noop} />)
     await fireEvent.press(getByText('Photo'))
     expect(onPickPhoto).toHaveBeenCalled()
   })
@@ -40,17 +42,43 @@ describe('AttachmentSheet', () => {
   // make `getByLabelText('Photo')` ambiguous.
   it('gives the Photo tile a distinct accessible name from a photo message', async () => {
     const { getByLabelText, queryByLabelText } = await renderScreen(
-      <AttachmentSheet onPickPhoto={() => {}} onClose={() => {}} />)
+      <AttachmentSheet onPickPhoto={noop} onVoiceNote={noop} onMemory={noop} onClose={noop} />)
     expect(getByLabelText('Choose photo')).toBeTruthy()
     expect(queryByLabelText('Photo')).toBeNull()
   })
 
-  it('dismisses the sheet from a source with no feature behind it yet', async () => {
-    const onClose = jest.fn()
+  it('starts the real recorder from the Voice note tile', async () => {
+    const onVoiceNote = jest.fn()
     const { getByText } = await renderScreen(
-      <AttachmentSheet onPickPhoto={() => {}} onClose={onClose} />)
-    await fireEvent.press(getByText('Camera'))
-    expect(onClose).toHaveBeenCalled()
+      <AttachmentSheet onPickPhoto={noop} onVoiceNote={onVoiceNote} onMemory={noop} onClose={noop} />)
+    await fireEvent.press(getByText('Voice note'))
+    expect(onVoiceNote).toHaveBeenCalled()
+  })
+
+  it('opens the Memories module from the Memory tile', async () => {
+    const onMemory = jest.fn()
+    const { getByText } = await renderScreen(
+      <AttachmentSheet onPickPhoto={noop} onVoiceNote={noop} onMemory={onMemory} onClose={noop} />)
+    await fireEvent.press(getByText('Memory'))
+    expect(onMemory).toHaveBeenCalled()
+  })
+
+  // Camera capture needs `expo-image-picker`/`expo-camera`, neither
+  // installed — the tile is `disabled` rather than a live-looking no-op.
+  // `userEvent.press`, unlike `fireEvent.press`, honours a Pressable's own
+  // `disabled` prop, which is the whole point here: this proves a real press
+  // does not reach `onClose`, not merely that the handler exists.
+  it('renders Camera disabled instead of silently dismissing the sheet', async () => {
+    const onClose = jest.fn()
+    const user = userEvent.setup()
+    const { getByText, getByLabelText } = await renderScreen(
+      <AttachmentSheet onPickPhoto={noop} onVoiceNote={noop} onMemory={noop} onClose={onClose} />)
+
+    expect(getByLabelText('Camera').props.accessibilityState).toMatchObject({ disabled: true })
+
+    await user.press(getByText('Camera'))
+
+    expect(onClose).not.toHaveBeenCalled()
   })
 })
 

@@ -178,19 +178,21 @@ export function ConversationScreen() {
             <ReactionBar
               onReact={(emoji) => { void s.react(s.selectedMessageId!, emoji) }}
               // No design for what "more reactions" opens yet (an emoji
-              // keyboard / full picker) — left a no-op rather than guessing,
-              // same call `ChatHeader`'s reserved `onMore` makes.
-              onMore={() => {}}
+              // keyboard / full picker). Left unset rather than guessing at
+              // one — `ReactionBar` renders its own control `disabled` when
+              // `onMore` is omitted, same call `ChatHeader` makes for its
+              // reserved "More options", instead of a control that looks
+              // pressable and quietly does nothing.
             />
             <MessageContextMenu
               onReply={() => s.startReply(s.selectedMessageId!)}
               // There is no clipboard package in this project (checked:
               // nothing matching "clipboard" in package.json) and adding one
-              // is outside this task's scope. Real "Copy" needs that
-              // dependency; until then this only dismisses the overlay, same
-              // as tapping the scrim, so it does not silently pretend to
-              // have copied anything.
-              onCopy={s.clearSelection}
+              // is outside this task's scope. `onCopy` left unset rather than
+              // aliased to `clearSelection` — `MessageContextMenu` renders
+              // "Copy" `disabled` when it has no handler, so the row honestly
+              // reads as unavailable instead of pretending a tap dismissed it
+              // on purpose.
               onSaveMemory={handleSaveMemory}
             />
           </View>
@@ -217,6 +219,18 @@ export function ConversationScreen() {
               // (preview → send → optimistic bubble) is real and testable
               // today. Swap this for the real picker when it lands.
               onPickPhoto={() => s.stagePhoto('file://sample.jpg')}
+              // The recorder and the store action behind it (`startRecording`)
+              // already exist — `Composer`'s own mic button already reaches
+              // for the exact same one. The sheet's tile had just never been
+              // wired to it.
+              onVoiceNote={() => { s.closeAttachments(); s.startRecording() }}
+              // No dedicated picker screen for "attach an existing memory" —
+              // the bridge the other direction (`saveAsMemory`, this screen's
+              // own `handleSaveMemory`) exists, but nothing turns a memory
+              // back into a message yet. Opening the Memories module itself
+              // is the honest middle ground: it goes somewhere real instead
+              // of just closing the sheet.
+              onMemory={() => { s.closeAttachments(); router.push('/(app)/memories') }}
               onClose={s.closeAttachments}
             />
           </View>

@@ -103,10 +103,12 @@ export function CreateAccountScreen() {
         <Divider label={COPY.dividerLabel} />
       </View>
 
-      {/* OAuth is out of scope (spec §17). */}
-      <View style={styles.social}>
-        <SocialButton provider="google" onPress={() => {}} />
-        <SocialButton provider="apple" onPress={() => {}} />
+      {/* OAuth is out of scope (spec §17) — see `SignInScreen`'s matching
+          social row for why these carry `disabled` (and its dimmed wrapper)
+          instead of a live-looking `onPress={() => {}}` no-op. */}
+      <View style={[styles.social, styles.socialDisabled]}>
+        <SocialButton provider="google" onPress={() => {}} disabled />
+        <SocialButton provider="apple" onPress={() => {}} disabled />
       </View>
 
       <FooterPrompt text={COPY.footerText} linkLabel={COPY.footerLink} onPress={goToSignIn} />
@@ -128,5 +130,8 @@ const styles = StyleSheet.create((theme) => ({
   social: {
     flexDirection: 'row',
     gap: theme.spacing.md,
+  },
+  socialDisabled: {
+    opacity: 0.6,
   },
 }))

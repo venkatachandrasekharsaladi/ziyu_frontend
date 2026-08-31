@@ -19,7 +19,15 @@ const EMOJI = ['❤️', '😂', '🥹', '😍', '👍', '✨']
 
 type Props = {
   onReact: (emoji: string) => void
-  onMore: () => void
+  /**
+   * Opens the full emoji picker / "more reactions" surface. There is no
+   * design for what that surface actually is yet, so the caller omits this
+   * entirely rather than guess at one — omitted (not merely a no-op) renders
+   * the control `disabled` below, the same "honestly unavailable" rule
+   * `SocialButton` follows for OAuth and `BottomNav` follows for an unbuilt
+   * tab, instead of a control that looks pressable and does nothing.
+   */
+  onMore?: () => void
 }
 
 /**
@@ -28,6 +36,9 @@ type Props = {
  */
 export function ReactionBar({ onReact, onMore }: Props) {
   const { theme } = useUnistyles()
+  const moreDisabled = !onMore
+
+  styles.useVariants({ disabled: moreDisabled })
 
   return (
     <View style={styles.bar}>
@@ -52,11 +63,17 @@ export function ReactionBar({ onReact, onMore }: Props) {
 
       <Pressable
         onPress={onMore}
+        disabled={moreDisabled}
         accessibilityRole="button"
         accessibilityLabel="More reactions"
+        accessibilityState={{ disabled: moreDisabled }}
         style={styles.more}
       >
-        <Feather name="plus" size={16} color={theme.colors.text.body} />
+        <Feather
+          name="plus"
+          size={16}
+          color={moreDisabled ? theme.colors.border.field : theme.colors.text.body}
+        />
       </Pressable>
     </View>
   )
@@ -85,5 +102,13 @@ const styles = StyleSheet.create((theme) => ({
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: theme.colors.surface.field,
+    variants: {
+      // Same 0.6 dimming `BottomNav` uses for a tab whose destination is not
+      // built yet.
+      disabled: {
+        true: { opacity: 0.6 },
+        false: {},
+      },
+    },
   },
 }))

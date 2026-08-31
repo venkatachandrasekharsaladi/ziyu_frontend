@@ -6,7 +6,14 @@ import { Text } from '@/design-system/primitives/Text'
 
 type Props = {
   onReply: () => void
-  onCopy: () => void
+  /**
+   * Real "Copy" needs `expo-clipboard`, not installed in this project. Left
+   * unset by the caller rather than aliased to some other action — omitted
+   * (not merely a no-op) renders the row `disabled` below, so it honestly
+   * reads as unavailable instead of looking pressable and quietly doing
+   * something else (or nothing).
+   */
+  onCopy?: () => void
   onSaveMemory: () => void
 }
 
@@ -22,9 +29,9 @@ export function MessageContextMenu({ onReply, onCopy, onSaveMemory }: Props) {
   const { theme } = useUnistyles()
 
   const items = [
-    { label: 'Reply', icon: 'corner-up-left', onPress: onReply },
-    { label: 'Copy', icon: 'copy', onPress: onCopy },
-    { label: 'Save Memory', icon: 'bookmark', onPress: onSaveMemory },
+    { label: 'Reply', icon: 'corner-up-left', onPress: onReply, disabled: false },
+    { label: 'Copy', icon: 'copy', onPress: onCopy, disabled: !onCopy },
+    { label: 'Save Memory', icon: 'bookmark', onPress: onSaveMemory, disabled: false },
   ] as const
 
   return (
@@ -33,16 +40,23 @@ export function MessageContextMenu({ onReply, onCopy, onSaveMemory }: Props) {
         <Pressable
           key={item.label}
           onPress={item.onPress}
+          disabled={item.disabled}
           style={styles.row}
           accessibilityRole="button"
           accessibilityLabel={item.label}
+          accessibilityState={{ disabled: item.disabled }}
         >
-          <Feather name={item.icon} size={18} color={theme.colors.text.body} />
+          <Feather
+            name={item.icon}
+            size={18}
+            color={item.disabled ? theme.colors.border.field : theme.colors.text.body}
+          />
           {/* `heading` tone, not `body` — the menu is a card floating over the
               scrim, not chat/page copy, and `heading` is the ink this app
               reaches for on any surface-card row label (see `ChatHeader`'s
-              "Sarah"). */}
-          <Text tone="heading">{item.label}</Text>
+              "Sarah"). `muted` when disabled, same as `BottomNav`'s own
+              not-yet-built tabs. */}
+          <Text tone={item.disabled ? 'muted' : 'heading'}>{item.label}</Text>
         </Pressable>
       ))}
     </View>

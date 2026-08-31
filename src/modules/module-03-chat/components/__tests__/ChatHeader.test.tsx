@@ -1,9 +1,28 @@
+import { userEvent } from '@testing-library/react-native'
+
 import { ChatHeader } from '@/modules/module-03-chat/components/ChatHeader'
 import { renderScreen } from '@/test/renderScreen'
 
 const noop = () => {}
 
 describe('ChatHeader', () => {
+  // No design exists yet for what "More options" opens — `ConversationScreen`
+  // omits `onMore` entirely rather than passing a no-op. `userEvent.press`,
+  // unlike `fireEvent.press`, honours `disabled`, which is the point: this
+  // proves a real press cannot reach a handler that does not exist.
+  it('renders "More options" disabled when no handler is given', async () => {
+    const user = userEvent.setup()
+    const { getByLabelText } = await renderScreen(
+      <ChatHeader onBack={noop} onVideoCall={noop} onVoiceCall={noop} />,
+    )
+
+    expect(getByLabelText('More options').props.accessibilityState).toMatchObject({
+      disabled: true,
+    })
+
+    await user.press(getByLabelText('More options'))
+  })
+
   it('reads "Online" when the partner is not typing (the default)', async () => {
     const { getByText, queryByText } = await renderScreen(
       <ChatHeader onBack={noop} onVideoCall={noop} onVoiceCall={noop} />,

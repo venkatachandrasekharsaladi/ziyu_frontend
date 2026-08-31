@@ -1,4 +1,4 @@
-import { fireEvent } from '@testing-library/react-native'
+import { fireEvent, userEvent } from '@testing-library/react-native'
 
 import { MessageContextMenu } from '@/modules/module-03-chat/components/MessageContextMenu'
 import { ReactionBar } from '@/modules/module-03-chat/components/ReactionBar'
@@ -24,6 +24,24 @@ describe('ReactionBar', () => {
     )
     await fireEvent.press(getByLabelText('More reactions'))
     expect(onMore).toHaveBeenCalled()
+  })
+
+  // No design exists yet for what "more reactions" opens — `ConversationScreen`
+  // omits `onMore` entirely rather than passing a no-op, and this is the
+  // control's own half of that: rendering visibly (not silently) unavailable.
+  // `userEvent.press`, unlike `fireEvent.press`, honours `disabled`, which is
+  // the point — this proves a real press cannot reach a handler that does not
+  // exist, not merely that none was called.
+  it('renders "more reactions" disabled when no handler is given', async () => {
+    const user = userEvent.setup()
+    const { getByLabelText } = await renderScreen(<ReactionBar onReact={() => {}} />)
+
+    expect(getByLabelText('More reactions').props.accessibilityState).toMatchObject({
+      disabled: true,
+    })
+
+    // Must not throw reaching for an absent handler.
+    await user.press(getByLabelText('More reactions'))
   })
 })
 
@@ -52,5 +70,21 @@ describe('MessageContextMenu', () => {
     expect(onReply).toHaveBeenCalled()
     expect(onCopy).toHaveBeenCalled()
     expect(onSaveMemory).toHaveBeenCalled()
+  })
+
+  // Real "Copy" needs `expo-clipboard`, not installed — `ConversationScreen`
+  // omits `onCopy` entirely rather than aliasing it to another action, and
+  // this is the control's own half of that: rendering visibly disabled
+  // instead of silently doing something else on a tap.
+  it('renders Copy disabled when no handler is given', async () => {
+    const user = userEvent.setup()
+    const { getByLabelText } = await renderScreen(
+      <MessageContextMenu onReply={() => {}} onSaveMemory={() => {}} />,
+    )
+
+    expect(getByLabelText('Copy').props.accessibilityState).toMatchObject({ disabled: true })
+
+    // Must not throw reaching for an absent handler.
+    await user.press(getByLabelText('Copy'))
   })
 })
