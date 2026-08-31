@@ -7,7 +7,7 @@ import { renderScreen } from '@/test/renderScreen'
 describe('ReactionBar', () => {
   it('offers the six emoji the frame draws', async () => {
     const { getByText } = await renderScreen(<ReactionBar onReact={() => {}} onMore={() => {}} />)
-    for (const e of ['🖤', '❤️', '😂', '🥺', '😍', '👍']) expect(getByText(e)).toBeTruthy()
+    for (const e of ['❤️', '😂', '🥹', '😍', '👍', '✨']) expect(getByText(e)).toBeTruthy()
   })
 
   it('reports which emoji was chosen', async () => {

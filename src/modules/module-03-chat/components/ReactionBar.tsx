@@ -4,8 +4,18 @@ import { StyleSheet, useUnistyles } from 'react-native-unistyles'
 
 import { Text } from '@/design-system/primitives/Text'
 
-/** The six quick reactions the long-press bar draws, left to right. */
-const EMOJI = ['🖤', '❤️', '😂', '🥺', '😍', '👍']
+/**
+ * The six quick reactions the long-press bar draws, left to right.
+ * Matches the Figma frame (Ziyu, Reaction Picker `3390:439`) exactly:
+ * ❤️ 😂 🥹 😍 👍 ✨
+ *
+ * Do not add 🖤 (black heart) back in: it reads as grief/goth/edgy irony,
+ * not affection, and sitting next to a red heart makes it look like a
+ * mistake. Do not swap 🥹 (face holding back tears — warm, moved-to-happy-
+ * tears) for 🥺 (pleading face — begging/wheedling); they look similar but
+ * mean very different things for a couple's app.
+ */
+const EMOJI = ['❤️', '😂', '🥹', '😍', '👍', '✨']
 
 type Props = {
   onReact: (emoji: string) => void

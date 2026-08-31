@@ -330,7 +330,7 @@ describe('design parity — Attachment Menu (3390:384)', () => {
 })
 
 describe('design parity — Reaction Picker (3390:439)', () => {
-  it('matches the context menu labels exactly, and one of the six reaction emoji', async () => {
+  it('matches the context menu labels exactly, and all six reaction emoji', async () => {
     await act(async () => {
       await useChatStore.getState().load()
       useChatStore.getState().selectMessage('m1')
@@ -347,14 +347,14 @@ describe('design parity — Reaction Picker (3390:439)', () => {
     // the overlay itself is reachable and wired to real reaction state.
     expect(getByLabelText('React ❤️')).toBeTruthy()
 
-    // DISCOVERED: the frame's six quick reactions and the built bar's six
-    // only overlap on four. Fixture-derived (not hardcoded on the Figma
-    // side), so a resync that changes the picker would change this too.
+    // FIXED (was DISCOVERED): the frame's six quick reactions and the built
+    // bar's six now match exactly, in order. Fixture-derived (not hardcoded
+    // on the Figma side), so a resync that changes the picker would change
+    // this too.
     const figmaEmoji = ['3390:479', '3390:481', '3390:483', '3390:485', '3390:487', '3390:489']
       .map((id) => textNode('3390:439', id).characters)
-    const builtEmoji = ['🖤', '❤️', '😂', '🥺', '😍', '👍']
-    expect(figmaEmoji.filter((e) => builtEmoji.includes(e))).toEqual(['❤️', '😂', '😍', '👍'])
-    expect(figmaEmoji).not.toEqual(builtEmoji)
+    const builtEmoji = ['❤️', '😂', '🥹', '😍', '👍', '✨']
+    expect(figmaEmoji).toEqual(builtEmoji)
   })
 })
 

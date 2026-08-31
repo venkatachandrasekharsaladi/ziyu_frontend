@@ -64,7 +64,7 @@ one test in a file is relevant, the test name.
 
 | ID | Screen | Figma node | Precondition | Steps | Expected | Automated | Test |
 |---|---|---|---|---|---|---|---|
-| CHAT-029 | Conversation | 3390:439 | — | Long-press a message | `ReactionBar` renders its full six emoji options (🖤 ❤️ 😂 🥺 😍 👍) | Yes | `components/__tests__/ReactionBar.test.tsx` — "offers the six emoji the frame draws" |
+| CHAT-029 | Conversation | 3390:439 | — | Long-press a message | `ReactionBar` renders its full six emoji options (❤️ 😂 🥹 😍 👍 ✨) | Yes | `components/__tests__/ReactionBar.test.tsx` — "offers the six emoji the frame draws" |
 | CHAT-030 | Conversation | 3390:439 | `ReactionBar` mounted | Press an emoji | `onReact` is called with that emoji | Yes | `components/__tests__/ReactionBar.test.tsx` — "reports which emoji was chosen" |
 | CHAT-031 | Conversation | 3390:439 | A message has no reaction from me | React, then react again with the same emoji | First reacts attaches the reaction; the second toggle clears it | Yes | `services/chat/__tests__/mock.test.ts` — "attaches and toggles a reaction" (service layer) |
 | CHAT-032 | Conversation | 3390:439 | Message long-pressed, overlay showing | Tap a reaction emoji through the overlay | The tap reaches `ReactionBar` and calls `react()` — it is not swallowed by the scrim beneath it | Yes | `screens/__tests__/ConversationFlow.test.tsx` — "lets a reaction through the overlay instead of the scrim only dismissing it" |
@@ -194,28 +194,26 @@ built at all" (the header's "Typing…", `ReplyPreview`'s "Replying to Sarah",
 `VoiceNoteRecorder`'s "RECORDING…") — has since been fixed and is removed
 from the list below rather than left listed as still open; see "Fixes landed
 after this catalogue was written" at the end of this document for what
-replaced it. The remaining eight are renumbered here to close the gap, so
+replaced it. A second item — "Reaction picker emoji" — has since been fixed
+the same way: `ReactionBar`'s six now match the frame's exactly
+(❤️😂🥹😍👍✨), so it is likewise removed rather than left listed as an open
+divergence. The remaining seven are renumbered here to close the gap, so
 none of the numbers below match an earlier reading of this file.
 
-1. **Reaction picker emoji.** The frame's six quick reactions (❤️😂🥹😍👍✨)
-   and the built `ReactionBar`'s six (🖤❤️😂🥺😍👍) share only 4. *Reported as
-   a product/content decision*: the built set was chosen deliberately for a
-   two-person relationship app, not copied wrong from the frame.
-
-2. **Attachment sheet sources.** The frame draws Photo / Video / Document /
+1. **Attachment sheet sources.** The frame draws Photo / Video / Document /
    Location plus a **Cancel** button; the built `AttachmentSheet` offers
    Photo / Camera / Voice note / Memory, with no Cancel button (dismiss is
    scrim-only). *Reported as a product/content decision*: "Voice note" and
    "Memory" suit this app's two-person relationship use case better than
    "Document"/"Location" would.
 
-3. **Chat Home's preview line.** The frame wraps the preview in quotes and
+2. **Chat Home's preview line.** The frame wraps the preview in quotes and
    prefixes a "Sarah:" attribution; `ChatHomeScreen`'s row has neither.
    *Genuine gap, new scope*: new UI requiring new copy, not a decision
    already made — the same category the removed "transient states" item used
    to be, before a later fix closed it.
 
-4. **Composer placeholder text.** No frame's placeholder matches the built
+3. **Composer placeholder text.** No frame's placeholder matches the built
    app's `"Message Sarah…"` — the frames themselves disagree with each other
    ("Type a message...", "Message...", "Message Sarah..."), and even where a
    frame's wording is close, its ellipsis is three literal periods, while the
@@ -223,7 +221,7 @@ none of the numbers below match an earlier reading of this file.
    product/content decision*: the built copy was chosen deliberately; the
    frames were never internally consistent enough to match verbatim either way.
 
-5. **Type ramp.** Message body text renders at 18pt (`body` variant) where
+4. **Type ramp.** Message body text renders at 18pt (`body` variant) where
    every frame draws message text at 16pt (matching the `label` token
    instead); bubble timestamps render at 11pt/600 (`caption`) where the frame
    draws 10pt/400 (`countdown`); bottom-nav labels render at 12pt title-case
@@ -246,19 +244,19 @@ action (CHAT-036..040), which writes through `memoriesService` — that is the
 actual bridge; building the frame literally would create a second, divergent
 Memories screen.
 
-6. **Copy does not copy.** `MessageContextMenu`'s Copy item dismisses the
+5. **Copy does not copy.** `MessageContextMenu`'s Copy item dismisses the
    overlay without copying anything — the same effect as tapping the scrim.
    There is no clipboard dependency anywhere in this project's
    `package.json`, and adding one was outside this task's scope. This is
    commented in-file (`ConversationScreen.tsx`, where `onCopy` is wired) but
    disclosed nowhere a reader would look until now.
 
-7. **Three of the four attachment tiles are inert.** `AttachmentSheet` draws
+6. **Three of the four attachment tiles are inert.** `AttachmentSheet` draws
    Photo / Camera / Voice note / Memory; only Photo wires to real behaviour
    (`onPickPhoto`, staging the mock picker). Camera, Voice note, and Memory
    all call `onClose` and do nothing else.
 
-8. **`MessageGroup` was specified but never built.** Design spec §7 names it
+7. **`MessageGroup` was specified but never built.** Design spec §7 names it
    for shared spacing/avatar handling on consecutive same-author messages. It
    does not appear in the implementation plan, in any task brief, or in the
    code — it was dropped silently somewhere between spec and plan. The
