@@ -272,6 +272,17 @@ already accumulated, and the existing onboarding (`days-that-matter`,
 - **Current:** A generates a code, sees a static "sent" screen forever.
 - **Proposed:** A sees live state — invited → opened → paired. B receives a deep
   link that opens straight into acceptance.
+- **The pattern to copy — Marco Polo** (`competitor-ui-patterns.md`): make the
+  invite **non-blocking**. Content can be created *before* the invitee joins, and
+  redemption **unlocks** it rather than flipping a silent flag. This reframes the
+  bug: the problem is not only that A never learns B joined, it is that A has
+  nothing to do while waiting. Pair this with the strategy doc's
+  invite-carries-content idea — B receives *"Chandu answered today's question.
+  Answer to see it."* — and the invite becomes the product's first moment rather
+  than a form.
+- **Also worth copying — Cupla** names the "wrong-account problem" explicitly in
+  its support docs and makes it self-diagnosable. That is the closest real
+  analogue to this app's actual failure symptom.
 - **Where it fits:** `InvitePartnerScreen`, `InvitationSentScreen`,
   `EnterPartnerCodeScreen`, `PartnerFoundScreen`.
 - **Frontend:** polling or subscription state, live status UI, deep-link handling.
@@ -411,7 +422,13 @@ already accumulated, and the existing onboarding (`days-that-matter`,
 
 ### LOV-017 — A repair signal
 
-- **Status:** Proposed · **Priority:** P2 · **Category:** Differentiation · **Dep:** FS
+- **Status:** Proposed · **Priority:** **P1 (raised from P2, 2026-09-01)** ·
+  **Category:** Differentiation · **Dep:** FS
+- **Why raised:** `couples-real-problems.md` ranks conflict repair as **the best
+  mechanistic fit of any problem** for a chat-and-memory product — asynchronous,
+  low-arousal, opt-in — and finds it unaddressed by LoveOS today. This idea was
+  proposed from intuition before that research existed; the two arrived at the
+  same conclusion independently.
 - **Problem:** every app here helps couples connect when things are already fine.
   None help in the hour after an argument, when neither person knows how to
   start — which is when relationships are actually decided.
@@ -574,14 +591,46 @@ notes, `LOV-017` repair signal, `LOV-018` widget, `LOV-020` notifications.
 
 ## 17. Research still needed
 
-1. **Competitor UI patterns** — onboarding lengths, invite handoffs, empty
-   states, daily-prompt interaction design. *Attempted; agent failed. Not done.*
-2. **The real problems couples face** — the existing research is strong on market
-   and silent on couples (0 mentions of mental load, resentment, or financial
-   conflict). *Attempted; agent failed mid-write. Not done.*
+1. ~~Competitor UI patterns~~ — **DONE**, `docs/research/competitor-ui-patterns.md`.
+2. ~~The real problems couples face~~ — **DONE**, `docs/research/couples-real-problems.md`.
 3. **Validate the wedge** — cohabiting 1–5 years is reasoned, not tested.
 4. **Whether the JMIR daily-prompt finding transfers.** It is the best evidence
    in the category, which is not the same as strong evidence.
+5. **Whether a repair signal is used or ignored in the moment it is designed
+   for.** Cheap to test, and the whole case for `LOV-017` rests on it.
+
+### 17.1 What the two completed studies changed
+
+**Most of the biggest problems are not software-tractable, and saying so is the
+finding.** Ranked by prevalence × severity × tractability
+(`couples-real-problems.md`):
+
+| Rank | Problem | Software can help? |
+|---|---|---|
+| 1 | Feeling unappreciated / unseen | Moderate — only if kept narrow, no gamification |
+| 2 | Communication breakdown | **Low-moderate** — *flooding is physiological, not informational* |
+| 3 | Mental load / domestic labour | **Low** — *the cognitive noticing, not the list, is the labor* |
+| 4 | Money conflict | **Low** — a values-and-trust conflict, not a visibility problem |
+| 5 | **Conflict repair** | **Best mechanistic fit for this product** |
+
+Two consequences worth acting on:
+
+- **Do not build a chore or task list.** Shared-task apps have existed for years
+  without moving the mental load, because the noticing is the labour. It would
+  look like addressing the problem while missing it entirely.
+- **Conflict repair is asynchronous, low-arousal and opt-in** — which is exactly
+  what a chat-and-memory product already is. `LOV-017` was proposed from
+  intuition *before* this research existed and the research arrived at the same
+  place by a different route. **Independent convergence is the strongest signal
+  in this exercise.**
+
+**What the category systematically ignores:** relationships in genuine crisis —
+infidelity aftermath, addiction, caregiving strain, infertility, a checked-out
+partner. Avoided because they are clinical-adjacent, low-frequency per couple
+(poor retention loops), and legally risky for a wellness brand. Lasting's own
+reviewers concede the app *"is unlikely to save a marriage where one partner is
+disengaged."* Treat that as the category's working assumption, not an edge case
+— and see §14 question 4.
 
 ---
 
@@ -591,4 +640,5 @@ notes, `LOV-017` repair signal, `LOV-018` widget, `LOV-020` notifications.
 |---|---|
 | 2026-09-01 | File created. Consolidates `research/shortlist.md`, `research/codebase-ideas.md`, and three audit documents into one source of truth. IDs `LOV-001`–`LOV-020` assigned. |
 | 2026-09-01 | Audits completed: 27 auth/onboarding screens, 11 home/memories/profile screens, design system. |
+| 2026-09-01 | Both outstanding studies completed. `LOV-017` raised P2 → P1 on independent convergence. `LOV-001` gained the Marco Polo non-blocking-invite pattern. §17.1 records that most top-ranked couple problems are **not** software-tractable. |
 | 2026-08-31 | Market research completed (`research/couples-app-strategy.md`, 41 sources). |

@@ -1,4 +1,4 @@
-# Couples-app strategy — where LoveOS should spend the next month
+and # Couples-app strategy — where LoveOS should spend the next month
 
 **Date:** 2026-09-01
 **Status:** Recommendation. Not approved, not planned.
