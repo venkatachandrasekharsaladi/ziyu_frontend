@@ -43,7 +43,7 @@ export function HeroCollage() {
     <View style={styles.frame}>
       <Image
         source={require('@/assets/images/welcome/hero.png')}
-        style={styles.image}
+        style={IMAGE}
         contentFit="contain"
         transition={200}
         accessibilityIgnoresInvertColors
@@ -55,6 +55,26 @@ export function HeroCollage() {
 
 const ASPECT_RATIO = 280 / 405.89
 
+/**
+ * Plain style object — Unistyles styles do not reach expo-image.
+ *
+ * Unistyles binds its styles to the native shadow node and does not process
+ * expo-image, so a Unistyles style handed to `<Image>` arrives with `width`,
+ * `height` and `mixBlendMode` all stripped. The artwork then drew 0×0 inside a
+ * frame that kept its shape — a hero-sized hole where the collage should be,
+ * with nothing in the logs to say why. Six other components already carry this
+ * same note; this was the one left behind.
+ *
+ * `mixBlendMode` is load-bearing, not decoration — see note 1 above — so losing
+ * it silently would have been the subtler half of the bug even once the
+ * dimensions came back.
+ */
+const IMAGE = {
+  width: '100%',
+  height: '100%',
+  mixBlendMode: 'multiply',
+} as const
+
 const styles = StyleSheet.create({
   frame: {
     width: '100%',
@@ -63,10 +83,5 @@ const styles = StyleSheet.create({
     aspectRatio: ASPECT_RATIO,
     flexShrink: 1,
     alignSelf: 'center',
-  },
-  image: {
-    width: '100%',
-    height: '100%',
-    mixBlendMode: 'multiply',
   },
 })

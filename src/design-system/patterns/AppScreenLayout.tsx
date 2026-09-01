@@ -50,7 +50,11 @@ export function AppScreenLayout({
     [router, activeTab],
   )
 
-  const body = <View style={styles.column}>{children}</View>
+  const body = (
+    <View testID="app-screen-column" style={styles.column}>
+      {children}
+    </View>
+  )
 
   return (
     <View style={styles.screen}>
@@ -93,7 +97,9 @@ const styles = StyleSheet.create((theme) => ({
   },
   column: {
     width: '100%',
-    maxWidth: 448,
+    // The single lever — see `tokens/layout.ts`. `width: '100%'` is what keeps
+    // a phone fluid; `maxWidth` is only what stops a tablet from stretching it.
+    maxWidth: theme.layout.column,
     alignSelf: 'center',
     gap: theme.spacing.xxl,
   },

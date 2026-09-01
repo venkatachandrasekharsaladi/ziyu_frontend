@@ -108,7 +108,7 @@ describe('theme parity', () => {
   it('shares every non-colour token group by identity, not by copy', () => {
     // Dark mode is a repaint, not a relayout. Sharing the actual object is the
     // strongest form of that guarantee: there is no second value to drift.
-    for (const group of ['spacing', 'radii', 'typography', 'elevation', 'control'] as const) {
+    for (const group of ['spacing', 'radii', 'typography', 'elevation', 'control', 'layout'] as const) {
       expect(midnightTheme[group]).toBe(lavenderTheme[group])
     }
   })

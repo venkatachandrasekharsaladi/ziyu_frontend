@@ -30,6 +30,15 @@ const base = {
   // root's setup files do not reach the projects.
   setupFilesAfterEnv: ['<rootDir>/jest.setup.js'],
   moduleNameMapper: {
+    // MUST come before the general `@/*` mapping below — Jest matches
+    // `moduleNameMapper` entries in order and stops at the first hit, and
+    // `tsconfig.json` carves this one prefix out to the repo-root `assets/`
+    // folder rather than `src/assets/`, which does not exist. Without this
+    // entry every asset `require('@/assets/...')` resolved fine for `tsc` and
+    // Metro alike and then failed only under Jest — and only the first time
+    // some test's dependency graph actually reached one, which nothing did
+    // until a screen-level render test did.
+    '^@/assets/(.*)$': '<rootDir>/assets/$1',
     '^@/(.*)$': '<rootDir>/src/$1',
   },
   testMatch: ['**/__tests__/**/*.test.{ts,tsx}'],

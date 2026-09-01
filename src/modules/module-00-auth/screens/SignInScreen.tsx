@@ -115,11 +115,20 @@ export function SignInScreen() {
         <Divider label={COPY.dividerLabel} />
       </View>
 
-      {/* OAuth is out of scope (spec §17). These render and are pressable so the
-          layout is real, but do nothing yet. */}
-      <View style={styles.social}>
-        <SocialButton provider="google" onPress={() => {}} />
-        <SocialButton provider="apple" onPress={() => {}} />
+      {/* OAuth is out of scope (spec §17) — real Google/Apple sign-in needs
+          `expo-auth-session` plus provider credentials, neither of which
+          exist here. These used to render pressable with an `onPress={() =>
+          {}}` no-op, which looked live and did nothing; `disabled` is what
+          `SocialButton` already exposes for exactly this (it flags
+          `accessibilityState.disabled` and blocks the press), so the layout
+          stays real while honestly reading as not-yet-available instead of
+          silently dead. The wrapping `View`'s opacity is the visual half —
+          `SocialButton` itself does not dim on `disabled` (design-system is
+          out of scope for this task), so it happens here instead, same 0.6
+          `BottomNav` reaches for on its own unbuilt tab. */}
+      <View style={[styles.social, styles.socialDisabled]}>
+        <SocialButton provider="google" onPress={() => {}} disabled />
+        <SocialButton provider="apple" onPress={() => {}} disabled />
       </View>
 
       <FooterPrompt
@@ -146,5 +155,8 @@ const styles = StyleSheet.create((theme) => ({
   social: {
     flexDirection: 'row',
     gap: theme.spacing.md,
+  },
+  socialDisabled: {
+    opacity: 0.6,
   },
 }))

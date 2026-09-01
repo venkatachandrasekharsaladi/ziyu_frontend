@@ -1,3 +1,5 @@
+import { samplePhoto } from '@/sample/photos'
+
 /**
  * UI-ONLY SAMPLE CONTENT — Figma `Ziyu`, the three Home Dashboard variants.
  *
@@ -33,7 +35,7 @@ export const SAMPLE_HOME = {
     lede: "Let's make her day special.",
     primary: 'Plan a Surprise',
     secondary: 'Create Birthday Card',
-    photoUri: 'https://picsum.photos/seed/loveos-birthday-girl/800/900',
+    photoUri: samplePhoto('balloons', 800, 900),
     photoCaption: 'Birthday Girl 🎀',
   },
 

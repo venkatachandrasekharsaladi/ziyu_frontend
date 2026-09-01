@@ -1,5 +1,6 @@
 import { midnightPalette as dark, palette } from '@/design-system/tokens/colors'
 import { elevation } from '@/design-system/tokens/elevation'
+import { layout } from '@/design-system/tokens/layout'
 import { radii } from '@/design-system/tokens/radii'
 import { spacing } from '@/design-system/tokens/spacing'
 import { typography } from '@/design-system/tokens/typography'
@@ -107,6 +108,24 @@ export type ThemeColors = {
    */
   focusRing: string
   shadow: string
+  /**
+   * CHAT — bubble fills, and the one accent Chat is allowed to tint with.
+   *
+   * `accent` is Iris, never Fuschia: Fuschia measures 3.09:1 on white and
+   * 2.93:1 on the page, failing AA as text and under a white label alike.
+   * Fuschia survives only as `bubbleIncoming`'s tint in lavender, where it
+   * sits behind `bubbleInk` rather than carrying text itself.
+   */
+  chat: {
+    bubbleOutgoing: string
+    bubbleIncoming: string
+    /** Ink on top of both bubbles. One value — both fills are contrast-checked for it. */
+    bubbleInk: string
+    accent: string
+    accentSoft: string
+    /** Label on top of `accent`. */
+    onAccent: string
+  }
 }
 
 /**
@@ -125,6 +144,14 @@ const shared = {
   radii,
   typography,
   elevation,
+  /**
+   * Sizing, not colour — same reason `spacing` and `radii` sit here rather
+   * than under a theme. A phone's content column does not get wider when the
+   * user switches from lavender to midnight, so there is exactly one `layout`
+   * object and both themes point at it. See `tokens/layout.ts` for why the
+   * group exists at all.
+   */
+  layout,
 } as const
 
 /**
@@ -185,6 +212,14 @@ export const lavenderTheme = {
     ],
     focusRing: palette.focusRingPurple,
     shadow: palette.shadowSoft,
+    chat: {
+      bubbleOutgoing: palette.iris60,
+      bubbleIncoming: palette.fuschia60,
+      bubbleInk: palette.ink900,
+      accent: palette.iris100,
+      accentSoft: palette.iris60,
+      onAccent: palette.white,
+    },
   } satisfies ThemeColors,
   /**
    * Which end of the light/dark axis this theme sits on.
@@ -255,6 +290,14 @@ export const midnightTheme = {
     ],
     focusRing: dark.focusRingLavender,
     shadow: dark.shadowSoft,
+    chat: {
+      bubbleOutgoing: dark.iris60Dark,
+      bubbleIncoming: dark.fuschia60Dark,
+      bubbleInk: dark.paper50,
+      accent: dark.iris300,
+      accentSoft: dark.iris60Dark,
+      onAccent: dark.ink900,
+    },
   } satisfies ThemeColors,
   scheme: 'dark',
   ...shared,

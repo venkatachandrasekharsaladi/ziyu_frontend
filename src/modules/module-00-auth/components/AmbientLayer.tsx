@@ -13,26 +13,36 @@ import { StyleSheet } from 'react-native-unistyles'
  * The whole layer is hidden from assistive tech — these shapes carry no
  * meaning and announcing four unlabelled images would only add noise.
  */
+/**
+ * Each shape carries its OWN complete style, `position` included.
+ *
+ * Plain objects, because Unistyles styles do not reach expo-image — it binds to
+ * the native shadow node and does not process expo-image, so anything from
+ * `StyleSheet.create` arrives stripped. These entries were already plain, which
+ * is why the shapes had their sizes; `position: 'absolute'` was coming from a
+ * Unistyles style beside them and was the one property being dropped, so the
+ * decoration laid itself out in flow instead of floating behind the content.
+ */
 const AMBIENT = [
   {
     key: 'heart-outline',
     source: require('@/assets/icons/ambient-heart-outline.svg'),
-    style: { left: '10.77%', top: '20.69%', width: 30, height: 27.5 },
+    style: { position: 'absolute', left: '10.77%', top: '20.69%', width: 30, height: 27.5 },
   },
   {
     key: 'sparkle-xs',
     source: require('@/assets/icons/ambient-sparkle-xs.svg'),
-    style: { right: '20%', top: '15%', width: 24, height: 36 },
+    style: { position: 'absolute', right: '20%', top: '15%', width: 24, height: 36 },
   },
   {
     key: 'star',
     source: require('@/assets/icons/ambient-star.svg'),
-    style: { right: '5%', top: '40%', width: 48, height: 56 },
+    style: { position: 'absolute', right: '5%', top: '40%', width: 48, height: 56 },
   },
   {
     key: 'sparkle-sm',
     source: require('@/assets/icons/ambient-sparkle-sm.svg'),
-    style: { right: '15%', top: '60%', width: 30, height: 41 },
+    style: { position: 'absolute', right: '15%', top: '60%', width: 30, height: 41 },
   },
 ] as const
 
@@ -44,7 +54,7 @@ export function AmbientLayer() {
       importantForAccessibility="no-hide-descendants"
     >
       {AMBIENT.map(({ key, source, style }) => (
-        <Image key={key} source={source} style={[styles.shape, style]} contentFit="contain" />
+        <Image key={key} source={source} style={style} contentFit="contain" />
       ))}
     </View>
   )
@@ -60,8 +70,5 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     // Decoration must never intercept a tap meant for the button beneath it.
     pointerEvents: 'none',
-  },
-  shape: {
-    position: 'absolute',
   },
 })

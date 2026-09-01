@@ -117,6 +117,21 @@ export const palette = {
    * cover happens to be.
    */
   scrimInk: 'rgba(0, 0, 0, 0.45)',
+
+  /**
+   * CHAT — Figma `Ziyu` colour styles Fuschia and Iris (91:0–91:5).
+   *
+   * Fuschia is decorative only. It reaches 3.09:1 on white and 2.93:1 on the
+   * page, so it never carries body text and never hosts a white label —
+   * `chat.accent` is Iris, not Fuschia, for exactly that reason.
+   * `chatContrast.test.ts` asserts Fuschia is never wired to `chat.accent`.
+   */
+  fuschia100: '#EF5DA8',
+  fuschia80: '#F178B6',
+  fuschia60: '#FCDDEC',
+  iris100: '#5D5FEF',
+  iris80: '#7879F1',
+  iris60: '#A5A6F6',
 } as const
 
 export type Palette = typeof palette
@@ -235,6 +250,16 @@ export const midnightPalette = {
 
   /** Shadows barely register here — see note 2 above. */
   shadowSoft: 'rgba(0, 0, 0, 0.5)',
+
+  /**
+   * CHAT — dark counterparts to the lavender palette's Fuschia and Iris.
+   *
+   * `iris300` reuses the lavender palette's `iris60` value as-is (not a new
+   * derivation) — it happens to double as the text-on-page tone needed here.
+   */
+  fuschia60Dark: '#3A2130',
+  iris60Dark: '#282A57',
+  iris300: '#A5A6F6',
 } as const
 
 export type MidnightPalette = typeof midnightPalette

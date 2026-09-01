@@ -1,4 +1,5 @@
 import { SAMPLE_MEMORIES } from '@/sample/memories'
+import { samplePhotoSquare } from '@/sample/photos'
 import type { Memory } from '@/services/memories/types'
 
 /**
@@ -24,21 +25,43 @@ export type Album = {
   coverUri: string
 }
 
-const cover = (seed: string) => `https://picsum.photos/seed/loveos-album-${seed}/800/600`
-
 export const SAMPLE_ALBUMS: Album[] = [
-  { key: 'Us', label: 'Us', emoji: '❤️', sampleCount: 86, coverUri: cover('us') },
-  { key: 'Trips', label: 'Trips', emoji: '✈️', sampleCount: 32, coverUri: cover('trips') },
-  { key: 'Dates', label: 'Dates', emoji: '☕', sampleCount: 24, coverUri: cover('dates') },
-  { key: 'Birthdays', label: 'Birthdays', emoji: '🎂', sampleCount: 12, coverUri: cover('birthdays') },
+  { key: 'Us', label: 'Us', emoji: '❤️', sampleCount: 86, coverUri: samplePhotoSquare('wedding', 800) },
+  {
+    key: 'Trips',
+    label: 'Trips',
+    emoji: '✈️',
+    sampleCount: 32,
+    coverUri: samplePhotoSquare('santorini', 800),
+  },
+  {
+    key: 'Dates',
+    label: 'Dates',
+    emoji: '☕',
+    sampleCount: 24,
+    coverUri: samplePhotoSquare('coastPalm', 800),
+  },
+  {
+    key: 'Birthdays',
+    label: 'Birthdays',
+    emoji: '🎂',
+    sampleCount: 12,
+    coverUri: samplePhotoSquare('balloons', 800),
+  },
   {
     key: 'Little Things',
     label: 'Little Things',
     emoji: '🌼',
     sampleCount: 18,
-    coverUri: cover('little-things'),
+    coverUri: samplePhotoSquare('flowers', 800),
   },
-  { key: 'favorites', label: 'Favorites', emoji: '⭐', sampleCount: 9, coverUri: cover('favorites') },
+  {
+    key: 'favorites',
+    label: 'Favorites',
+    emoji: '⭐',
+    sampleCount: 9,
+    coverUri: samplePhotoSquare('heartLights', 800),
+  },
 ]
 
 /** The `favorites` album is the flag; every other album is its tag. */
