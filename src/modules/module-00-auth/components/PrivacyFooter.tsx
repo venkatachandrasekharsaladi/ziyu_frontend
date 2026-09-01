@@ -16,7 +16,10 @@ export function PrivacyFooter() {
     <View style={styles.container}>
       <Image
         source={require('@/assets/icons/lock.svg')}
-        style={styles.icon}
+        // Plain style object — Unistyles styles do not reach expo-image, so a
+        // `StyleSheet.create` entry here arrived with both dimensions stripped
+        // and the lock drew 0×0. Figma 522:280 sizes it 9.33×12.25.
+        style={{ width: 9.33, height: 12.25 }}
         contentFit="contain"
         accessibilityElementsHidden
         importantForAccessibility="no-hide-descendants"
@@ -40,10 +43,6 @@ const styles = StyleSheet.create((theme) => ({
     // Figma sets the whole group to 80% — the note should recede, not compete
     // with the call to action above it.
     opacity: 0.8,
-  },
-  icon: {
-    width: 9.33,
-    height: 12.25,
   },
   textWrap: {
     paddingLeft: theme.spacing.xs,
