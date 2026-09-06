@@ -116,8 +116,10 @@ What to expect while wiring up
   are real. Tests pass zeroes; the app uses the defaults.
 - Nothing persists across a reload yet — there is no storage layer.
 - **Two-device pairing does not work yet**, and it is the one thing the whole
-  product depends on. See `docs/build-status.md` and `docs/product/backlog.md`
-  (`LOV-001`) before planning the pairing endpoints.
+  product depends on: partner A generates a code and never learns whether B
+  redeemed it, and the mock issues one fixed code. Read `docs/build-status.md`
+  before designing the pairing endpoints, and ask us for the `LOV-001` entry —
+  the product backlog is internal and not tracked in this repo.
 
 Verifying a change
 ------------------

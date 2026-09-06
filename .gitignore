@@ -45,6 +45,26 @@ GoogleService-Info.plist
 # typescript
 *.tsbuildinfo
 
+# ---------------------------------------------------------------------------
+# Internal product thinking — deliberately NOT shared.
+#
+# What stays in the repo is what somebody needs in order to RUN, BUILD or
+# INTEGRATE with this app: README.md, TECH.md, docs/build-status.md and
+# docs/qa/. Everything below is our own working material — ideas, competitor
+# research, screen audits, meeting agendas, planning specs. It changes weekly,
+# it is argued over, and it is noise to anyone pulling this repo to build
+# against it.
+#
+# These files still exist on disk; they are simply no longer tracked.
+# ---------------------------------------------------------------------------
+docs/PRODUCT.md
+docs/product/
+docs/research/
+docs/audit/
+docs/discussion-guide.md
+docs/decision-log.md
+docs/superpowers/
+
 example
 
 # generated native folders
