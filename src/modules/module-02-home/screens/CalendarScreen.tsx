@@ -4,6 +4,7 @@ import { useCallback, useState } from 'react'
 import { Pressable, View } from 'react-native'
 import { StyleSheet, useUnistyles } from 'react-native-unistyles'
 
+import { useBackTo } from '@/hooks/useBackTo'
 import { CALENDAR_COPY as COPY } from '@/copy/calendar'
 import { AppScreenLayout } from '@/design-system/patterns/AppScreenLayout'
 import { Button } from '@/design-system/primitives/Button'
@@ -61,6 +62,7 @@ export function monthGrid(year: number, month: number): (number | null)[] {
 export function CalendarScreen() {
   const { theme } = useUnistyles()
   const router = useRouter()
+  const back = useBackTo('/(app)/home')
   const keyDates = useStoryStore((state) => state.keyDates)
 
   const today = new Date()
@@ -78,7 +80,6 @@ export function CalendarScreen() {
 
   const reminders = USE_SAMPLE_CONTENT ? SAMPLE_HOME.littleThings : []
 
-  const back = useCallback(() => router.back(), [router])
   const add = useCallback(() => router.push('/(app)/memories/new'), [router])
   const openOccasion = useCallback(
     // Object form: expo-router types the dynamic segment as a param here and

@@ -1,6 +1,7 @@
 import { act, waitFor } from '@testing-library/react-native'
 
 import fixture from '@/modules/module-03-chat/__fixtures__/figma-chat.json'
+import { CHAT_COPY } from '@/copy/chat'
 import { lavenderTheme } from '@/design-system/themes/theme'
 import { ChatHomeScreen } from '@/modules/module-03-chat/screens/ChatHomeScreen'
 import { ConversationScreen } from '@/modules/module-03-chat/screens/ConversationScreen'
@@ -161,11 +162,14 @@ describe('design parity — type ramp (theme tokens vs. Figma text nodes)', () =
     expect(figma.fontWeight).toBe(400)
     expect(lavenderTheme.typography.label.fontSize).toBe(figma.fontSize)
     expect(lavenderTheme.typography.label.fontFamily).toContain(WEIGHT_MARKER[figma.fontWeight!])
-    // NOT asserted here (and not fixed as part of this task): `MessageBubble`
-    // does not actually pass `variant="label"` — its bubble `<Text>` takes no
-    // `variant` at all, which defaults to `body` (18pt). The RAMP has a token
-    // at the right size; the component just doesn't reach for it. See the
-    // report's additional-mismatches list.
+    // FIXED (was NOT asserted): `MessageBubble` now passes `variant="label"`
+    // on all three of its body branches (text, photo caption, voice
+    // transcript). It previously passed no `variant` at all, defaulting to
+    // `body` — so every message in the thread rendered at 18pt against the
+    // frame's 16pt. The ramp always had the right token; the component just
+    // never reached for it.
+    expect(lavenderTheme.typography.label.fontSize).toBe(16)
+    expect(lavenderTheme.typography.body.fontSize).toBe(18)
   })
 
   it('footnote (pinned-preview strip body): 14pt, regular', () => {
@@ -213,24 +217,49 @@ describe('design parity — Conversation, Normal (3390:665)', () => {
   const TIMESTAMPS = ['3390:678', '3390:686', '3390:697', '3390:706', '3390:717']
   // Excluded with a reason, not silently: see the standalone test below.
   const COMPOSER_PLACEHOLDER = '3390:756'
+  // The frame was drawn while the partner was named "Sarah"; the app now
+  // calls that partner "Sweatcha". The header name node is checked on its own
+  // below, against the app's current copy, rather than against the frame.
+  const PARTNER_NAME = '3390:731'
+  // The frame's divider names a minute ("TODAY, 5:42 PM"). The app's names the
+  // day, because every bubble already states its own time in its footer — a
+  // deliberate content divergence, asserted on its own below rather than
+  // silently dropped from the loop.
+  const DAY_DIVIDER = '3390:670'
 
   it('renders every non-clock, non-placeholder string the frame draws', async () => {
     const { getByText } = await renderScreen(<ConversationScreen />)
     await waitFor(() => expect(getByText('Just trust me.')).toBeTruthy())
 
     const strings = frames[CONVERSATION].text
-      .filter((t) => !TIMESTAMPS.includes(t.id) && t.id !== COMPOSER_PLACEHOLDER)
+      .filter(
+        (t) =>
+          !TIMESTAMPS.includes(t.id)
+          && t.id !== COMPOSER_PLACEHOLDER
+          && t.id !== PARTNER_NAME
+          && t.id !== DAY_DIVIDER,
+      )
       .map((t) => normalize(t.characters))
       .filter(Boolean)
 
-    // Eight strings survive the exclusions above (day divider, 5 message
-    // bodies, name, presence) — asserted so this can't quietly degrade to
-    // "loop over zero things" if the exclusion lists ever grow unchecked.
-    expect(strings.length).toBe(8)
+    // Six strings survive the exclusions above (5 message bodies, presence) —
+    // asserted so this can't quietly degrade to "loop over zero things" if the
+    // exclusion lists ever grow unchecked.
+    expect(strings.length).toBe(6)
 
     for (const s of strings) {
       expect(getByText(s)).toBeTruthy()
     }
+
+    // The one frame string this app deliberately no longer matches. The node
+    // still has a counterpart on screen — it just carries the current name.
+    expect(textNode(CONVERSATION, PARTNER_NAME).characters).toBe('Sarah')
+    expect(getByText('Sweatcha')).toBeTruthy()
+
+    // The divider, likewise: the frame's node still reads as it always did,
+    // and the screen draws the day it stands for.
+    expect(textNode(CONVERSATION, DAY_DIVIDER).characters).toBe('TODAY, 5:42 PM')
+    expect(getByText('Today')).toBeTruthy()
   })
 
   it('DISCOVERED: the composer placeholder does not match the frame text node verbatim', async () => {
@@ -240,9 +269,12 @@ describe('design parity — Conversation, Normal (3390:665)', () => {
     // only the 3 mismatches named in the brief's own task were in scope to
     // actually fix): if this ever starts passing, the composer's placeholder
     // changed and the finding in the report needs updating too.
+    // The partner's name diverges too: the frame was drawn against "Sarah",
+    // the app now spells that name "Sweatcha" (`copy/chat.ts`). Same story — a
+    // deliberate content divergence, so the two strings stay unequal.
     const figma = textNode(CONVERSATION, COMPOSER_PLACEHOLDER)
     expect(figma.characters).toBe('Message Sarah...')
-    const built = 'Message Sarah…'
+    const built = 'Message Sweatcha…'
     expect(built).not.toBe(figma.characters)
   })
 })
@@ -250,19 +282,25 @@ describe('design parity — Conversation, Normal (3390:665)', () => {
 describe('design parity — Chat Home (3390:764)', () => {
   it('renders the screen-level copy the frame draws', async () => {
     const { getAllByText, getByText } = await renderScreen(<ChatHomeScreen />)
-    await waitFor(() => expect(getByText('Chandu & Sarah')).toBeTruthy())
+    await waitFor(() => expect(getByText('Chandu & Sweatcha')).toBeTruthy())
 
     // "Chat" (the screen's own 44pt headline, node 3390:768) also happens to
     // be the bottom nav's Chat-tab label verbatim, so this one is `getAllByText`
     // — two real elements legitimately share the string, not an ambiguity bug.
     expect(getAllByText(normalize(textNode(CHAT_HOME, '3390:768').characters)).length).toBeGreaterThanOrEqual(1)
     expect(getByText(normalize(textNode(CHAT_HOME, '3390:770').characters))).toBeTruthy() // subtitle
-    expect(getByText(normalize(textNode(CHAT_HOME, '3390:784').characters))).toBeTruthy() // coupleName
+
+    // coupleName — node 3390:784 still reads "Chandu & Sarah", drawn before
+    // the partner was renamed. The row renders the app's current couple name
+    // instead, so this checks the counterpart exists rather than that the two
+    // strings still match.
+    expect(textNode(CHAT_HOME, '3390:784').characters).toBe('Chandu & Sarah')
+    expect(getByText('Chandu & Sweatcha')).toBeTruthy()
   })
 
   it('draws the card eyebrows as the frame\'s upper-cased text, once uppercased the same way `caption` would on a real device', async () => {
     const { getByText } = await renderScreen(<ChatHomeScreen />)
-    await waitFor(() => expect(getByText('Chandu & Sarah')).toBeTruthy())
+    await waitFor(() => expect(getByText('Chandu & Sweatcha')).toBeTruthy())
 
     // The rendered DOM text child stays sentence-case under this test runner
     // (see the file header's WHY comment on the Unistyles mock) — `caption`'s
@@ -285,7 +323,7 @@ describe('design parity — Chat Home (3390:764)', () => {
 
   it('DISCOVERED: the row never shows the frame\'s preview line, because the real thread\'s newest message is not the coffee one Figma illustrates', async () => {
     const { getByText, queryByText } = await renderScreen(<ChatHomeScreen />)
-    await waitFor(() => expect(getByText('Chandu & Sarah')).toBeTruthy())
+    await waitFor(() => expect(getByText('Chandu & Sweatcha')).toBeTruthy())
 
     // `messages[messages.length - 1]` — the row's actual source — is `m5`,
     // "Just trust me.", not `m1`'s coffee line the frame draws as the last
@@ -402,10 +440,11 @@ describe('design parity — Conversation, Replying (3390:585)', () => {
 
     // FIXED (was DISCOVERED): frame node 3390:627, "Replying to Sarah" — an
     // attribution label above the quote — now has a counterpart.
-    // `ReplyPreview` renders it verbatim (matches the fixture exactly, no
-    // ellipsis involved) above the quoted body.
+    // `ReplyPreview` renders the same label, carrying the partner name as
+    // this app now spells it ("Sweatcha") rather than the frame's older
+    // "Sarah" — a deliberate content divergence, not a missing element.
     expect(textNode('3390:585', '3390:627').characters).toBe('Replying to Sarah')
-    expect(getAllByText('Replying to Sarah').length).toBeGreaterThanOrEqual(1)
+    expect(getAllByText('Replying to Sweatcha').length).toBeGreaterThanOrEqual(1)
   })
 })
 
@@ -445,22 +484,60 @@ describe('design parity — Pinned & Search (3390:60)', () => {
 })
 
 describe('design parity — Active Video/Voice Moment (3391:842 / 3391:884)', () => {
+  // Fixture node ids, named rather than inlined — each is asserted more than
+  // once below and a bare '3391:852' says nothing at the call site.
+  const VIDEO_CAPTION = '3391:852' // "Just a little moment\ntogether."
+  const VIDEO_TIMER = '3391:868' // "Together for\n05:20", 32/700
+  const VOICE_CAPTION = '3391:905' // "A little moment together"
+  const VOICE_KEEP = '3391:911' // "KEEP MOMENT", 11/600
+  const VOICE_TIMER = '3391:921' // "Together for 08:42", 16/400
+
   it('renders the partner\'s name; the frame\'s other in-call captions are not built', async () => {
     const video = await renderScreen(<VideoMomentScreen />)
-    // `VideoMomentScreen` never renders "Sarah" as a `Text` child — only
+    // `VideoMomentScreen` never renders "Sweatcha" as a `Text` child — only
     // `Avatar`'s `accessibilityLabel`, since the self/partner feeds are
     // avatar stand-ins, not name labels.
-    await waitFor(() => expect(video.getByLabelText('Sarah')).toBeTruthy())
+    await waitFor(() => expect(video.getByLabelText('Sweatcha')).toBeTruthy())
 
     const voice = await renderScreen(<VoiceMomentScreen />)
-    await waitFor(() => expect(voice.getByText('Sarah')).toBeTruthy())
+    await waitFor(() => expect(voice.getByText('Sweatcha')).toBeTruthy())
 
-    // DISCOVERED: neither screen renders the frames' other captions —
-    // "Just a little moment together." / "Together for 05:20" (3391:842),
-    // "A little moment together" / "KEEP MOMENT" / "Together for 08:42"
-    // (3391:884). Both screens' own header comments already document why:
-    // they are a visual shell with no WebRTC dependency, out of this
-    // project's scope — a pre-existing, intentional reduction, not a new
-    // bug, but listed in the report for completeness.
+    // FIXED (was DISCOVERED): both frames' captions are now rendered, and
+    // both elapsed readouts carry the frames' "Together for" label rather
+    // than a bare clock. Asserted against the fixture's own text nodes, so a
+    // resync that reworded a caption fails here rather than drifting.
+    //
+    // Still NOT built, and still out of scope for the same reason both
+    // screens' header comments give: there is no WebRTC or audio capture in
+    // this project, so `KEEP MOMENT` renders named-but-disabled rather than
+    // wired (see `Moments.test.tsx`, which pins that disabled state).
+    expect(video.getByText(normalize(textNode('3391:842', VIDEO_CAPTION).characters)))
+      .toBeTruthy()
+    expect(voice.getByText(normalize(textNode('3391:884', VOICE_CAPTION).characters)))
+      .toBeTruthy()
+
+    // The label prefix the two timers now share, read off the fixture rather
+    // than hardcoded, so a reworded frame fails here. The minutes themselves
+    // are a live interval value, so only the prefix is checkable this way —
+    // `Moments.test.tsx` pins the composed string under fake timers.
+    for (const [frame, node] of [['3391:842', VIDEO_TIMER], ['3391:884', VOICE_TIMER]] as const) {
+      expect(normalize(textNode(frame, node).characters))
+        .toContain(CHAT_COPY.moments.togetherForPrefix)
+    }
+
+    // The voice frame's affordance is present and correctly named, and the
+    // frame draws it at 11/600 — which is exactly `caption`, the variant the
+    // screen reaches for. Both halves checked: a right-sized label on the
+    // wrong string would still be wrong.
+    expect(textNode('3391:884', VOICE_KEEP).characters).toBe('KEEP MOMENT')
+    expect(CHAT_COPY.moments.keepMoment.toUpperCase()).toBe(textNode('3391:884', VOICE_KEEP).characters)
+    expect(lavenderTheme.typography.caption.fontSize).toBe(textNode('3391:884', VOICE_KEEP).fontSize)
+
+    // DISCOVERED (video timer, node 3391:868): the frame draws it at 32pt and
+    // the ramp has no 32 — `h2` is 34, `h3` is 22. The screen uses `h2` and
+    // this pins the 2pt gap so it is a recorded fact rather than a silent
+    // rounding, the same treatment Chat Home's 44pt headline already gets.
+    expect(textNode('3391:842', VIDEO_TIMER).fontSize).toBe(32)
+    expect(lavenderTheme.typography.h2.fontSize).toBe(34)
   })
 })

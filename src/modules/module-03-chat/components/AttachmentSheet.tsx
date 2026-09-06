@@ -1,7 +1,10 @@
 import { Feather } from '@expo/vector-icons'
 import { Pressable, View } from 'react-native'
+import Animated from 'react-native-reanimated'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { StyleSheet, useUnistyles } from 'react-native-unistyles'
 
+import { useEntrance } from '@/design-system/patterns/useEntrance'
 import { Text } from '@/design-system/primitives/Text'
 
 type Props = {
@@ -30,6 +33,18 @@ type Props = {
  * for OAuth.
  */
 export function AttachmentSheet({ onPickPhoto, onVoiceNote, onMemory, onClose }: Props) {
+  // The sheet sits on the bottom edge, so its own padding has to clear the
+  // home indicator / gesture bar. Without this the last row of tiles sits
+  // under the system affordance on every gesture-nav device — the fixed
+  // 342pt height hid the problem by never letting the content reach the edge.
+  const insets = useSafeAreaInsets()
+  const { theme } = useUnistyles()
+  // A sheet is the clearest case for motion in the app: it is a surface that
+  // was not there a moment ago, and sliding it up from the edge it is
+  // attached to is what tells the user where it came from and where a
+  // dismiss will send it.
+  const entrance = useEntrance()
+
   const tiles = [
     // `accessibilityLabel` diverges from the visible text on THIS tile only.
     // `PhotoMessage` (this task's other half) carries `accessibilityLabel=
@@ -69,13 +84,17 @@ export function AttachmentSheet({ onPickPhoto, onVoiceNote, onMemory, onClose }:
   ] as const
 
   return (
-    <View style={styles.sheet}>
+    <Animated.View
+      entering={entrance.sheetIn}
+      exiting={entrance.sheetOut}
+      style={[styles.sheet, { paddingBottom: insets.bottom + theme.spacing.xl }]}
+    >
       <View style={styles.grid}>
         {tiles.map((tile) => (
           <Tile key={tile.label} {...tile} />
         ))}
       </View>
-    </View>
+    </Animated.View>
   )
 }
 
@@ -125,7 +144,19 @@ function Tile({ label, accessibilityLabel, icon, onPress, disabled }: TileProps)
 
 const styles = StyleSheet.create((theme) => ({
   sheet: {
-    height: 342,
+    /*
+     * NO FIXED HEIGHT.
+     *
+     * This was `height: 342` — the literal height of Figma frame 3390:384
+     * (390×342), which is a measurement OF the design, not a rule the design
+     * follows. A sheet pinned to it cannot grow when the tile labels wrap at
+     * a large accessibility font size, and cannot shrink when a tile is
+     * removed; it just clips or leaves dead space.
+     *
+     * Hugging its content reproduces ~342pt at the 390pt baseline anyway,
+     * because that is what the content measures — the number was always an
+     * output, and now it is computed rather than asserted.
+     */
     width: '100%',
     backgroundColor: theme.colors.surface.page,
     borderTopLeftRadius: theme.radii.panel,

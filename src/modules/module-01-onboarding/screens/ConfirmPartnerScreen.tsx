@@ -3,6 +3,7 @@ import { useCallback, useEffect } from 'react'
 import { View } from 'react-native'
 import { StyleSheet } from 'react-native-unistyles'
 
+import { useBackTo } from '@/hooks/useBackTo'
 import { CONFIRM_PARTNER_COPY as COPY } from '@/copy/confirmPartner'
 import { StatusScreen } from '@/design-system/patterns/StatusScreen'
 import { Avatar } from '@/design-system/primitives/Avatar'
@@ -21,6 +22,7 @@ const AVATAR_SIZE = 96
  */
 export function ConfirmPartnerScreen() {
   const router = useRouter()
+  const back = useBackTo('/(onboarding)/setup')
   const partner = useRelationshipStore((state) => state.partner)
   const profile = useRelationshipStore((state) => state.profile)
 
@@ -35,7 +37,7 @@ export function ConfirmPartnerScreen() {
   if (!partner) return null
 
   return (
-    <AuthScreenLayout onBack={router.back} centred>
+    <AuthScreenLayout onBack={back} centred>
       <StatusScreen
         illustration={
           <View style={styles.pair}>

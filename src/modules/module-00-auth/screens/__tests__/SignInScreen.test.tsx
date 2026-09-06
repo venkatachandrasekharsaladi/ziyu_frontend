@@ -10,7 +10,7 @@ const mockPush = jest.fn()
 const mockBack = jest.fn()
 
 jest.mock('expo-router', () => ({
-  useRouter: () => ({ push: mockPush, back: mockBack, replace: jest.fn() }),
+  useRouter: () => ({ canGoBack: () => true, push: mockPush, back: mockBack, replace: jest.fn() }),
 }))
 
 async function fillAndSubmit(email: string, password: string) {

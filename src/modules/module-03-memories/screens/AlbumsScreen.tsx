@@ -3,6 +3,7 @@ import { useCallback } from 'react'
 import { View } from 'react-native'
 import { StyleSheet } from 'react-native-unistyles'
 
+import { useBackTo } from '@/hooks/useBackTo'
 import { ALBUMS_COPY as COPY } from '@/copy/albums'
 import { AppScreenLayout } from '@/design-system/patterns/AppScreenLayout'
 import { Text } from '@/design-system/primitives/Text'
@@ -18,6 +19,7 @@ import { SAMPLE_ALBUMS } from '@/sample/albums'
  */
 export function AlbumsScreen() {
   const router = useRouter()
+  const back = useBackTo('/(app)/memories')
 
   const open = useCallback(
     (key: string) => router.push(`/(app)/memories/albums/${encodeURIComponent(key)}`),
@@ -25,7 +27,7 @@ export function AlbumsScreen() {
   )
 
   return (
-    <AppScreenLayout activeTab="memories" onBack={() => router.back()}>
+    <AppScreenLayout activeTab="memories" onBack={back}>
       <View style={styles.head}>
         <Text variant="caption" tone="muted">
           {COPY.list.eyebrow.toUpperCase()}

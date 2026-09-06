@@ -3,6 +3,7 @@ import { useCallback, useState } from 'react'
 import { Platform, Share, View } from 'react-native'
 import { StyleSheet } from 'react-native-unistyles'
 
+import { useBackTo } from '@/hooks/useBackTo'
 import { ConfirmDialog } from '@/components/feedback/ConfirmDialog'
 import { FeedbackBanner } from '@/components/feedback/FeedbackBanner'
 import { INVITATION_SENT_COPY as COPY } from '@/copy/invitationSent'
@@ -28,6 +29,7 @@ import { useRelationshipStore } from '@/state/relationshipStore'
  */
 export function InvitationSentScreen() {
   const router = useRouter()
+  const back = useBackTo('/(onboarding)/setup')
   const code = useRelationshipStore((state) => state.code)
   const reset = useRelationshipStore((state) => state.reset)
   const [formError, setFormError] = useState<string | null>(null)
@@ -113,7 +115,7 @@ export function InvitationSentScreen() {
   }, [destroy])
 
   return (
-    <AuthScreenLayout onBack={router.back} centred>
+    <AuthScreenLayout onBack={back} centred>
       {/* Rendered in normal flow, same call `ConversationScreen` makes for its
           own Save Memory banner: this is transient enough that it does not
           need its own floating layer, and nudging the content below it down

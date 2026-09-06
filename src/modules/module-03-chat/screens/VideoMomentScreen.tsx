@@ -1,9 +1,10 @@
-import { useRouter } from 'expo-router'
 import { useEffect, useState } from 'react'
 import { View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { StyleSheet } from 'react-native-unistyles'
 
+import { useBackTo } from '@/hooks/useBackTo'
+import { CHAT_COPY } from '@/copy/chat'
 import { ThemedStatusBar } from '@/design-system/patterns/ThemedStatusBar'
 import { Avatar } from '@/design-system/primitives/Avatar'
 import { Text } from '@/design-system/primitives/Text'
@@ -26,7 +27,10 @@ const TICK_MS = 1000
  * `setInterval`, cleared on unmount; nothing here is actually carrying video.
  */
 export function VideoMomentScreen() {
-  const router = useRouter()
+  // Ending a call returns to the conversation it was started from — by
+  // popping the stack normally, or by going there directly when this screen
+  // was itself opened from a link and has no stack behind it.
+  const onEnd = useBackTo('/(app)/chat/conversation')
   const insets = useSafeAreaInsets()
   const [elapsedMs, setElapsedMs] = useState(0)
   const [muted, setMuted] = useState(false)
@@ -49,12 +53,25 @@ export function VideoMomentScreen() {
       {/* The "partner feed" — full-bleed, with their avatar standing in for
           the frame a real camera would decode. */}
       <View style={styles.partnerFeed}>
-        <Avatar name="Sarah" size={128} />
+        <Avatar name="Sweatcha" size={128} />
       </View>
 
+      {/*
+        "Together for 05:20" — the frame labels this readout rather than
+        drawing a bare clock (node 3391:868). The prefix is copy; the minutes
+        are the live interval value.
+
+        RAMP GAP, documented not papered over: the frame draws this at
+        32pt/700 and the ramp has no 32 — `h2` is 34/700 and `h3` is 22. `h2`
+        is the closest and the weight is right, so it is used here and the
+        2pt difference is recorded, exactly like the Chat Home headline's
+        44pt gap `DesignParity.test.tsx` already carries. Inventing a `display`
+        token for one node would widen the type ramp on the strength of a
+        single frame.
+      */}
       <View style={[styles.timer, { top: insets.top + 16 }]}>
-        <Text variant="body" tone="onPrimary" align="center">
-          {clock(elapsedMs)}
+        <Text variant="h2" tone="onPrimary" align="center">
+          {`${CHAT_COPY.moments.togetherForPrefix} ${clock(elapsedMs)}`}
         </Text>
       </View>
 
@@ -67,12 +84,21 @@ export function VideoMomentScreen() {
       </View>
 
       <View style={[styles.controls, { paddingBottom: insets.bottom + 24 }]}>
+        {/* The frame's caption (3391:842). Sits with the controls rather
+            than free-floating: the fixture recorded this frame's TEXT but
+            never any node's x/y, so the one honest claim available is that
+            the line belongs to the bottom cluster — not a pixel offset
+            invented from a zoomed-out screenshot. */}
+        <Text variant="label" tone="onPrimary" align="center">
+          {CHAT_COPY.moments.videoCaption}
+        </Text>
+
         <CallControls
           muted={muted}
           onToggleMute={() => setMuted((was) => !was)}
           cameraOn={cameraOn}
           onToggleCamera={() => setCameraOn((was) => !was)}
-          onEnd={router.back}
+          onEnd={onEnd}
         />
       </View>
     </View>
@@ -115,5 +141,6 @@ const styles = StyleSheet.create((theme) => ({
     right: 0,
     bottom: 0,
     alignItems: 'center',
+    gap: theme.spacing.md,
   },
 }))

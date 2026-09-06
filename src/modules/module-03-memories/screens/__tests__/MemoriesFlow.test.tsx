@@ -37,10 +37,13 @@ const service = jest.mocked(memoriesService)
 const mockPush = jest.fn()
 const mockReplace = jest.fn()
 const mockBack = jest.fn()
+// The ordinary answer is "yes, there is a stack"; the deep-link case below
+// sets it false for itself.
+const mockCanGoBack = jest.fn(() => true)
 let mockId = 'memory-1'
 
 jest.mock('expo-router', () => ({
-  useRouter: () => ({ push: mockPush, replace: mockReplace, back: mockBack }),
+  useRouter: () => ({ canGoBack: mockCanGoBack, push: mockPush, replace: mockReplace, back: mockBack }),
   useLocalSearchParams: () => ({ id: mockId }),
 }))
 
@@ -68,6 +71,9 @@ const COFFEE: Memory = {
 
 beforeEach(() => {
   jest.clearAllMocks()
+  // `clearAllMocks` strips implementations too, so restore the router's
+  // ordinary answer: there is a stack behind this screen.
+  mockCanGoBack.mockReturnValue(true)
   mockId = 'memory-1'
   useRelationshipStore.getState().reset()
 
@@ -257,9 +263,28 @@ describe('M03-S02 Memory Detail', () => {
 
     await user.press(screen.getByRole('button', { name: COPY.detail.back }))
 
-    // replace, not push — the detail screen it failed to draw is not worth
-    // keeping on the stack.
+    // Back out of the error to wherever the user came from — the album or the
+    // library that linked here. Never a push: the detail screen it failed to
+    // draw is not worth adding to the stack.
+    expect(mockBack).toHaveBeenCalled()
+    expect(mockPush).not.toHaveBeenCalled()
+  })
+
+  it('lands on the library when a missing memory was opened directly', async () => {
+    // No stack to pop — the URL was opened cold, so there is nowhere to go
+    // back TO. `replace`, so the memory that does not exist does not sit in
+    // history waiting to be returned to.
+    mockCanGoBack.mockReturnValue(false)
+    service.get.mockResolvedValue({ ok: false, error: { code: 'NOT_FOUND' } })
+    const user = userEvent.setup()
+    await renderScreen(<MemoryDetailScreen />)
+
+    expect(await screen.findByText(COPY.detail.errors.NOT_FOUND)).toBeTruthy()
+
+    await user.press(screen.getByRole('button', { name: COPY.detail.back }))
+
     expect(mockReplace).toHaveBeenCalledWith('/(app)/memories')
+    expect(mockBack).not.toHaveBeenCalled()
   })
 
   it('distinguishes a dropped connection from a deleted memory', async () => {

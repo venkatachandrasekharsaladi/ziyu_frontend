@@ -9,7 +9,7 @@ import { renderScreen } from '@/test/renderScreen'
 const mockPush = jest.fn()
 
 jest.mock('expo-router', () => ({
-  useRouter: () => ({ push: mockPush, back: jest.fn(), replace: jest.fn() }),
+  useRouter: () => ({ canGoBack: () => true, push: mockPush, back: jest.fn(), replace: jest.fn() }),
 }))
 
 describe('InvitePartnerScreen', () => {

@@ -16,6 +16,18 @@ export const radii = {
   panel: 24,
   /** The M00-S02 medallion. Figma 522:68. */
   medallion: 32,
+  /**
+   * A message bubble's outer corner. Softer than `panel` (24), so a two-word
+   * bubble does not read as a lozenge; firmer than `tile` (16), so a long one
+   * still feels held.
+   */
+  bubble: 20,
+  /**
+   * The corner a bubble tightens on the author's own side — every bubble in a
+   * run except the one that opens it. Reads as the tail of the run without
+   * drawing a tail shape, which no RN border-radius can do honestly.
+   */
+  bubbleTight: 6,
   /** Buttons. Figma draws 9999 — named so the intent survives. */
   pill: 9999,
 } as const

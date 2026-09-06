@@ -3,6 +3,7 @@ import { useCallback, useState } from 'react'
 import { View } from 'react-native'
 import { StyleSheet } from 'react-native-unistyles'
 
+import { useBackTo } from '@/hooks/useBackTo'
 import { BECAME_US_COPY as COPY } from '@/copy/becameUs'
 import { Button } from '@/design-system/primitives/Button'
 import { DateField } from '@/design-system/primitives/DateField'
@@ -21,6 +22,7 @@ import { useStoryStore } from '@/state/storyStore'
  */
 export function BecameUsScreen() {
   const router = useRouter()
+  const back = useBackTo('/(onboarding)/setup')
   const setBecameUs = useStoryStore((state) => state.setBecameUs)
 
   const [date, setDate] = useState('')
@@ -39,7 +41,7 @@ export function BecameUsScreen() {
   }, [date, location, note, setBecameUs, next])
 
   return (
-    <AuthScreenLayout onBack={router.back}>
+    <AuthScreenLayout onBack={back}>
       <View style={styles.copy}>
         <Text variant="h1" tone="heading" align="center">
           {COPY.heading}

@@ -3,6 +3,7 @@ import { useCallback, useState } from 'react'
 import { View } from 'react-native'
 import { StyleSheet } from 'react-native-unistyles'
 
+import { useBackTo } from '@/hooks/useBackTo'
 import { DAYS_THAT_MATTER_COPY as COPY } from '@/copy/daysThatMatter'
 import { Button } from '@/design-system/primitives/Button'
 import { DateField } from '@/design-system/primitives/DateField'
@@ -30,6 +31,7 @@ type DateKey = (typeof COPY.fields)[number]['key']
  */
 export function DaysThatMatterScreen() {
   const router = useRouter()
+  const back = useBackTo('/(onboarding)/setup')
   const setKeyDates = useStoryStore((state) => state.setKeyDates)
 
   const [dates, setDates] = useState<Record<DateKey, string>>({
@@ -58,7 +60,7 @@ export function DaysThatMatterScreen() {
   }, [dates, setKeyDates, next])
 
   return (
-    <AuthScreenLayout onBack={router.back}>
+    <AuthScreenLayout onBack={back}>
       <View style={styles.copy}>
         <Text variant="h1" tone="heading" align="center">
           {COPY.heading}

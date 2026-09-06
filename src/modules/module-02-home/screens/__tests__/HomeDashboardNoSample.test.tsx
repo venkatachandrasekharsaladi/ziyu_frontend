@@ -7,7 +7,7 @@ import { useStoryStore } from '@/state/storyStore'
 import { renderScreen } from '@/test/renderScreen'
 
 jest.mock('expo-router', () => ({
-  useRouter: () => ({ push: jest.fn(), back: jest.fn(), replace: jest.fn() }),
+  useRouter: () => ({ canGoBack: () => true, push: jest.fn(), back: jest.fn(), replace: jest.fn() }),
 }))
 
 /**

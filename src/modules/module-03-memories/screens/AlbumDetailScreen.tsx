@@ -4,6 +4,7 @@ import { useCallback } from 'react'
 import { View } from 'react-native'
 import { StyleSheet, useUnistyles } from 'react-native-unistyles'
 
+import { useBackTo } from '@/hooks/useBackTo'
 import { ALBUMS_COPY as COPY } from '@/copy/albums'
 import { AppScreenLayout } from '@/design-system/patterns/AppScreenLayout'
 import { Button } from '@/design-system/primitives/Button'
@@ -24,11 +25,11 @@ import { findAlbum, memoriesInAlbum } from '@/sample/albums'
 export function AlbumDetailScreen() {
   const { theme } = useUnistyles()
   const router = useRouter()
+  const back = useBackTo('/(app)/memories')
   const { key } = useLocalSearchParams<{ key: string }>()
   const album = findAlbum(decodeURIComponent(key ?? ''))
 
   const open = useCallback((id: string) => router.push(`/(app)/memories/${id}`), [router])
-  const back = useCallback(() => router.back(), [router])
 
   if (!album) {
     return (

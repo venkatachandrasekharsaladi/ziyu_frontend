@@ -1,7 +1,9 @@
-import { Feather } from '@expo/vector-icons'
-import { Pressable, View } from 'react-native'
-import { StyleSheet, useUnistyles } from 'react-native-unistyles'
+import { View } from 'react-native'
+import Animated from 'react-native-reanimated'
+import { StyleSheet } from 'react-native-unistyles'
 
+import { useEntrance } from '@/design-system/patterns/useEntrance'
+import { IconButton } from '@/design-system/patterns/IconButton'
 import { CHAT_COPY } from '@/copy/chat'
 import { Text } from '@/design-system/primitives/Text'
 
@@ -25,28 +27,30 @@ type Props = {
  * wrapping `View`: `Text` has no `style` prop to carry `flex: 1` itself.
  *
  * The attribution line above the quote (Figma `3390:585`'s "Replying to
- * Sarah") is `CHAT_COPY.conversation.replyingToSarah` — a fixed string, not a
+ * Sweatcha") is `CHAT_COPY.conversation.replyingToPartner` — a fixed string, not a
  * prop, because nothing calling this component knows who authored the
  * message it quotes either: `ConversationScreen` hands over only the quoted
  * `body` (see `Composer`'s `replyTo`), and this app's one thread has exactly
  * one partner to attribute a reply to regardless of whose bubble it was.
  */
 export function ReplyPreview({ body, onCancel }: Props) {
-  const { theme } = useUnistyles()
+  // This strip appears above the composer the instant a reply starts, and
+  // pushes the composer down as it does. Rising into place makes that shove
+  // read as one movement instead of a jump.
+  const entrance = useEntrance()
 
   return (
-    <View style={styles.wrap}>
+    <Animated.View entering={entrance.rise} exiting={entrance.fadeOut} style={styles.wrap}>
       <View style={styles.bar} />
       <View style={styles.body}>
         <Text variant="footnote" tone="placeholder" numberOfLines={1}>
-          {CHAT_COPY.conversation.replyingToSarah}
+          {CHAT_COPY.conversation.replyingToPartner}
         </Text>
         <Text numberOfLines={1}>{body}</Text>
       </View>
-      <Pressable onPress={onCancel} accessibilityRole="button" accessibilityLabel="Cancel reply">
-        <Feather name="x" size={18} color={theme.colors.text.placeholder} />
-      </Pressable>
-    </View>
+      {/* Was a bare icon with no padding around it — a 18pt tap target. */}
+      <IconButton icon="x" label="Cancel reply" onPress={onCancel} size="sm" tone="plain" />
+    </Animated.View>
   )
 }
 

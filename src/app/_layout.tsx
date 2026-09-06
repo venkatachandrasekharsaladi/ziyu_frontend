@@ -14,6 +14,8 @@ import * as SplashScreen from 'expo-splash-screen'
 import { useEffect } from 'react'
 import { SafeAreaProvider } from 'react-native-safe-area-context'
 
+import { useStackScreenOptions } from '@/design-system/patterns/useStackScreenOptions'
+
 /**
  * Root layout.
  *
@@ -28,6 +30,9 @@ import { SafeAreaProvider } from 'react-native-safe-area-context'
 SplashScreen.preventAutoHideAsync()
 
 export default function RootLayout() {
+  // Called before the early `return null` below so hook order stays stable
+  // across the fonts-loading render and every render after it.
+  const screenOptions = useStackScreenOptions()
   const [fontsLoaded, fontError] = useFonts({
     PlusJakartaSans_400Regular,
     PlusJakartaSans_600SemiBold,
@@ -48,7 +53,7 @@ export default function RootLayout() {
 
   return (
     <SafeAreaProvider>
-      <Stack screenOptions={{ headerShown: false }} />
+      <Stack screenOptions={screenOptions} />
     </SafeAreaProvider>
   )
 }

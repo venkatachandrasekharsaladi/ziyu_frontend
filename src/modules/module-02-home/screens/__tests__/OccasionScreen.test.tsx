@@ -11,7 +11,7 @@ const mockBack = jest.fn()
 let mockKey = 'partnerBirthday'
 
 jest.mock('expo-router', () => ({
-  useRouter: () => ({ push: mockPush, replace: jest.fn(), back: mockBack }),
+  useRouter: () => ({ canGoBack: () => true, push: mockPush, replace: jest.fn(), back: mockBack }),
   useLocalSearchParams: () => ({ key: mockKey }),
 }))
 

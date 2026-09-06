@@ -244,7 +244,7 @@ beforeEach(() => {
 it('walks the whole module A to Z in one continuous session', async () => {
   // 1. Chat Home shows the couple's one conversation.
   const home = await renderScreen(<ChatHomeScreen />)
-  await waitFor(() => expect(home.getByText('Chandu & Sarah')).toBeTruthy())
+  await waitFor(() => expect(home.getByText('Chandu & Sweatcha')).toBeTruthy())
   // `render(...).unmount()` is also async in RNTL v14 (it wraps the
   // renderer's own unmount in `act`) — an un-awaited `unmount()` here left
   // an open act scope that silently emptied the NEXT `renderScreen()`

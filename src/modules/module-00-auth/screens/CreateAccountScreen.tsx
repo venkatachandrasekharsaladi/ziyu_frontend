@@ -5,6 +5,7 @@ import { useForm, useWatch } from 'react-hook-form'
 import { View } from 'react-native'
 import { StyleSheet } from 'react-native-unistyles'
 
+import { useBackTo } from '@/hooks/useBackTo'
 import { FormField } from '@/components/forms/FormField'
 import { CREATE_ACCOUNT_COPY as COPY } from '@/copy/createAccount'
 import { authErrorMessage } from '@/copy/errors'
@@ -26,6 +27,7 @@ import { authService } from '@/services/auth'
  */
 export function CreateAccountScreen() {
   const router = useRouter()
+  const back = useBackTo('/(auth)/welcome')
 
   const { control, handleSubmit, setError, formState } = useForm<SignUpValues>({
     resolver: zodResolver(signUpSchema),
@@ -53,7 +55,7 @@ export function CreateAccountScreen() {
   const goToSignIn = useCallback(() => router.push('/(auth)/sign-in'), [router])
 
   return (
-    <AuthScreenLayout onBack={router.back}>
+    <AuthScreenLayout onBack={back}>
       <View style={styles.copy}>
         {/*
           One Text with a newline, NOT one Text per line. As separate children of

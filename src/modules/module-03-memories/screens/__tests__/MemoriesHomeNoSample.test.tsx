@@ -18,7 +18,7 @@ jest.mock('@/services/memories', () => ({
 const mockPush = jest.fn()
 
 jest.mock('expo-router', () => ({
-  useRouter: () => ({ push: mockPush, replace: jest.fn(), back: jest.fn() }),
+  useRouter: () => ({ canGoBack: () => true, push: mockPush, replace: jest.fn(), back: jest.fn() }),
 }))
 
 /**

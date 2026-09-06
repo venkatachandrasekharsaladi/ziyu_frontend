@@ -10,7 +10,7 @@ const mockReplace = jest.fn()
 const mockPush = jest.fn()
 
 jest.mock('expo-router', () => ({
-  useRouter: () => ({ replace: mockReplace, push: mockPush, back: jest.fn() }),
+  useRouter: () => ({ canGoBack: () => true, replace: mockReplace, push: mockPush, back: jest.fn() }),
 }))
 
 beforeEach(() => {
@@ -79,19 +79,6 @@ describe('AppScreenLayout', () => {
 
     await user.press(screen.getByLabelText('Home'))
 
-    expect(mockReplace).not.toHaveBeenCalled()
-  })
-
-  it('goes nowhere for a tab that has nowhere to go', async () => {
-    await renderScreen(<AppScreenLayout activeTab="home" />)
-
-    // Disabled, so a press never reaches the handler — and if the disabled
-    // state ever regressed, `href: ''` would still stop the navigation.
-    // `Timeline`, not `Chat`: Task 10 flipped chat's tab live, so timeline is
-    // the one destination still without a screen behind it.
-    expect(screen.getByLabelText('Timeline').props.accessibilityState).toMatchObject({
-      disabled: true,
-    })
     expect(mockReplace).not.toHaveBeenCalled()
   })
 

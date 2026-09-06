@@ -4,15 +4,15 @@ import { samplePhoto } from '@/sample/photos'
  * UI-ONLY SAMPLE CONTENT — Figma `Ziyu`, the three Home Dashboard variants.
  *
  * Every value here is drawn in the design: "1,395 beautiful days together",
- * the 8 trips / 42 places tiles, Sarah's birthday six days out, the anniversary
+ * the 8 trips / 42 places tiles, Sweatcha's birthday six days out, the anniversary
  * reminder. The screen prefers the real store whenever it holds a value and
  * falls back to these only where it is empty, so this file stops being visible
  * the moment a couple enters anything real.
  */
 export const SAMPLE_HOME = {
   /** Header line: the couple, as the design's top bar shows them. */
-  coupleName: 'Chandu & Sarah',
-  greetingName: 'Chandu & Sarah',
+  coupleName: 'Chandu & Sweatcha',
+  greetingName: 'Chandu & Sweatcha',
   daysTogether: 1395,
 
   /** "Your little world" — the three stat tiles. */
@@ -25,13 +25,13 @@ export const SAMPLE_HOME = {
   /** "Coming up" — countdown rows. */
   comingUp: [
     { key: 'anniversary', label: 'Our Anniversary', detail: 'Oct 14', days: 18 },
-    { key: 'partnerBirthday', label: "Sarah's Birthday", detail: 'Oct 20', days: 6 },
+    { key: 'partnerBirthday', label: "Sweatcha's Birthday", detail: 'Oct 20', days: 6 },
   ],
 
   /** The birthday spotlight card from the second dashboard variant. */
   spotlight: {
     eyebrow: 'Upcoming special event',
-    heading: "Sarah's birthday is in 6 days 🎂",
+    heading: "Sweatcha's birthday is in 6 days 🎂",
     lede: "Let's make her day special.",
     primary: 'Plan a Surprise',
     secondary: 'Create Birthday Card',

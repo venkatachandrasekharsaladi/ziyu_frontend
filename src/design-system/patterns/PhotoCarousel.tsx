@@ -10,6 +10,7 @@ import {
 } from 'react-native'
 import { StyleSheet, useUnistyles } from 'react-native-unistyles'
 
+
 type PhotoCarouselProps = {
   photos: string[]
   height: number

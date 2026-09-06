@@ -5,6 +5,7 @@ import { Controller, useForm } from 'react-hook-form'
 import { View } from 'react-native'
 import { StyleSheet } from 'react-native-unistyles'
 
+import { useBackTo } from '@/hooks/useBackTo'
 import { FormField } from '@/components/forms/FormField'
 import { CREATE_PROFILE_COPY as COPY } from '@/copy/createProfile'
 import { PhotoPicker } from '@/design-system/patterns/PhotoPicker'
@@ -28,6 +29,7 @@ import { useRelationshipStore } from '@/state/relationshipStore'
  */
 export function CreateProfileScreen() {
   const router = useRouter()
+  const back = useBackTo('/(onboarding)/setup')
   const setProfile = useRelationshipStore((state) => state.setProfile)
   const [formError, setFormError] = useState<string | null>(null)
 
@@ -59,7 +61,7 @@ export function CreateProfileScreen() {
   const onPickPhoto = useCallback(() => {}, [])
 
   return (
-    <AuthScreenLayout onBack={router.back}>
+    <AuthScreenLayout onBack={back}>
       <View style={styles.copy}>
         <Text variant="h1" tone="heading" align="center">
           {COPY.heading}

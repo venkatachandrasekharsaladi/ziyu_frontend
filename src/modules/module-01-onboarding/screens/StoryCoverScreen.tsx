@@ -1,6 +1,7 @@
 import { useRouter } from 'expo-router'
 import { useCallback } from 'react'
 
+import { useBackTo } from '@/hooks/useBackTo'
 import { STORY_COVER_COPY as COPY } from '@/copy/storyCover'
 import { StatusScreen } from '@/design-system/patterns/StatusScreen'
 import { AuthMedallion } from '@/modules/module-00-auth/components/AuthMedallion'
@@ -16,13 +17,14 @@ import { AuthScreenLayout } from '@/modules/module-00-auth/components/AuthScreen
  */
 export function StoryCoverScreen() {
   const router = useRouter()
+  const back = useBackTo('/(onboarding)/setup')
 
   const begin = useCallback(() => router.push('/(onboarding)/when-we-met'), [router])
   // Skipping jumps the whole capture flow, not one step of it.
   const skip = useCallback(() => router.replace('/(onboarding)/story-ready'), [router])
 
   return (
-    <AuthScreenLayout onBack={router.back} centred>
+    <AuthScreenLayout onBack={back} centred>
       <StatusScreen
         illustration={<AuthMedallion />}
         heading={COPY.heading}

@@ -1,7 +1,8 @@
 import { Feather } from '@expo/vector-icons'
-import { Pressable, View } from 'react-native'
+import { View } from 'react-native'
 import { StyleSheet, useUnistyles } from 'react-native-unistyles'
 
+import { IconButton } from '@/design-system/patterns/IconButton'
 import { BRAND } from '@/config/brand'
 import { Text } from '@/design-system/primitives/Text'
 
@@ -28,15 +29,13 @@ export function AppHeader({ onBack }: AppHeaderProps) {
   return (
     <View style={styles.header}>
       {onBack ? (
-        <Pressable
+        <IconButton
+          icon="arrow-left"
+          label="Go back"
           onPress={onBack}
-          accessibilityRole="button"
-          accessibilityLabel="Go back"
-          style={styles.edge}
+          tone="plain"
           testID="header-edge"
-        >
-          <Feather name="arrow-left" size={20} color={theme.colors.text.heading} />
-        </Pressable>
+        />
       ) : (
         <View style={styles.edge} testID="header-edge" />
       )}
@@ -65,9 +64,11 @@ const styles = StyleSheet.create((theme) => ({
     // is verified on device (spec open item 7).
     backgroundColor: theme.colors.surface.page,
   },
+  // The spacer opposite the back control. Matches `IconButton`'s own `md`
+  // diameter so the wordmark between them stays centred.
   edge: {
-    width: 40,
-    height: 40,
+    width: 44,
+    height: 44,
     alignItems: 'center',
     justifyContent: 'center',
   },

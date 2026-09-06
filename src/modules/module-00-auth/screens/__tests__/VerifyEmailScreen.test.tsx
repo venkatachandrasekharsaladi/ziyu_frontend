@@ -8,7 +8,7 @@ const mockBack = jest.fn()
 const mockReplace = jest.fn()
 
 jest.mock('expo-router', () => ({
-  useRouter: () => ({ push: jest.fn(), back: mockBack, replace: mockReplace }),
+  useRouter: () => ({ canGoBack: () => true, push: jest.fn(), back: mockBack, replace: mockReplace }),
 }))
 
 describe('VerifyEmailScreen', () => {

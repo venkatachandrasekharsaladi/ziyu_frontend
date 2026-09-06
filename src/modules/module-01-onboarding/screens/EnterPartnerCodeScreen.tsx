@@ -3,6 +3,7 @@ import { useCallback, useState } from 'react'
 import { View } from 'react-native'
 import { StyleSheet } from 'react-native-unistyles'
 
+import { useBackTo } from '@/hooks/useBackTo'
 import { ENTER_CODE_COPY as COPY } from '@/copy/enterPartnerCode'
 import { Button } from '@/design-system/primitives/Button'
 import { CodeInput } from '@/design-system/primitives/CodeInput'
@@ -21,6 +22,7 @@ const CODE_LENGTH = 6
  */
 export function EnterPartnerCodeScreen() {
   const router = useRouter()
+  const back = useBackTo('/(onboarding)/setup')
   const setPartner = useRelationshipStore((state) => state.setPartner)
   const [code, setCode] = useState('')
   const [error, setError] = useState<string | null>(null)
@@ -53,7 +55,7 @@ export function EnterPartnerCodeScreen() {
   const goToSetup = useCallback(() => router.push('/(onboarding)/setup'), [router])
 
   return (
-    <AuthScreenLayout onBack={router.back} centred>
+    <AuthScreenLayout onBack={back} centred>
       <View style={styles.copy}>
         <Text variant="h1" tone="heading" align="center">
           {COPY.heading}

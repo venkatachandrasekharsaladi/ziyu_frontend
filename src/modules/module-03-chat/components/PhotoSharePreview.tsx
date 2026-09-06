@@ -1,8 +1,9 @@
-import { Feather } from '@expo/vector-icons'
 import { Image } from 'expo-image'
 import { useState } from 'react'
-import { Pressable, TextInput, View } from 'react-native'
+import { TextInput, View } from 'react-native'
 import { StyleSheet, useUnistyles } from 'react-native-unistyles'
+
+import { IconButton } from '@/design-system/patterns/IconButton'
 
 type Props = {
   uri: string
@@ -36,14 +37,7 @@ export function PhotoSharePreview({ uri, onSend, onCancel }: Props) {
       />
 
       <View style={styles.topBar}>
-        <Pressable
-          onPress={onCancel}
-          accessibilityRole="button"
-          accessibilityLabel="Cancel photo"
-          style={styles.round}
-        >
-          <Feather name="x" size={20} color={theme.colors.text.onPrimary} />
-        </Pressable>
+        <IconButton icon="x" label="Cancel photo" onPress={onCancel} tone="onMedia" />
       </View>
 
       <View style={styles.bottomBar}>
@@ -56,14 +50,7 @@ export function PhotoSharePreview({ uri, onSend, onCancel }: Props) {
           style={styles.input}
         />
 
-        <Pressable
-          onPress={() => onSend(uri, caption)}
-          accessibilityRole="button"
-          accessibilityLabel="Send photo"
-          style={styles.send}
-        >
-          <Feather name="arrow-up" size={20} color={theme.colors.chat.onAccent} />
-        </Pressable>
+        <IconButton icon="arrow-up" label="Send photo" onPress={() => onSend(uri, caption)} tone="accent" />
       </View>
     </View>
   )
@@ -80,17 +67,6 @@ const styles = StyleSheet.create((theme) => ({
   topBar: {
     paddingHorizontal: theme.spacing.lg,
     paddingTop: theme.spacing.xxl,
-  },
-  round: {
-    width: 40,
-    height: 40,
-    borderRadius: theme.radii.pill,
-    alignItems: 'center',
-    justifyContent: 'center',
-    // Translucent-on-photo is the whole point of reaching for `scrim` here
-    // rather than a solid surface token — a solid circle would read as a
-    // stray chip floating over someone's photo.
-    backgroundColor: theme.colors.surface.scrim,
   },
   bottomBar: {
     position: 'absolute',
@@ -114,13 +90,5 @@ const styles = StyleSheet.create((theme) => ({
     backgroundColor: theme.colors.surface.card,
     ...theme.typography.body,
     color: theme.colors.text.body,
-  },
-  send: {
-    width: 40,
-    height: 40,
-    borderRadius: theme.radii.pill,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: theme.colors.chat.accent,
   },
 }))

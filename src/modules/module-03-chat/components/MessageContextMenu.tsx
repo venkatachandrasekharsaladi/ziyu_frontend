@@ -1,7 +1,9 @@
 import { Feather } from '@expo/vector-icons'
 import { Pressable, View } from 'react-native'
+import Animated from 'react-native-reanimated'
 import { StyleSheet, useUnistyles } from 'react-native-unistyles'
 
+import { useEntrance } from '@/design-system/patterns/useEntrance'
 import { Text } from '@/design-system/primitives/Text'
 
 type Props = {
@@ -34,8 +36,13 @@ export function MessageContextMenu({ onReply, onCopy, onSaveMemory }: Props) {
     { label: 'Save Memory', icon: 'bookmark', onPress: onSaveMemory, disabled: false },
   ] as const
 
+  // Rises the short distance into place rather than appearing. A menu that
+  // pops in has no relationship to the bubble that summoned it; a menu that
+  // settles does.
+  const entrance = useEntrance()
+
   return (
-    <View style={styles.card}>
+    <Animated.View entering={entrance.rise} exiting={entrance.fadeOut} style={styles.card}>
       {items.map((item) => (
         <Pressable
           key={item.label}
@@ -54,12 +61,12 @@ export function MessageContextMenu({ onReply, onCopy, onSaveMemory }: Props) {
           {/* `heading` tone, not `body` — the menu is a card floating over the
               scrim, not chat/page copy, and `heading` is the ink this app
               reaches for on any surface-card row label (see `ChatHeader`'s
-              "Sarah"). `muted` when disabled, same as `BottomNav`'s own
+              "Sweatcha"). `muted` when disabled, same as `BottomNav`'s own
               not-yet-built tabs. */}
           <Text tone={item.disabled ? 'muted' : 'heading'}>{item.label}</Text>
         </Pressable>
       ))}
-    </View>
+    </Animated.View>
   )
 }
 
@@ -70,7 +77,11 @@ const styles = StyleSheet.create((theme) => ({
     borderRadius: theme.radii.tile,
     paddingVertical: theme.spacing.sm,
     boxShadow: theme.elevation.card,
+    // Same floor-and-ceiling rule as `VoiceNotePlayer`'s row: 190pt keeps the
+    // three action labels on one line each, `maxWidth` keeps the menu inside
+    // the screen when the floor is a large fraction of a 320pt device.
     minWidth: 190,
+    maxWidth: '100%',
   },
   row: {
     flexDirection: 'row',

@@ -1,4 +1,3 @@
-import { Feather } from '@expo/vector-icons'
 import { Image } from 'expo-image'
 import { useCallback, useState } from 'react'
 import {
@@ -12,6 +11,7 @@ import {
 } from 'react-native'
 import { StyleSheet, useUnistyles } from 'react-native-unistyles'
 
+import { IconButton } from '@/design-system/patterns/IconButton'
 import { Text } from '@/design-system/primitives/Text'
 
 /**
@@ -94,15 +94,13 @@ export function PhotoLightbox({
             <View />
           )}
 
-          <Pressable
+          <IconButton
+            icon="x"
+            label="Close photo"
             onPress={onClose}
-            accessibilityRole="button"
-            accessibilityLabel="Close photo"
-            style={styles.close}
+            tone="onMedia"
             testID="lightbox-close"
-          >
-            <Feather name="x" size={22} color={theme.colors.text.onPrimary} />
-          </Pressable>
+          />
         </View>
 
         <ScrollView
@@ -157,12 +155,6 @@ const styles = StyleSheet.create((theme) => ({
     justifyContent: 'space-between',
     paddingHorizontal: theme.spacing.xl,
     paddingTop: theme.spacing.huge,
-  },
-  close: {
-    width: 40,
-    height: 40,
-    alignItems: 'center',
-    justifyContent: 'center',
   },
   caption: {
     position: 'absolute',

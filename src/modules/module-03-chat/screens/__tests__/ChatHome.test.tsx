@@ -67,7 +67,7 @@ describe('ChatHomeScreen', () => {
 
     const { getByText } = await renderScreen(<ChatHomeScreen />)
 
-    await waitFor(() => expect(getByText('Chandu & Sarah')).toBeTruthy())
+    await waitFor(() => expect(getByText('Chandu & Sweatcha')).toBeTruthy())
     expect(getByText(/Just trust me\./)).toBeTruthy()
   })
 
