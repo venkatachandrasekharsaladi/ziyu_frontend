@@ -11,7 +11,7 @@ const mockPush = jest.fn()
 const mockBack = jest.fn()
 
 jest.mock('expo-router', () => ({
-  useRouter: () => ({ push: mockPush, replace: jest.fn(), back: mockBack }),
+  useRouter: () => ({ canGoBack: () => true, push: mockPush, replace: jest.fn(), back: mockBack }),
 }))
 
 beforeEach(() => {

@@ -38,9 +38,19 @@ const service = jest.mocked(chatService)
  */
 const mockPush = jest.fn()
 const mockBack = jest.fn()
+const mockReplace = jest.fn()
+// `canGoBack` is part of the router this screen actually uses now (see
+// `useBackTo`): it pops the stack when there is one, and goes to Chat Home
+// directly when there is not. A mock without it would throw rather than fail.
+const mockCanGoBack = jest.fn(() => true)
 
 jest.mock('expo-router', () => ({
-  useRouter: () => ({ push: mockPush, back: mockBack }),
+  useRouter: () => ({
+    push: mockPush,
+    back: mockBack,
+    replace: mockReplace,
+    canGoBack: mockCanGoBack,
+  }),
 }))
 
 const message = (id: string, authorId: 'me' | 'partner', body: string): Message => ({
@@ -69,6 +79,10 @@ let listeners: ((event: ChatEvent) => void)[] = []
 
 beforeEach(() => {
   jest.clearAllMocks()
+  // `clearAllMocks` strips the implementation too, so the router's default
+  // answer has to be restored: the ordinary case is a stack with something
+  // in it. The deep-link case sets this to false for itself.
+  mockCanGoBack.mockReturnValue(true)
   listeners = []
   service.subscribe.mockImplementation((listener) => {
     listeners = [...listeners, listener]
@@ -181,9 +195,9 @@ describe('ConversationScreen', () => {
   it('draws the partner identity the frame shows', async () => {
     await renderScreen(<ConversationScreen />)
 
-    expect(await screen.findByText('Sarah')).toBeTruthy()
+    expect(await screen.findByText('Sweatcha')).toBeTruthy()
     expect(screen.getByText('Online')).toBeTruthy()
-    expect(screen.getByLabelText('Sarah')).toBeTruthy() // the avatar
+    expect(screen.getByLabelText('Sweatcha')).toBeTruthy() // the avatar
   })
 
   it('returns to Chat Home from the back control', async () => {
@@ -193,6 +207,23 @@ describe('ConversationScreen', () => {
     await user.press(await screen.findByLabelText('Back'))
 
     expect(mockBack).toHaveBeenCalled()
+  })
+
+  // Opening this route directly — a shared link, a browser reload on
+  // `/chat/conversation`, a notification — leaves the stack with exactly one
+  // entry, and `back()` then goes nowhere: expo-router logs "The action
+  // 'GO_BACK' was not handled by any navigator" and the control is dead.
+  // `replace`, not `push`, so Chat Home takes this screen's place rather than
+  // stacking on top of it and offering a Back that returns here.
+  it('goes to Chat Home when it was opened directly and has no stack to pop', async () => {
+    mockCanGoBack.mockReturnValue(false)
+    const user = userEvent.setup()
+    await renderScreen(<ConversationScreen />)
+
+    await user.press(await screen.findByLabelText('Back'))
+
+    expect(mockBack).not.toHaveBeenCalled()
+    expect(mockReplace).toHaveBeenCalledWith('/(app)/chat')
   })
 
   it('opens the video Moment from its call control', async () => {

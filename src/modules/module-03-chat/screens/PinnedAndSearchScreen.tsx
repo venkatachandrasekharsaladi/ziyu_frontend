@@ -1,8 +1,8 @@
-import { useRouter } from 'expo-router'
 import { useEffect, useRef, useState } from 'react'
 import { View } from 'react-native'
 import { StyleSheet } from 'react-native-unistyles'
 
+import { useBackTo } from '@/hooks/useBackTo'
 import { CHAT_COPY as COPY } from '@/copy/chat'
 import { AppScreenLayout } from '@/design-system/patterns/AppScreenLayout'
 import { Input } from '@/design-system/primitives/Input'
@@ -39,7 +39,9 @@ import type { Message } from '@/services/chat/types'
  * service straight — unlike a component, which never may.
  */
 export function PinnedAndSearchScreen() {
-  const router = useRouter()
+  // Opened directly there is no stack to pop, so Back falls back to the
+  // thread these pins and results come from.
+  const onBack = useBackTo('/(app)/chat/conversation')
   const messages = useChatStore((state) => state.messages)
   const load = useChatStore((state) => state.load)
   const loaded = useRef(false)
@@ -96,7 +98,7 @@ export function PinnedAndSearchScreen() {
   const visibleResults = results?.filter((m) => !pinnedIds.has(m.id)) ?? null
 
   return (
-    <AppScreenLayout activeTab="chat" onBack={router.back}>
+    <AppScreenLayout activeTab="chat" onBack={onBack}>
       <Input
         label={COPY.search.label}
         value={query}

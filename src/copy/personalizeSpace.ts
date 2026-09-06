@@ -12,7 +12,7 @@ export const PERSONALIZE_SPACE_COPY = {
   heading: 'One last little touch.',
   lede: `Make your ${BRAND.name} feel like yours.`,
   nameLabel: 'Couple display name',
-  namePlaceholder: 'e.g. Chandu & Sarah',
+  namePlaceholder: 'e.g. Chandu & Sweatcha',
   shortNameLabel: 'Our little world (Optional)',
   shortNamePlaceholder: 'e.g. C + S',
   styleLabel: 'Choose a subtle cover style',

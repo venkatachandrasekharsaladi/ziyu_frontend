@@ -3,6 +3,7 @@ import { useCallback, useState } from 'react'
 import { View } from 'react-native'
 import { StyleSheet } from 'react-native-unistyles'
 
+import { useBackTo } from '@/hooks/useBackTo'
 import { MEMORIES_COPY as COPY } from '@/copy/memories'
 import { AppScreenLayout } from '@/design-system/patterns/AppScreenLayout'
 import { PhotoPicker } from '@/design-system/patterns/PhotoPicker'
@@ -22,6 +23,7 @@ import { useRelationshipStore } from '@/state/relationshipStore'
  */
 export function AddMemoryScreen() {
   const router = useRouter()
+  const back = useBackTo('/(app)/memories')
   const profile = useRelationshipStore((state) => state.profile)
 
   const [title, setTitle] = useState('')
@@ -67,7 +69,7 @@ export function AddMemoryScreen() {
   const onPickPhoto = useCallback(() => {}, [])
 
   return (
-    <AppScreenLayout activeTab="memories" onBack={router.back}>
+    <AppScreenLayout activeTab="memories" onBack={back}>
       <Text variant="h2" tone="heading" align="center">
         {COPY.add.heading}
       </Text>
@@ -124,7 +126,7 @@ export function AddMemoryScreen() {
         ) : null}
 
         <Button label={COPY.add.submit} onPress={submit} loading={saving} />
-        <Button label={COPY.add.cancel} onPress={router.back} variant="link" />
+        <Button label={COPY.add.cancel} onPress={back} variant="link" />
       </View>
     </AppScreenLayout>
   )

@@ -1,6 +1,7 @@
-import { Feather } from '@expo/vector-icons'
-import { Pressable, View } from 'react-native'
-import { StyleSheet, useUnistyles } from 'react-native-unistyles'
+import { View } from 'react-native'
+import { StyleSheet } from 'react-native-unistyles'
+
+import { IconButton } from '@/design-system/patterns/IconButton'
 
 type Props = {
   muted: boolean
@@ -34,49 +35,31 @@ export function CallControls({
   onToggleCamera,
   onEnd,
 }: Props) {
-  const { theme } = useUnistyles()
   // Presence, not truthiness: `cameraOn === false` on a video call must still
   // show the button (camera off, offering to turn it back on).
   const hasCamera = onToggleCamera !== undefined
 
   return (
     <View style={styles.row}>
-      <Pressable
+      <IconButton
+        icon={muted ? 'mic-off' : 'mic'}
+        label={muted ? 'Unmute' : 'Mute'}
         onPress={onToggleMute}
-        accessibilityRole="button"
-        accessibilityLabel={muted ? 'Unmute' : 'Mute'}
-        style={styles.round}
-      >
-        <Feather
-          name={muted ? 'mic-off' : 'mic'}
-          size={24}
-          color={theme.colors.text.onPrimary}
-        />
-      </Pressable>
+        size="lg"
+        tone="onMedia"
+      />
 
       {hasCamera && (
-        <Pressable
+        <IconButton
+          icon={cameraOn ? 'video' : 'video-off'}
+          label={cameraOn ? 'Turn camera off' : 'Turn camera on'}
           onPress={onToggleCamera}
-          accessibilityRole="button"
-          accessibilityLabel={cameraOn ? 'Turn camera off' : 'Turn camera on'}
-          style={styles.round}
-        >
-          <Feather
-            name={cameraOn ? 'video' : 'video-off'}
-            size={24}
-            color={theme.colors.text.onPrimary}
-          />
-        </Pressable>
+          size="lg"
+          tone="onMedia"
+        />
       )}
 
-      <Pressable
-        onPress={onEnd}
-        accessibilityRole="button"
-        accessibilityLabel="End call"
-        style={styles.endRound}
-      >
-        <Feather name="phone-off" size={24} color={theme.colors.text.onPrimary} />
-      </Pressable>
+      <IconButton icon="phone-off" label="End call" onPress={onEnd} size="lg" tone="danger" />
     </View>
   )
 }
@@ -87,25 +70,5 @@ const styles = StyleSheet.create((theme) => ({
     alignItems: 'center',
     justifyContent: 'center',
     gap: theme.spacing.xl,
-  },
-  round: {
-    width: 56,
-    height: 56,
-    borderRadius: theme.radii.pill,
-    alignItems: 'center',
-    justifyContent: 'center',
-    // Translucent-on-anything, same reasoning `PhotoSharePreview`'s round
-    // controls already use: this row sits over a photo/video surface on the
-    // video screen and a plain page on the voice one, and a solid surface
-    // token would look like a stray chip on one of the two.
-    backgroundColor: theme.colors.surface.scrim,
-  },
-  endRound: {
-    width: 56,
-    height: 56,
-    borderRadius: theme.radii.pill,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: theme.colors.feedback.error,
   },
 }))

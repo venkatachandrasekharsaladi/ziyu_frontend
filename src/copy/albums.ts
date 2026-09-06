@@ -7,14 +7,14 @@
  */
 export const ALBUMS_COPY = {
   list: {
-    eyebrow: 'Chandu & Sarah',
+    eyebrow: 'Chandu & Sweatcha',
     heading: 'Your albums',
     /** Under each cover: "86 memories". */
     count: (n: number) => (n === 1 ? '1 memory' : `${n} memories`),
     empty: 'Your albums fill up as you tag memories.',
   },
   detail: {
-    /** Hero subtitle: "32 memories · Chandu & Sarah". */
+    /** Hero subtitle: "32 memories · Chandu & Sweatcha". */
     subtitle: (n: number, couple: string) =>
       `${n === 1 ? '1 memory' : `${n} memories`} · ${couple}`,
     empty: 'Nothing in this album yet.',

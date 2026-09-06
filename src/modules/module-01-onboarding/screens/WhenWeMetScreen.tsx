@@ -3,6 +3,7 @@ import { useCallback, useState } from 'react'
 import { View } from 'react-native'
 import { StyleSheet } from 'react-native-unistyles'
 
+import { useBackTo } from '@/hooks/useBackTo'
 import { WHEN_WE_MET_COPY as COPY } from '@/copy/whenWeMet'
 import { Button } from '@/design-system/primitives/Button'
 import { DateField } from '@/design-system/primitives/DateField'
@@ -28,6 +29,7 @@ const EARLIEST_YEAR = 1900
  */
 export function WhenWeMetScreen() {
   const router = useRouter()
+  const back = useBackTo('/(onboarding)/setup')
   const setMet = useStoryStore((state) => state.setMet)
 
   const [precision, setPrecision] = useState<DatePrecision>('exact')
@@ -70,7 +72,7 @@ export function WhenWeMetScreen() {
   }, [])
 
   return (
-    <AuthScreenLayout onBack={router.back}>
+    <AuthScreenLayout onBack={back}>
       <View style={styles.copy}>
         <Text variant="h1" tone="heading" align="center">
           {COPY.heading}

@@ -1,5 +1,16 @@
 import { Image } from 'expo-image'
+import { useWindowDimensions } from 'react-native'
 import { useUnistyles } from 'react-native-unistyles'
+
+/**
+ * The widest a photo bubble is ever drawn, however wide the device is.
+ *
+ * Past roughly this, a photo stops reading as an inline message and starts
+ * reading as a gallery item — and on a tablet the thread is already capped at
+ * `layout.column` anyway, so without a cap the image would just grow to fill
+ * a column that exists to stop exactly that.
+ */
+const MAX_PHOTO_WIDTH = 280
 
 type Props = {
   uri: string
@@ -26,6 +37,29 @@ type Props = {
  */
 export function PhotoMessage({ uri, time }: Props) {
   const { theme } = useUnistyles()
+  const { width: windowWidth } = useWindowDimensions()
+
+  /*
+   * WHY THIS IS COMPUTED AND NOT A CONSTANT.
+   *
+   * This was `width: 220`, a number copied off the 390pt frame — and at 390
+   * it happens to fit. It does not fit a 320pt phone: `MessageBubble` caps a
+   * row at `maxWidth: '76%'` and the bubble adds `spacing.lg` of padding
+   * either side, so the room a photo actually has is
+   *
+   *     0.76 × contentWidth − 2 × spacing.lg
+   *
+   * which at 320pt is ~211pt. A fixed 220 overflowed its own bubble by ~9pt
+   * on every small Android in the target market, and on a 430pt Pro Max it
+   * left ~75pt of bubble unused. Deriving it from the same two numbers the
+   * bubble itself uses means the photo cannot disagree with its container.
+   *
+   * `contentWidth` clamps to `layout.column` rather than using the raw window:
+   * on a tablet `AppScreenLayout` already centres the thread inside that
+   * column, so the window width is not the width this photo lives in.
+   */
+  const contentWidth = Math.min(windowWidth, theme.layout.column)
+  const width = Math.min(MAX_PHOTO_WIDTH, contentWidth * 0.76 - theme.spacing.lg * 2)
 
   return (
     <Image
@@ -33,7 +67,7 @@ export function PhotoMessage({ uri, time }: Props) {
       // Plain style object — Unistyles styles do not reach expo-image (see
       // `PhotoCarousel.tsx` / `AlbumCard.tsx`).
       style={{
-        width: 220,
+        width,
         aspectRatio: 4 / 3,
         borderRadius: theme.radii.panel,
         backgroundColor: theme.colors.surface.field,

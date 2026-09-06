@@ -6,7 +6,7 @@ import { WelcomeScreen } from '@/modules/module-00-auth/screens/WelcomeScreen'
 import { renderScreen } from '@/test/renderScreen'
 
 jest.mock('expo-router', () => ({
-  useRouter: () => ({ push: jest.fn(), replace: jest.fn(), back: jest.fn() }),
+  useRouter: () => ({ canGoBack: () => true, push: jest.fn(), replace: jest.fn(), back: jest.fn() }),
 }))
 
 describe('WelcomeScreen', () => {

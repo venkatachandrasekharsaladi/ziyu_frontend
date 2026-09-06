@@ -56,7 +56,7 @@ export const SAMPLE_MEMORIES: WithPhotos[] = [
     photoUri: samplePhoto('parisDusk'),
     tags: ['Trips', 'Us'],
     favorite: true,
-    addedBy: 'Sarah',
+    addedBy: 'Sweatcha',
   },
   {
     id: 'sample-coast-trip',
@@ -82,7 +82,7 @@ export const SAMPLE_MEMORIES: WithPhotos[] = [
     photoUri: samplePhoto('planeWing'),
     tags: ['Trips', 'Little Things'],
     favorite: false,
-    addedBy: 'Sarah',
+    addedBy: 'Sweatcha',
   },
   {
     id: 'sample-night-market',
@@ -106,7 +106,7 @@ export const SAMPLE_MEMORIES: WithPhotos[] = [
     photoUri: samplePhoto('caughtLaughing'),
     tags: ['Us'],
     favorite: false,
-    addedBy: 'Sarah',
+    addedBy: 'Sweatcha',
   },
   {
     id: 'sample-flowers',
@@ -124,7 +124,7 @@ export const SAMPLE_MEMORIES: WithPhotos[] = [
     caption: 'Voice note',
     tags: ['Little Things'],
     favorite: false,
-    addedBy: 'Sarah',
+    addedBy: 'Sweatcha',
   },
   {
     id: 'sample-coffee-shop-note',
@@ -142,7 +142,7 @@ export const SAMPLE_MEMORIES: WithPhotos[] = [
     photoUri: samplePhoto('birthdayPlate'),
     tags: ['Birthdays'],
     favorite: false,
-    addedBy: 'Sarah',
+    addedBy: 'Sweatcha',
   },
   {
     id: 'sample-first-date',
@@ -164,7 +164,7 @@ export const SAMPLE_MEMORIES: WithPhotos[] = [
     photoUri: samplePhoto('coffeeToast'),
     tags: ['Dates'],
     favorite: false,
-    addedBy: 'Sarah',
+    addedBy: 'Sweatcha',
   },
   {
     id: 'sample-pasta-night',
@@ -174,7 +174,7 @@ export const SAMPLE_MEMORIES: WithPhotos[] = [
     photoUri: samplePhoto('cookingTogether'),
     tags: ['Us', 'Little Things'],
     favorite: true,
-    addedBy: 'Sarah',
+    addedBy: 'Sweatcha',
   },
   {
     id: 'sample-rainy-coffees',

@@ -1,6 +1,5 @@
-import { Feather } from '@expo/vector-icons'
 import { useEffect, useState } from 'react'
-import { Pressable, View } from 'react-native'
+import { View } from 'react-native'
 import Animated, {
   useAnimatedStyle,
   useReducedMotion,
@@ -8,8 +7,9 @@ import Animated, {
   withRepeat,
   withTiming,
 } from 'react-native-reanimated'
-import { StyleSheet, useUnistyles } from 'react-native-unistyles'
+import { StyleSheet } from 'react-native-unistyles'
 
+import { IconButton } from '@/design-system/patterns/IconButton'
 import { CHAT_COPY } from '@/copy/chat'
 import { Text } from '@/design-system/primitives/Text'
 import { clock } from '@/modules/module-03-chat/components/VoiceNotePlayer'
@@ -35,7 +35,6 @@ const TICK_MS = 1000
  * and is what turns that into a `sendVoice(uri, durationMs)` call.
  */
 export function VoiceNoteRecorder({ onCancel, onSend }: Props) {
-  const { theme } = useUnistyles()
   const [elapsedMs, setElapsedMs] = useState(0)
   const reduced = useReducedMotion()
   const pulse = useSharedValue(1)
@@ -84,23 +83,9 @@ export function VoiceNoteRecorder({ onCancel, onSend }: Props) {
 
       <View style={styles.spacer} />
 
-      <Pressable
-        onPress={onCancel}
-        accessibilityRole="button"
-        accessibilityLabel="Cancel recording"
-        style={styles.round}
-      >
-        <Feather name="x" size={20} color={theme.colors.text.body} />
-      </Pressable>
+      <IconButton icon="x" label="Cancel recording" onPress={onCancel} />
 
-      <Pressable
-        onPress={() => onSend(elapsedMs)}
-        accessibilityRole="button"
-        accessibilityLabel="Send voice note"
-        style={styles.send}
-      >
-        <Feather name="check" size={20} color={theme.colors.chat.onAccent} />
-      </Pressable>
+      <IconButton icon="check" label="Send voice note" onPress={() => onSend(elapsedMs)} tone="accent" />
     </View>
   )
 }
@@ -124,20 +109,4 @@ const styles = StyleSheet.create((theme) => ({
     backgroundColor: theme.colors.feedback.error,
   },
   spacer: { flex: 1 },
-  round: {
-    width: 40,
-    height: 40,
-    borderRadius: theme.radii.pill,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: theme.colors.surface.field,
-  },
-  send: {
-    width: 40,
-    height: 40,
-    borderRadius: theme.radii.pill,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: theme.colors.chat.accent,
-  },
 }))

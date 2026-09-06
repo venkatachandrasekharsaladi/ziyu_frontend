@@ -1,5 +1,7 @@
 import { Stack } from 'expo-router'
 
+import { useStackScreenOptions } from '@/design-system/patterns/useStackScreenOptions'
+
 /**
  * The app itself — everything past onboarding.
  *
@@ -8,5 +10,8 @@ import { Stack } from 'expo-router'
  * not a stack header.
  */
 export default function AppLayout() {
-  return <Stack screenOptions={{ headerShown: false }} />
+  // Shared across all four layouts — see `useStackScreenOptions` for why
+  // `ios_from_right` rather than the `slide_from_right` that looks right
+  // and is Android-only.
+  return <Stack screenOptions={useStackScreenOptions()} />
 }

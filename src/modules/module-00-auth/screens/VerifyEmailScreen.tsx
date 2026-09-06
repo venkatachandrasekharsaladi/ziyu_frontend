@@ -3,6 +3,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { View } from 'react-native'
 import { StyleSheet } from 'react-native-unistyles'
 
+import { useBackTo } from '@/hooks/useBackTo'
 import { authErrorMessage } from '@/copy/errors'
 import { VERIFY_EMAIL_COPY as COPY } from '@/copy/verifyEmail'
 import { Button } from '@/design-system/primitives/Button'
@@ -28,6 +29,7 @@ function formatCooldown(seconds: number): string {
  */
 export function VerifyEmailScreen() {
   const router = useRouter()
+  const back = useBackTo('/(auth)/welcome')
   // Explicit `number`: COPY is `as const`, so inference would narrow this to the
   // literal 60 and reject every decrement.
   const [remaining, setRemaining] = useState<number>(COPY.resendCooldownSeconds)
@@ -70,7 +72,7 @@ export function VerifyEmailScreen() {
   const isCoolingDown = remaining > 0
 
   return (
-    <AuthScreenLayout onBack={router.back} centred>
+    <AuthScreenLayout onBack={back} centred>
       <EnvelopeIllustration />
 
       <View style={styles.copy}>
@@ -117,7 +119,7 @@ export function VerifyEmailScreen() {
         */}
         <Button label={COPY.continue} onPress={goToOnboarding} />
 
-        <Button label={COPY.changeEmail} onPress={router.back} variant="soft" />
+        <Button label={COPY.changeEmail} onPress={back} variant="soft" />
       </View>
     </AuthScreenLayout>
   )

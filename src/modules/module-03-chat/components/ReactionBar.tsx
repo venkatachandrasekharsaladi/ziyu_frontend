@@ -1,7 +1,7 @@
-import { Feather } from '@expo/vector-icons'
 import { Pressable, View } from 'react-native'
-import { StyleSheet, useUnistyles } from 'react-native-unistyles'
+import { StyleSheet } from 'react-native-unistyles'
 
+import { IconButton } from '@/design-system/patterns/IconButton'
 import { Text } from '@/design-system/primitives/Text'
 
 /**
@@ -35,11 +35,6 @@ type Props = {
  * `MessageContextMenu` in the overlay it shows when `selectedMessageId` is set.
  */
 export function ReactionBar({ onReact, onMore }: Props) {
-  const { theme } = useUnistyles()
-  const moreDisabled = !onMore
-
-  styles.useVariants({ disabled: moreDisabled })
-
   return (
     <View style={styles.bar}>
       {EMOJI.map((emoji) => (
@@ -61,20 +56,8 @@ export function ReactionBar({ onReact, onMore }: Props) {
 
       <View style={styles.divider} />
 
-      <Pressable
-        onPress={onMore}
-        disabled={moreDisabled}
-        accessibilityRole="button"
-        accessibilityLabel="More reactions"
-        accessibilityState={{ disabled: moreDisabled }}
-        style={styles.more}
-      >
-        <Feather
-          name="plus"
-          size={16}
-          color={moreDisabled ? theme.colors.border.field : theme.colors.text.body}
-        />
-      </Pressable>
+      {/* Omitting `onMore` renders it disabled — `IconButton` owns that rule. */}
+      <IconButton icon="plus" label="More reactions" onPress={onMore} size="sm" />
     </View>
   )
 }
@@ -95,20 +78,4 @@ const styles = StyleSheet.create((theme) => ({
   // the `Text` inside it — the same split `Text.tsx` enforces everywhere else.
   emojiTouch: { alignItems: 'center', justifyContent: 'center' },
   divider: { width: 1, height: 22, backgroundColor: theme.colors.border.subtle },
-  more: {
-    width: 28,
-    height: 28,
-    borderRadius: theme.radii.pill,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: theme.colors.surface.field,
-    variants: {
-      // Same 0.6 dimming `BottomNav` uses for a tab whose destination is not
-      // built yet.
-      disabled: {
-        true: { opacity: 0.6 },
-        false: {},
-      },
-    },
-  },
 }))

@@ -2,6 +2,7 @@ import { useEffect } from 'react'
 import { AccessibilityInfo, Modal, Pressable, View } from 'react-native'
 import { StyleSheet } from 'react-native-unistyles'
 
+import { Overlay } from '@/design-system/patterns/Overlay'
 import { Text } from '@/design-system/primitives/Text'
 
 type Props = {
@@ -77,18 +78,13 @@ export function ConfirmDialog({
 
   return (
     <Modal visible transparent animationType="fade" onRequestClose={onCancel}>
-      <Pressable
-        style={styles.scrim}
-        onPress={onCancel}
-        accessibilityRole="button"
-        accessibilityLabel="Dismiss dialog"
-      >
-        {/* Swallows the tap so pressing the card itself does not bubble to
-            the scrim behind it and dismiss the dialog as if the backdrop
-            had been hit. */}
-        <Pressable
+      <Overlay onDismiss={onCancel} dismissLabel="Dismiss dialog">
+        {/* A plain `View`. It used to be a `Pressable` with an empty
+            `onPress`, purely to stop a tap on the card bubbling into the
+            scrim behind it — `Overlay` lays the backdrop beside the content
+            rather than around it, so there is nothing left to swallow. */}
+        <View
           style={styles.card}
-          onPress={() => {}}
           // `alert`, same role `FeedbackBanner` carries for its own message —
           // RN's `AccessibilityRole` union has no `dialog`/`alertdialog`
           // value (that is a web ARIA role, not a native accessibility trait);
@@ -129,21 +125,17 @@ export function ConfirmDialog({
               </Text>
             </Pressable>
           </View>
-        </Pressable>
-      </Pressable>
+        </View>
+      </Overlay>
     </Modal>
   )
 }
 
 const styles = StyleSheet.create((theme) => ({
-  scrim: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: theme.spacing.xl,
-    backgroundColor: theme.colors.surface.scrim,
-  },
   card: {
+    // `Overlay` stretches its children, so the card centres itself rather
+    // than relying on the layer to do it.
+    alignSelf: 'center',
     width: '100%',
     maxWidth: 360,
     gap: theme.spacing.md,

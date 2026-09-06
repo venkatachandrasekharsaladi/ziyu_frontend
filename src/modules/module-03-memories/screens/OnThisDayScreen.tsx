@@ -3,6 +3,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { View } from 'react-native'
 import { StyleSheet } from 'react-native-unistyles'
 
+import { useBackTo } from '@/hooks/useBackTo'
 import { ON_THIS_DAY_COPY as COPY } from '@/copy/onThisDay'
 import { AppScreenLayout } from '@/design-system/patterns/AppScreenLayout'
 import { Button } from '@/design-system/primitives/Button'
@@ -71,6 +72,7 @@ export function groupByYear(memories: Memory[], month: number, day: number) {
  */
 export function OnThisDayScreen() {
   const router = useRouter()
+  const back = useBackTo('/(app)/memories')
   const [memories, setMemories] = useState<Memory[] | null>(null)
 
   useEffect(() => {
@@ -95,7 +97,6 @@ export function OnThisDayScreen() {
 
   const add = useCallback(() => router.push('/(app)/memories/new'), [router])
   const open = useCallback((id: string) => router.push(`/(app)/memories/${id}`), [router])
-  const back = useCallback(() => router.back(), [router])
 
   if (memories === null) return <AppScreenLayout activeTab="memories" />
 

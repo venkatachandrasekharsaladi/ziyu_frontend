@@ -9,7 +9,7 @@
  */
 export const ON_THIS_DAY_COPY = {
   title: 'On this day',
-  eyebrow: 'Chandu & Sarah',
+  eyebrow: 'Chandu & Sweatcha',
   add: 'Add a memory for today',
   menu: 'Open menu',
   /** `2023` seen in 2026 -> "3 years ago". */

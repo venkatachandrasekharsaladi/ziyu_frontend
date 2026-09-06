@@ -3,6 +3,7 @@ import { useCallback, useState } from 'react'
 import { View } from 'react-native'
 import { StyleSheet } from 'react-native-unistyles'
 
+import { useBackTo } from '@/hooks/useBackTo'
 import { PERSONALIZE_SPACE_COPY as COPY } from '@/copy/personalizeSpace'
 import { Button } from '@/design-system/primitives/Button'
 import { Input } from '@/design-system/primitives/Input'
@@ -21,6 +22,7 @@ import { useSpaceStore, type CoverStyle } from '@/state/spaceStore'
  */
 export function PersonalizeSpaceScreen() {
   const router = useRouter()
+  const back = useBackTo('/(onboarding)/setup')
   const setSpace = useSpaceStore((state) => state.setSpace)
 
   const [name, setName] = useState('')
@@ -41,7 +43,7 @@ export function PersonalizeSpaceScreen() {
   }, [name, shortName, coverStyle, setSpace, next])
 
   return (
-    <AuthScreenLayout onBack={router.back}>
+    <AuthScreenLayout onBack={back}>
       <View style={styles.copy}>
         <Text variant="h1" tone="heading" align="center">
           {COPY.heading}

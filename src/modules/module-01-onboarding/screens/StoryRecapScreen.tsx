@@ -4,6 +4,7 @@ import { useCallback, useState } from 'react'
 import { View } from 'react-native'
 import { StyleSheet, useUnistyles } from 'react-native-unistyles'
 
+import { useBackTo } from '@/hooks/useBackTo'
 import { STORY_RECAP_COPY as COPY } from '@/copy/storyRecap'
 import { Button } from '@/design-system/primitives/Button'
 import { Card } from '@/design-system/primitives/Card'
@@ -27,6 +28,7 @@ type Row = { key: string; label: string; when: string; detail?: string; icon: 'h
  */
 export function StoryRecapScreen() {
   const router = useRouter()
+  const back = useBackTo('/(onboarding)/setup')
   const { theme } = useUnistyles()
   const story = useStoryStore()
   const [error, setError] = useState<string | null>(null)
@@ -84,7 +86,7 @@ export function StoryRecapScreen() {
   }, [story, router])
 
   return (
-    <AuthScreenLayout onBack={router.back}>
+    <AuthScreenLayout onBack={back}>
       <View style={styles.copy}>
         <Text variant="h1" tone="heading" align="center">
           {COPY.heading}

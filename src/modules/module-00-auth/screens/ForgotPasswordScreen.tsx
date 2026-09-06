@@ -5,6 +5,7 @@ import { useForm } from 'react-hook-form'
 import { View } from 'react-native'
 import { StyleSheet } from 'react-native-unistyles'
 
+import { useBackTo } from '@/hooks/useBackTo'
 import { FormField } from '@/components/forms/FormField'
 import { authErrorMessage } from '@/copy/errors'
 import { FORGOT_PASSWORD_COPY as COPY } from '@/copy/forgotPassword'
@@ -28,6 +29,7 @@ import { authService } from '@/services/auth'
  */
 export function ForgotPasswordScreen() {
   const router = useRouter()
+  const back = useBackTo('/(auth)/welcome')
   const [sentTo, setSentTo] = useState<string | null>(null)
   const [formError, setFormError] = useState<string | null>(null)
   const [isResending, setIsResending] = useState(false)
@@ -70,7 +72,7 @@ export function ForgotPasswordScreen() {
   const goToSignIn = useCallback(() => router.push('/(auth)/sign-in'), [router])
 
   return (
-    <AuthScreenLayout onBack={router.back} centred>
+    <AuthScreenLayout onBack={back} centred>
       <View style={styles.copy}>
         <Text variant="h2" tone="heading" align="center">
           {sentTo ? COPY.sentHeading : COPY.heading}

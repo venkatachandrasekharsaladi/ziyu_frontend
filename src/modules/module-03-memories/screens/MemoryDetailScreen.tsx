@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { View } from 'react-native'
 import { StyleSheet, useUnistyles } from 'react-native-unistyles'
 
+import { useBackTo } from '@/hooks/useBackTo'
 import { MEMORIES_COPY as COPY } from '@/copy/memories'
 import { AppScreenLayout } from '@/design-system/patterns/AppScreenLayout'
 import { StatusScreen } from '@/design-system/patterns/StatusScreen'
@@ -22,7 +23,7 @@ import { formatDate } from '@/utils/formatStoryDate'
  * the service supports it.
  */
 export function MemoryDetailScreen() {
-  const router = useRouter()
+  const back = useBackTo('/(app)/memories')
   const { theme } = useUnistyles()
   const { id } = useLocalSearchParams<{ id: string }>()
 
@@ -59,13 +60,12 @@ export function MemoryDetailScreen() {
     if (result.ok) setMemory(result.value)
   }, [memory])
 
-  const back = useCallback(() => router.replace('/(app)/memories'), [router])
 
-  if (!loaded) return <AppScreenLayout activeTab="memories" onBack={router.back} />
+  if (!loaded) return <AppScreenLayout activeTab="memories" onBack={back} />
 
   if (!memory) {
     return (
-      <AppScreenLayout activeTab="memories" onBack={router.back}>
+      <AppScreenLayout activeTab="memories" onBack={back}>
         <StatusScreen
           heading={error ?? COPY.detail.missing}
           actions={<Button label={COPY.detail.back} onPress={back} />}
@@ -75,7 +75,7 @@ export function MemoryDetailScreen() {
   }
 
   return (
-    <AppScreenLayout activeTab="memories" onBack={router.back}>
+    <AppScreenLayout activeTab="memories" onBack={back}>
       <View style={styles.head}>
         <Text variant="h2" tone="heading">
           {memory.title}

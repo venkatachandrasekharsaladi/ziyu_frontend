@@ -1,6 +1,7 @@
 import { midnightPalette as dark, palette } from '@/design-system/tokens/colors'
 import { elevation } from '@/design-system/tokens/elevation'
 import { layout } from '@/design-system/tokens/layout'
+import { motion } from '@/design-system/tokens/motion'
 import { radii } from '@/design-system/tokens/radii'
 import { spacing } from '@/design-system/tokens/spacing'
 import { typography } from '@/design-system/tokens/typography'
@@ -152,6 +153,15 @@ const shared = {
    * group exists at all.
    */
   layout,
+  /**
+   * Timing, not colour — same reasoning as `layout` above. A press settles at
+   * the same speed in lavender and midnight; an animation that changed pace
+   * with the palette would be a bug, and `theme.parity` asserts this is the
+   * very same object in both. See `tokens/motion.ts` for why the group
+   * exists and why its easing curves are plain control points rather than
+   * built `Easing` functions.
+   */
+  motion,
 } as const
 
 /**

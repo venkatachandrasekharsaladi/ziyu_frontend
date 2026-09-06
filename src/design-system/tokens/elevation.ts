@@ -25,6 +25,15 @@ export const elevation = {
   /** M00-S04 envelope. Figma 522:248. */
   illustration:
     '0px 12px 32px 0px rgba(103, 75, 181, 0.12), 0px 2px 8px 0px rgba(103, 75, 181, 0.04)',
+  /**
+   * The composer, lifted off the bottom edge.
+   *
+   * Casts UPWARD — the one direction nothing else here needs. Every other
+   * elevation sits on top of a page; the composer floats over a thread that
+   * scrolls underneath it, and has to separate itself from the message it is
+   * about to cover.
+   */
+  composer: '0px -2px 12px 0px rgba(103, 75, 181, 0.10)',
 } as const
 
 export type Elevation = typeof elevation

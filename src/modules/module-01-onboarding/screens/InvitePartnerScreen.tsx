@@ -3,6 +3,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { Share, View } from 'react-native'
 import { StyleSheet } from 'react-native-unistyles'
 
+import { useBackTo } from '@/hooks/useBackTo'
 import { INVITE_PARTNER_COPY as COPY } from '@/copy/invitePartner'
 import { Button } from '@/design-system/primitives/Button'
 import { CodeDisplay } from '@/design-system/primitives/CodeDisplay'
@@ -22,6 +23,7 @@ import { useRelationshipStore } from '@/state/relationshipStore'
  */
 export function InvitePartnerScreen() {
   const router = useRouter()
+  const back = useBackTo('/(onboarding)/setup')
   const code = useRelationshipStore((state) => state.code)
   const setInvite = useRelationshipStore((state) => state.setInvite)
   const [formError, setFormError] = useState<string | null>(null)
@@ -66,7 +68,7 @@ export function InvitePartnerScreen() {
   }, [router])
 
   return (
-    <AuthScreenLayout onBack={router.back} centred>
+    <AuthScreenLayout onBack={back} centred>
       <View style={styles.copy}>
         <Text variant="h1" tone="heading" align="center">
           {COPY.heading}

@@ -79,9 +79,14 @@ export function ChatHomeScreen() {
         >
           <Card>
             <View style={styles.row}>
+              {/* The two avatars overlap rather than sit apart: this row is
+                  one couple, not two contacts, and the ring is what keeps the
+                  second one legible where it crosses the first. */}
               <View style={styles.avatarPair}>
                 <Avatar name="Chandu" size={40} />
-                <Avatar name="Sarah" size={40} />
+                <View style={styles.avatarOverlap}>
+                  <Avatar name="Sweatcha" size={40} />
+                </View>
               </View>
 
               <View style={styles.body}>
@@ -145,7 +150,13 @@ const styles = StyleSheet.create((theme) => ({
   },
   avatarPair: {
     flexDirection: 'row',
-    gap: theme.spacing.xs,
+    alignItems: 'center',
+  },
+  avatarOverlap: {
+    marginLeft: -theme.spacing.md,
+    borderRadius: theme.radii.pill,
+    borderWidth: 2,
+    borderColor: theme.colors.surface.card,
   },
   body: {
     flex: 1,

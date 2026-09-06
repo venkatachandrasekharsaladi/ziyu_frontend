@@ -6,6 +6,7 @@ import { useForm } from 'react-hook-form'
 import { View } from 'react-native'
 import { StyleSheet, useUnistyles } from 'react-native-unistyles'
 
+import { useBackTo } from '@/hooks/useBackTo'
 import { FormField } from '@/components/forms/FormField'
 import { authErrorMessage } from '@/copy/errors'
 import { SIGN_IN_COPY as COPY } from '@/copy/signIn'
@@ -29,6 +30,7 @@ import { authService } from '@/services/auth'
  */
 export function SignInScreen() {
   const router = useRouter()
+  const back = useBackTo('/(auth)/welcome')
   const { theme } = useUnistyles()
   const [formError, setFormError] = useState<string | null>(null)
 
@@ -59,7 +61,7 @@ export function SignInScreen() {
   const goToSignUp = useCallback(() => router.push('/(auth)/sign-up'), [router])
 
   return (
-    <AuthScreenLayout onBack={router.back}>
+    <AuthScreenLayout onBack={back}>
       <AuthMedallion />
 
       <View style={styles.copy}>

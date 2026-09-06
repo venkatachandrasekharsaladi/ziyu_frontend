@@ -1,16 +1,15 @@
 /**
  * The app's bottom navigation, shared by every screen inside `(app)`.
  *
- * Five destinations, as every Module 02+ design draws them. Tabs whose screens
- * do not exist yet carry `live: false` and render disabled rather than hidden,
- * so the bar does not change shape as they arrive.
+ * Four destinations, all of them built. `BottomNav` still honours `live: false`
+ * and renders such a tab disabled rather than hidden — see its own test — but
+ * no tab needs that today, so the bar no longer carries a dead stop.
  */
 export const APP_NAV = {
   tabs: [
     { key: 'home', label: 'Home', icon: 'home', live: true, href: '/(app)/home' },
     { key: 'memories', label: 'Memories', icon: 'book-open', live: true, href: '/(app)/memories' },
     { key: 'chat', label: 'Chat', icon: 'message-circle', live: true, href: '/(app)/chat' },
-    { key: 'timeline', label: 'Timeline', icon: 'clock', live: false, href: '' },
     { key: 'profile', label: 'Profile', icon: 'user', live: true, href: '/(app)/profile' },
   ],
 } as const

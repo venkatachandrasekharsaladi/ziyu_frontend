@@ -47,10 +47,10 @@ describe('Composer', () => {
     )
 
     expect(getByText('Just trust me.')).toBeTruthy()
-    // Figma `3390:585` node `3390:627` — the "Replying to Sarah" label above
+    // Figma `3390:585` node `3390:627` — the "Replying to Sweatcha" label above
     // the quote. Previously missing entirely (see the divergence this closed
     // in `docs/qa/chat-test-cases.md`); `ReplyPreview` now renders it.
-    expect(getByText('Replying to Sarah')).toBeTruthy()
+    expect(getByText('Replying to Sweatcha')).toBeTruthy()
   })
 
   it('does not show a reply attribution when there is no reply in progress', async () => {
@@ -58,6 +58,6 @@ describe('Composer', () => {
       <Composer value="" onChangeText={noop} onSend={noop} onAttach={noop} onRecord={noop} />,
     )
 
-    expect(queryByText('Replying to Sarah')).toBeNull()
+    expect(queryByText('Replying to Sweatcha')).toBeNull()
   })
 })

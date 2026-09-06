@@ -8,7 +8,7 @@ import { renderScreen } from '@/test/renderScreen'
 const mockReplace = jest.fn()
 
 jest.mock('expo-router', () => ({
-  useRouter: () => ({ push: jest.fn(), back: jest.fn(), replace: mockReplace }),
+  useRouter: () => ({ canGoBack: () => true, push: jest.fn(), back: jest.fn(), replace: mockReplace }),
 }))
 
 describe('RelationshipConnectedScreen', () => {

@@ -5,6 +5,7 @@ import { useForm, useWatch } from 'react-hook-form'
 import { View } from 'react-native'
 import { StyleSheet } from 'react-native-unistyles'
 
+import { useBackTo } from '@/hooks/useBackTo'
 import { FormField } from '@/components/forms/FormField'
 import { authErrorMessage } from '@/copy/errors'
 import { RESET_PASSWORD_COPY as COPY } from '@/copy/resetPassword'
@@ -41,6 +42,7 @@ import { authService } from '@/services/auth'
  */
 export function ResetPasswordScreen() {
   const router = useRouter()
+  const back = useBackTo('/(auth)/welcome')
   const { token } = useLocalSearchParams<{ token?: string }>()
   const [isReset, setIsReset] = useState(false)
   const [formError, setFormError] = useState<string | null>(null)
@@ -78,7 +80,7 @@ export function ResetPasswordScreen() {
 
   if (!token) {
     return (
-      <AuthScreenLayout onBack={router.back} centred>
+      <AuthScreenLayout onBack={back} centred>
         <StatusScreen
           heading={COPY.errors.TOKEN_INVALID}
           actions={<Button label={COPY.missingTokenAction} onPress={goToForgot} />}
@@ -101,7 +103,7 @@ export function ResetPasswordScreen() {
   }
 
   return (
-    <AuthScreenLayout onBack={router.back}>
+    <AuthScreenLayout onBack={back}>
       <View style={styles.copy}>
         <Text variant="h2" tone="heading">
           {COPY.heading}

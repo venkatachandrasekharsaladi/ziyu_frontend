@@ -69,6 +69,35 @@ export function AppScreenLayout({
           style={styles.flex}
           contentContainerStyle={styles.content}
           showsVerticalScrollIndicator={false}
+          /*
+           * SCROLL FEEL. Every one of these was absent, and this is the
+           * scroller most screens in the app are rendered inside — so each
+           * fix lands everywhere at once.
+           *
+           * `keyboardDismissMode="on-drag"`: dragging the content pushes the
+           * keyboard away, instead of it staying up and covering the thing
+           * the user just scrolled to see.
+           *
+           * `keyboardShouldPersistTaps="handled"`: without it, the first tap
+           * on a button while the keyboard is open only dismisses the
+           * keyboard and the user has to tap twice. `AuthScreenLayout`
+           * already learned this and carries the same prop with the same
+           * note — this brings the app group in line with it.
+           *
+           * `contentInsetAdjustmentBehavior="automatic"`: lets iOS handle
+           * the inset under a notch/Dynamic Island itself rather than the
+           * content starting under it on first paint.
+           *
+           * `overScrollMode="never"`: Android's blue glow at the top and
+           * bottom is a stock-Android affordance that reads as a foreign
+           * object in a themed surface. iOS rubber-banding is kept, because
+           * it is the platform's own idea of the same thing and does not
+           * paint an unthemed colour.
+           */
+          keyboardDismissMode="on-drag"
+          keyboardShouldPersistTaps="handled"
+          contentInsetAdjustmentBehavior="automatic"
+          overScrollMode="never"
         >
           {body}
         </ScrollView>

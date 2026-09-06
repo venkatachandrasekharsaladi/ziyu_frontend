@@ -3,6 +3,7 @@ import { useCallback, useEffect } from 'react'
 import { View } from 'react-native'
 import { StyleSheet } from 'react-native-unistyles'
 
+import { useBackTo } from '@/hooks/useBackTo'
 import { PARTNER_FOUND_COPY as COPY } from '@/copy/partnerFound'
 import { StatusScreen } from '@/design-system/patterns/StatusScreen'
 import { Avatar } from '@/design-system/primitives/Avatar'
@@ -22,6 +23,7 @@ const AVATAR_SIZE = 192
  */
 export function PartnerFoundScreen() {
   const router = useRouter()
+  const back = useBackTo('/(onboarding)/setup')
   const partner = useRelationshipStore((state) => state.partner)
 
   const goToEnterCode = useCallback(
@@ -43,7 +45,7 @@ export function PartnerFoundScreen() {
   if (!partner) return null
 
   return (
-    <AuthScreenLayout onBack={router.back} centred>
+    <AuthScreenLayout onBack={back} centred>
       <StatusScreen
         illustration={
           <View style={styles.avatar}>

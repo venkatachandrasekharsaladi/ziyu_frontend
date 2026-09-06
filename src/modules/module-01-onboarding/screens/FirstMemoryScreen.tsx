@@ -3,6 +3,7 @@ import { useCallback, useState } from 'react'
 import { View } from 'react-native'
 import { StyleSheet } from 'react-native-unistyles'
 
+import { useBackTo } from '@/hooks/useBackTo'
 import { FIRST_MEMORY_COPY as COPY } from '@/copy/firstMemory'
 import { PhotoPicker } from '@/design-system/patterns/PhotoPicker'
 import { Button } from '@/design-system/primitives/Button'
@@ -21,6 +22,7 @@ import { useStoryStore } from '@/state/storyStore'
  */
 export function FirstMemoryScreen() {
   const router = useRouter()
+  const back = useBackTo('/(onboarding)/setup')
   const setFirstMemory = useStoryStore((state) => state.setFirstMemory)
   const profile = useRelationshipStore((state) => state.profile)
 
@@ -37,7 +39,7 @@ export function FirstMemoryScreen() {
   const onPickPhoto = useCallback(() => {}, [])
 
   return (
-    <AuthScreenLayout onBack={router.back}>
+    <AuthScreenLayout onBack={back}>
       <View style={styles.copy}>
         <Text variant="h1" tone="heading" align="center">
           {COPY.heading}

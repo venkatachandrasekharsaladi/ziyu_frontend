@@ -1,8 +1,8 @@
-import { Feather } from '@expo/vector-icons'
 import { useState } from 'react'
-import { Pressable, View } from 'react-native'
-import { StyleSheet, useUnistyles } from 'react-native-unistyles'
+import { View } from 'react-native'
+import { StyleSheet } from 'react-native-unistyles'
 
+import { IconButton } from '@/design-system/patterns/IconButton'
 import { Text } from '@/design-system/primitives/Text'
 
 type Props = {
@@ -53,7 +53,6 @@ export function clock(ms: number): string {
  * prop at all.
  */
 export function VoiceNotePlayer({ durationMs, time }: Props) {
-  const { theme } = useUnistyles()
   const [isPlaying, setIsPlaying] = useState(false)
 
   // Not derived from `isPlaying` — Task 14 asserts on this exact prefix and
@@ -62,18 +61,13 @@ export function VoiceNotePlayer({ durationMs, time }: Props) {
 
   return (
     <View style={styles.row}>
-      <Pressable
+      <IconButton
+        icon={isPlaying ? 'pause' : 'play'}
+        label={label}
         onPress={() => setIsPlaying((was) => !was)}
-        accessibilityRole="button"
-        accessibilityLabel={label}
-        style={styles.playButton}
-      >
-        <Feather
-          name={isPlaying ? 'pause' : 'play'}
-          size={16}
-          color={theme.colors.chat.onAccent}
-        />
-      </Pressable>
+        size="sm"
+        tone="accent"
+      />
 
       <View style={styles.waveform}>
         {BAR_HEIGHTS.map((height, i) => (
@@ -95,15 +89,13 @@ const styles = StyleSheet.create((theme) => ({
     flexDirection: 'row',
     alignItems: 'center',
     gap: theme.spacing.sm,
+    // `minWidth` gives the waveform something to fill so a 2-second note is
+    // not a stub — but `maxWidth: '100%'` is what stops it forcing its own
+    // bubble wider than the 76% cap on a 320pt phone, where the room inside
+    // a bubble is ~211pt and this floor is 180pt. Floor and ceiling together,
+    // never a floor alone.
     minWidth: 180,
-  },
-  playButton: {
-    width: 32,
-    height: 32,
-    borderRadius: theme.radii.pill,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: theme.colors.chat.accent,
+    maxWidth: '100%',
   },
   waveform: {
     flex: 1,

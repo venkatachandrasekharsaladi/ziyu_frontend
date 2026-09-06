@@ -1,10 +1,12 @@
-import { useRouter } from 'expo-router'
 import { useEffect, useState } from 'react'
 import { View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { StyleSheet } from 'react-native-unistyles'
 
+import { useBackTo } from '@/hooks/useBackTo'
+import { CHAT_COPY } from '@/copy/chat'
 import { ThemedStatusBar } from '@/design-system/patterns/ThemedStatusBar'
+import { IconButton } from '@/design-system/patterns/IconButton'
 import { Avatar } from '@/design-system/primitives/Avatar'
 import { Text } from '@/design-system/primitives/Text'
 import { CallControls } from '@/modules/module-03-chat/components/CallControls'
@@ -24,16 +26,19 @@ const TICK_MS = 1000
  * the elapsed timer is a real `setInterval`, cleared on unmount — nothing
  * here is actually carrying audio. `ConversationScreen`'s call controls are
  * this screen's only entry point (see `ChatHeader`'s own header comment);
- * this screen's only exit is `onEnd`, which is always `router.back()`.
+ * this screen's only exit is `onEnd`, which returns to that conversation.
  */
 export function VoiceMomentScreen() {
-  const router = useRouter()
+  // Ending a call returns to the conversation it was started from — by
+  // popping the stack normally, or by going there directly when this screen
+  // was itself opened from a link and has no stack behind it.
+  const onEnd = useBackTo('/(app)/chat/conversation')
   const insets = useSafeAreaInsets()
   const [elapsedMs, setElapsedMs] = useState(0)
   const [muted, setMuted] = useState(false)
 
   // Cleared on unmount, same lesson `VoiceNoteRecorder` already learned the
-  // hard way (Task 9's review finding): `router.back()` unmounts this screen
+  // hard way (Task 9's review finding): leaving unmounts this screen
   // from underneath the interval, and a leaked timer would keep ticking a
   // state setter on an unmounted component.
   useEffect(() => {
@@ -53,12 +58,39 @@ export function VoiceMomentScreen() {
       <View style={styles.identity}>
         {/* Sized up from the header's own default — this is the whole
             screen's focal point, not a row accessory. */}
-        <Avatar name="Sarah" size={128} />
-        <Text variant="h2" tone="heading">
-          Sarah
+        <Avatar name="Sweatcha" size={128} />
+        {/* `wordmark` (20/600), not `h2` (34/700): the frame draws the
+            partner's name at 20pt semibold (node 3391:919), the same size
+            `ChatHeader` already gives it. The 128pt avatar is this screen's
+            focal point — the name is its caption, not a page heading. */}
+        <Text variant="wordmark" tone="heading">
+          Sweatcha
         </Text>
-        <Text variant="body" tone="placeholder">
-          {clock(elapsedMs)}
+        {/* "Together for 08:42" (node 3391:921, 16/400 = `label`) — labelled,
+            as the frame draws it, not the bare clock this screen shipped
+            with. */}
+        <Text variant="label" tone="placeholder">
+          {`${CHAT_COPY.moments.togetherForPrefix} ${clock(elapsedMs)}`}
+        </Text>
+        <Text variant="label" tone="muted" align="center">
+          {CHAT_COPY.moments.voiceCaption}
+        </Text>
+      </View>
+
+      {/*
+        KEEP MOMENT — the frame's one affordance this screen never had.
+        Disabled on purpose rather than wired to a no-op: `IconButton`
+        renders `disabled` when `onPress` is omitted, which is this app's
+        "honestly unavailable" rule (see its own header comment, and
+        `BottomNav` for an unbuilt tab). Keeping a moment would have to write
+        a Memory from a call that carries no audio and no recording — there
+        is no service behind it — so it announces itself and stays inert
+        until there is.
+      */}
+      <View style={styles.keep}>
+        <IconButton icon="heart" label={CHAT_COPY.moments.keepMoment} tone="accent" />
+        <Text variant="caption" tone="muted" align="center">
+          {CHAT_COPY.moments.keepMoment}
         </Text>
       </View>
 
@@ -66,7 +98,7 @@ export function VoiceMomentScreen() {
         <CallControls
           muted={muted}
           onToggleMute={() => setMuted((was) => !was)}
-          onEnd={router.back}
+          onEnd={onEnd}
         />
       </View>
     </View>
@@ -83,6 +115,11 @@ const styles = StyleSheet.create((theme) => ({
   identity: {
     alignItems: 'center',
     gap: theme.spacing.sm,
+  },
+  keep: {
+    alignItems: 'center',
+    gap: theme.spacing.xs,
+    paddingTop: theme.spacing.xl,
   },
   controls: {
     flex: 1,

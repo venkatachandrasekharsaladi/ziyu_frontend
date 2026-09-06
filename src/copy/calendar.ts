@@ -8,7 +8,7 @@
  */
 export const CALENDAR_COPY = {
   title: 'Our calendar',
-  eyebrow: 'Chandu & Sarah',
+  eyebrow: 'Chandu & Sweatcha',
   weekdays: ['S', 'M', 'T', 'W', 'T', 'F', 'S'],
   monthLabel: (month: string, year: number) => `${month} ${year}`,
   prev: 'Previous month',

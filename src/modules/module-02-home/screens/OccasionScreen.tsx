@@ -4,6 +4,7 @@ import { useCallback } from 'react'
 import { View } from 'react-native'
 import { StyleSheet, useUnistyles } from 'react-native-unistyles'
 
+import { useBackTo } from '@/hooks/useBackTo'
 import { OCCASION_COPY as COPY } from '@/copy/occasion'
 import { AppScreenLayout } from '@/design-system/patterns/AppScreenLayout'
 import { Button } from '@/design-system/primitives/Button'
@@ -36,12 +37,12 @@ function iso(d: Date) {
 export function OccasionScreen() {
   const { theme } = useUnistyles()
   const router = useRouter()
+  const back = useBackTo('/(app)/home')
   const { key } = useLocalSearchParams<{ key: string }>()
   const keyDates = useStoryStore((state) => state.keyDates)
 
   const row = findComingUp(keyDates, decodeURIComponent(key ?? ''))
 
-  const back = useCallback(() => router.back(), [router])
   const addMemory = useCallback(() => router.push('/(app)/memories/new'), [router])
   const calendar = useCallback(() => router.push('/(app)/calendar'), [router])
   const openMemory = useCallback((id: string) => router.push(`/(app)/memories/${id}`), [router])

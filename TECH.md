@@ -57,4 +57,71 @@ Where to look
 - TypeScript config: `tsconfig.json`
 - Babel config: `babel.config.js`
 
-If you want this as a badge in the README or a shorter one-line summary, tell me which format you prefer.
+
+Backend integration — start here
+================================
+
+**This repository is the Expo frontend only.** There is no server, database or
+API in it. Every service is a typed boundary with an in-memory fake behind it:
+`fetch`, `axios` and `WebSocket` appear nowhere in `src/`. The only outbound
+traffic today is Unsplash image loading.
+
+That is deliberate — it means there is no half-wired networking to unpick.
+
+The seam
+--------
+
+Five services live under `src/services/`, each with the same three files:
+
+    src/services/<name>/types.ts   the contract — the interface your client must satisfy
+    src/services/<name>/mock.ts    the in-memory fake that ships today
+    src/services/<name>/index.ts   the swap point — one line
+
+    auth · chat · memories · pairing · story
+
+Every screen imports from `index.ts`, never from `mock.ts`. So replacing a mock
+is a one-line change in one file:
+
+```ts
+// src/services/chat/index.ts  — before
+export const chatService = createMockChatService()
+
+// after
+export const chatService = createHttpChatService(requireApiUrl())
+```
+
+Write `createHttpChatService` to satisfy `ChatService` in `types.ts` and every
+screen, store and test keeps working unchanged. Start by reading that file — it
+is the specification, and it is short.
+
+Configuration
+-------------
+
+    cp .env.example .env
+
+`src/config/env.ts` is the only place the app reads `process.env`. Variables
+**must** carry the `EXPO_PUBLIC_` prefix or Expo will not inline them and they
+resolve to `undefined` with no build error. Everything so prefixed ships inside
+the app bundle and is therefore public — never put a secret in it.
+
+Expo reads `.env` at startup only; restart the dev server after editing it.
+
+Android emulators cannot reach the host's `localhost` — use `10.0.2.2`.
+
+What to expect while wiring up
+------------------------------
+
+- `src/services/api/generated/` is reserved for a generated API client.
+- Mock services resolve with artificial delays (`ChatTimings`) so loading states
+  are real. Tests pass zeroes; the app uses the defaults.
+- Nothing persists across a reload yet — there is no storage layer.
+- **Two-device pairing does not work yet**, and it is the one thing the whole
+  product depends on. See `docs/build-status.md` and `docs/product/backlog.md`
+  (`LOV-001`) before planning the pairing endpoints.
+
+Verifying a change
+------------------
+
+    npm run typecheck     # tsc --noEmit
+    npm test              # 178 suites, runs in both themes
+    npm run web           # expo start --web
