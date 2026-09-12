@@ -33,7 +33,7 @@ export const SETTINGS_NOTIFICATIONS_COPY = {
   partnerActivityDetail: 'When they open the app or add something quietly.',
 
   quietGroup: 'Quiet hours',
-  quietLabel: 'Quiet hours',
+  quietLabel: 'Pause overnight',
   quietDetail: 'Hold everything until morning.',
   quietFrom: 'From',
   quietTo: 'Until',

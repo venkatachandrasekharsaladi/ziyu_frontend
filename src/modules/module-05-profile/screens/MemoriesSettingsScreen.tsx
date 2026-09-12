@@ -8,11 +8,10 @@ import { SettingsScreenLayout } from '@/design-system/patterns/SettingsScreenLay
 import { SettingsToggleRow } from '@/design-system/patterns/SettingsToggleRow'
 import { usePreferencesStore } from '@/state/preferencesStore'
 
-const ALBUM_LABEL: Record<string, string> = {
-  all: 'All memories',
-  favourites: 'Favourites',
-  trips: 'Trips',
-}
+// `defaultAlbumKey` is typed `string` on the store, not the literal union
+// `COPY.albums`'s keys form — this alias is what lets it index the `as const`
+// object without a type error, while the actual labels stay in copy.
+const ALBUM_LABEL: Record<string, string> = COPY.albums
 
 /**
  * M05-S12 — Settings → Memories & Story.
