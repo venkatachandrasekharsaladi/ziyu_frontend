@@ -78,3 +78,6 @@ example
 # generated native folders
 /ios
 /android
+
+# Subagent-driven development scratch — ledger, briefs, review packages.
+.superpowers/
