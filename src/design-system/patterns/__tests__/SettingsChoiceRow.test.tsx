@@ -60,4 +60,38 @@ describe('SettingsChoiceRow', () => {
 
     expect(screen.getByText('Auto follows your device')).toBeTruthy()
   })
+
+  // The row draws the label; the control is asked to skip its caption. Two
+  // nodes with these words means the caption came back and the row is printing
+  // its own name twice, in two different styles.
+  it('draws its label once, not once here and once in the control', async () => {
+    await renderScreen(
+      <SettingsChoiceRow label="Theme" segments={[...SEGMENTS]} value="light" onChange={jest.fn()} />,
+    )
+
+    expect(screen.getAllByText('Theme')).toHaveLength(1)
+  })
+
+  it('keeps the control findable by the same name a screen reader hears', async () => {
+    await renderScreen(
+      <SettingsChoiceRow label="Theme" segments={[...SEGMENTS]} value="light" onChange={jest.fn()} />,
+    )
+
+    expect(screen.getByLabelText('Theme').props.accessibilityRole).toBe('radiogroup')
+  })
+
+  it('takes an icon, and stands in the same shell without one', async () => {
+    await renderScreen(
+      <SettingsChoiceRow
+        icon="moon"
+        label="Theme"
+        segments={[...SEGMENTS]}
+        value="light"
+        onChange={jest.fn()}
+      />,
+    )
+
+    expect(screen.getByText('Theme')).toBeTruthy()
+    expect(screen.getByText('Light')).toBeTruthy()
+  })
 })

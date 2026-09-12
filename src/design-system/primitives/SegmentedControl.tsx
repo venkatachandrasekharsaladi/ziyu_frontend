@@ -11,6 +11,18 @@ export type Segment<T extends string> = {
 
 type SegmentedControlProps<T extends string> = {
   label: string
+  /**
+   * Drops the visible caption for a caller that already draws the label
+   * itself — `SettingsChoiceRow` does, at the same variant and tone as its
+   * sibling rows, so the caption would be the same words a second time in a
+   * lighter style.
+   *
+   * It hides the CAPTION, never the NAME: `label` still goes on the radiogroup
+   * as its `accessibilityLabel`, so the control is announced and found by
+   * exactly the string it is today. Defaults to false, so M01-S12's date
+   * precision — the original and still the only other caller — is untouched.
+   */
+  labelHidden?: boolean
   segments: Segment<T>[]
   value: T
   onChange: (next: T) => void
@@ -29,15 +41,18 @@ type SegmentedControlProps<T extends string> = {
  */
 export function SegmentedControl<T extends string>({
   label,
+  labelHidden = false,
   segments,
   value,
   onChange,
 }: SegmentedControlProps<T>) {
   return (
     <View style={styles.container}>
-      <Text variant="caption" tone="body">
-        {label}
-      </Text>
+      {labelHidden ? null : (
+        <Text variant="caption" tone="body">
+          {label}
+        </Text>
+      )}
 
       <View style={styles.track} accessibilityRole="radiogroup" accessibilityLabel={label}>
         {segments.map((segment) => (

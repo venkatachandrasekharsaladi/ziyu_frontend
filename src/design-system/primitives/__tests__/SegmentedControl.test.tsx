@@ -50,4 +50,24 @@ describe('SegmentedControl', () => {
 
     expect(screen.getByText('Precision')).toBeTruthy()
   })
+
+  // `labelHidden` drops the CAPTION, never the NAME. A caller that draws the
+  // label itself — `SettingsChoiceRow` — would otherwise print the same words
+  // twice; a control that also lost its accessible name would be a regression
+  // nobody could see.
+  it('drops its caption when the caller draws the label, and keeps its name', async () => {
+    await render(
+      <SegmentedControl
+        label="Precision"
+        labelHidden
+        segments={SEGMENTS}
+        value="exact"
+        onChange={() => {}}
+      />,
+    )
+
+    expect(screen.queryByText('Precision')).toBeNull()
+    expect(screen.getByLabelText('Precision')).toBeTruthy()
+    expect(screen.getByLabelText('Precision').props.accessibilityRole).toBe('radiogroup')
+  })
 })
