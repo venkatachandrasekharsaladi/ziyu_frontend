@@ -28,6 +28,12 @@ const COVER_LABEL: Record<'dawn' | 'dusk' | 'night', string> = {
  * owns the choice (`themeChoiceStore`), and this screen has no reason to
  * import that store directly when the hook already hands over what it needs.
  *
+ * A PANEL NAMES THE GROUP, A ROW NAMES THE SETTING. This screen used to pass
+ * `themeLabel` as both, which — with `SegmentedControl` taking it a third time
+ * as the radiogroup's accessible name — put "Theme" on the screen three times.
+ * `AccessibilityScreen` had it right first, with a "Display" panel holding a
+ * "Text size" row; this now matches it.
+ *
  * The cover link is cast `as Href`, the same way the hub casts every one of its
  * destinations: `settings/our-space` has no route file yet. Without the cast it
  * only compiled against a stale `.expo/types/router.d.ts` that still listed a
@@ -53,8 +59,9 @@ export function AppearanceScreen() {
 
   return (
     <SettingsScreenLayout title={COPY.title} lede={COPY.lede} onBack={goBack}>
-      <SectionPanel title={COPY.themeLabel}>
+      <SectionPanel title={COPY.displayGroup}>
         <SettingsChoiceRow
+          icon="moon"
           label={COPY.themeLabel}
           detail={COPY.themeDetail}
           segments={segments}

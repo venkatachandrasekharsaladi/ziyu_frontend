@@ -26,6 +26,17 @@ describe('AppearanceScreen', () => {
     expect(screen.getByText(COPY.lede)).toBeTruthy()
   })
 
+  // A panel names the group, a row names the setting, and never the same word.
+  // "Theme" used to be the panel title, the row label AND the radiogroup's
+  // accessible name — three of it on one screen.
+  it('names the group and the setting separately, so neither word appears twice', async () => {
+    await renderScreen(<AppearanceScreen />)
+
+    expect(screen.getByText(COPY.displayGroup)).toBeTruthy()
+    expect(screen.getAllByText(COPY.themeLabel)).toHaveLength(1)
+    expect(screen.getByLabelText(COPY.themeLabel).props.accessibilityRole).toBe('radiogroup')
+  })
+
   it('offers all three theme choices', async () => {
     await renderScreen(<AppearanceScreen />)
 

@@ -41,6 +41,7 @@ export function AccessibilityScreen() {
     <SettingsScreenLayout title={COPY.title} lede={COPY.lede} onBack={goBack}>
       <SectionPanel title={COPY.displayGroup}>
         <SettingsChoiceRow
+          icon="type"
           label={COPY.textSizeLabel}
           segments={TEXT_SEGMENTS}
           value={textScale}
