@@ -15,6 +15,14 @@ import { Text } from '@/design-system/primitives/Text'
  */
 export type FeatherName = keyof typeof Feather.glyphMap
 
+// Minimum touch target in logical pixels. Touch targets must never shrink
+// to satisfy spacing scale updates.
+const MIN_ROW_HEIGHT = 48
+
+// Icon-well diameter in logical pixels. Must not scale with spacing; it is an
+// affordance size, not spacing.
+const ICON_WELL_SIZE = 32
+
 type SettingsRowProps = {
   icon: FeatherName
   label: string
@@ -67,14 +75,14 @@ export function SettingsRow({
         </Text>
 
         {detail ? (
-          <Text variant="footnote" tone="muted">
+          <Text variant="footnote" tone="body">
             {detail}
           </Text>
         ) : null}
       </View>
 
       {value ? (
-        <Text variant="footnote" tone="muted">
+        <Text variant="footnote" tone="body">
           {value}
         </Text>
       ) : null}
@@ -109,7 +117,7 @@ const styles = StyleSheet.create((theme) => ({
     flexDirection: 'row',
     alignItems: 'center',
     gap: theme.spacing.md,
-    minHeight: 48,
+    minHeight: MIN_ROW_HEIGHT,
     paddingVertical: theme.spacing.sm,
     paddingHorizontal: theme.spacing.lg,
     borderRadius: theme.radii.tile,
@@ -119,8 +127,8 @@ const styles = StyleSheet.create((theme) => ({
     width: '100%',
   },
   iconWell: {
-    width: 32,
-    height: 32,
+    width: ICON_WELL_SIZE,
+    height: ICON_WELL_SIZE,
     alignItems: 'center',
     justifyContent: 'center',
     borderRadius: theme.radii.pill,
