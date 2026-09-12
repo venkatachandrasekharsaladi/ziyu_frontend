@@ -47,7 +47,8 @@ export function SettingsChoiceRow<T extends string>({
 const styles = StyleSheet.create((theme) => ({
   row: {
     gap: theme.spacing.sm,
-    padding: theme.spacing.lg,
+    paddingVertical: theme.spacing.sm,
+    paddingHorizontal: theme.spacing.lg,
     borderRadius: theme.radii.tile,
     backgroundColor: theme.colors.surface.card,
   },
