@@ -77,7 +77,7 @@ export function SettingsToggleRow({
         }}
         disabled={disabled}
         accessibilityLabel={label}
-        accessibilityState={{ checked: value }}
+        accessibilityState={{ checked: value, disabled }}
         trackColor={{ false: theme.colors.border.field, true: theme.colors.brand.primary }}
         thumbColor={theme.colors.text.onPrimary}
         testID={testID}

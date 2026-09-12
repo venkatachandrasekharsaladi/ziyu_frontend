@@ -67,4 +67,37 @@ describe('SettingsToggleRow', () => {
 
     expect(screen.getByRole('switch', { name: 'Read receipts' }).props.disabled).toBe(false)
   })
+
+  // Sits beside the `props.disabled` assertion above rather than replacing it:
+  // that one is what stops a disabled row responding on a real device, this one
+  // is what a screen reader actually hears. React Native's `Switch` only folds
+  // `disabled` into `accessibilityState` on its Android branch — the iOS branch
+  // (what this suite runs under) passes `accessibilityState` through untouched,
+  // so a disabled switch that builds that object without `disabled` announces
+  // as enabled to VoiceOver even though it no longer responds to a tap.
+  it('reports disabled to a screen reader, not only to the platform', async () => {
+    await renderScreen(
+      <SettingsToggleRow
+        icon="bell"
+        label="Messages"
+        value
+        onValueChange={jest.fn()}
+        disabled
+      />,
+    )
+
+    expect(
+      screen.getByRole('switch', { name: 'Messages' }).props.accessibilityState,
+    ).toMatchObject({ disabled: true })
+  })
+
+  it('reports enabled to a screen reader by default', async () => {
+    await renderScreen(
+      <SettingsToggleRow icon="eye" label="Read receipts" value onValueChange={jest.fn()} />,
+    )
+
+    expect(
+      screen.getByRole('switch', { name: 'Read receipts' }).props.accessibilityState,
+    ).toMatchObject({ disabled: false })
+  })
 })
