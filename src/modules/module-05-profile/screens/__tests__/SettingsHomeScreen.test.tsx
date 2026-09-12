@@ -85,6 +85,8 @@ describe('SettingsHomeScreen', () => {
   it('still signs out locally when the service rejects', async () => {
     jest.spyOn(authService, 'signOut').mockRejectedValue(new Error('offline'))
     const user = userEvent.setup()
+    useRelationshipStore.getState().setPartner({ id: 'p1', name: 'Pedro' })
+    useRelationshipStore.getState().setProfile({ name: 'Alex' })
 
     await renderScreen(<SettingsHomeScreen />)
     await user.press(screen.getByRole('button', { name: COPY.signOut }))
@@ -93,6 +95,8 @@ describe('SettingsHomeScreen', () => {
     await waitFor(() => {
       expect(mockReplace).toHaveBeenCalledWith('/(auth)/welcome')
     })
+    expect(useRelationshipStore.getState().partner).toBeNull()
+    expect(useRelationshipStore.getState().profile).toBeNull()
   })
 
   it('offers delete account, and does not act on the first tap', async () => {
