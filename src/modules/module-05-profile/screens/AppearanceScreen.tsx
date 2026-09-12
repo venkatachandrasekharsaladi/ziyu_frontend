@@ -1,4 +1,4 @@
-import { useRouter } from 'expo-router'
+import { useRouter, type Href } from 'expo-router'
 import { useCallback } from 'react'
 
 import { SETTINGS_APPEARANCE_COPY as COPY } from '@/copy/settingsAppearance'
@@ -27,13 +27,22 @@ const COVER_LABEL: Record<'dawn' | 'dusk' | 'night', string> = {
  * `choice` and `setChoice` come only from `useThemeMode` — the theme layer
  * owns the choice (`themeChoiceStore`), and this screen has no reason to
  * import that store directly when the hook already hands over what it needs.
+ *
+ * The cover link is cast `as Href`, the same way the hub casts every one of its
+ * destinations: `settings/our-space` has no route file yet. Without the cast it
+ * only compiled against a stale `.expo/types/router.d.ts` that still listed a
+ * route deleted from the tree — a generated, gitignored file, so the typecheck
+ * was clean on this machine and would have failed on a fresh clone.
  */
 export function AppearanceScreen() {
   const router = useRouter()
   const { choice, setChoice } = useThemeMode()
   const coverStyle = useSpaceStore((state) => state.coverStyle)
 
-  const goToSpace = useCallback(() => router.push('/(app)/settings/our-space'), [router])
+  const goToSpace = useCallback(
+    () => router.push('/(app)/settings/our-space' as Href),
+    [router],
+  )
   const goBack = useCallback(() => router.back(), [router])
 
   const segments: { value: ThemeChoice; label: string }[] = [
