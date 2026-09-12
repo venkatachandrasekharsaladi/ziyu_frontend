@@ -51,9 +51,16 @@ GoogleService-Info.plist
 # What stays in the repo is what somebody needs in order to RUN, BUILD or
 # INTEGRATE with this app: README.md, TECH.md, docs/build-status.md and
 # docs/qa/. Everything below is our own working material — ideas, competitor
-# research, screen audits, meeting agendas, planning specs. It changes weekly,
-# it is argued over, and it is noise to anyone pulling this repo to build
-# against it.
+# research, screen audits, meeting agendas. It changes weekly, it is argued
+# over, and it is noise to anyone pulling this repo to build against it.
+#
+# TWO DELIBERATE EXCEPTIONS, both added after this rule proved too broad:
+# `docs/decision-log.md` and `docs/superpowers/specs/`. Tracked code cites
+# them by name — `pairing/types.ts` carries a field "per D31",
+# `AppHeader.tsx` defers a blur pending "spec open item 7" — and a comment
+# that points at a file nobody else can open is a dead reference. An approved
+# spec is a decision record, not a draft: it belongs with the code whose shape
+# it explains, the same way `docs/build-status.md` does.
 #
 # These files still exist on disk; they are simply no longer tracked.
 # ---------------------------------------------------------------------------
@@ -62,8 +69,9 @@ docs/product/
 docs/research/
 docs/audit/
 docs/discussion-guide.md
-docs/decision-log.md
-docs/superpowers/
+
+# Execution scratch — regenerated per phase, superseded the moment it is run.
+docs/superpowers/plans/
 
 example
 
