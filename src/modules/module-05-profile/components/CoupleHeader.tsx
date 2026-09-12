@@ -11,8 +11,13 @@ type CoupleHeaderProps = {
   photoUri?: string | null
   partnerPhotoUri?: string | null
   spaceName?: string | null
-  /** Omitted when the pair has not recorded a start date. */
-  daysTogether?: number
+  /**
+   * `null` when the pair has not recorded the day they met — which is what
+   * `daysSince` hands back for a missing or unparseable date, so the caller
+   * passes its result straight through instead of laundering it into
+   * `undefined` first. Either way the counter is simply not drawn.
+   */
+  daysTogether?: number | null
   daysLabel: string
 }
 

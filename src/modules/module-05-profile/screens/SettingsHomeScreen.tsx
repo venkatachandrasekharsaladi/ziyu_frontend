@@ -14,7 +14,9 @@ import { CoupleHeader } from '@/modules/module-05-profile/components/CoupleHeade
 import { authService } from '@/services/auth'
 import { useRelationshipStore } from '@/state/relationshipStore'
 import { useSpaceStore } from '@/state/spaceStore'
+import { useStoryStore } from '@/state/storyStore'
 import { usePreferencesStore } from '@/state/preferencesStore'
+import { daysSince } from '@/utils/daysUntil'
 
 const LANGUAGE_LABEL: Record<string, string> = {
   en: 'English',
@@ -56,8 +58,15 @@ export function SettingsHomeScreen() {
   const resetRelationship = useRelationshipStore((state) => state.reset)
   const resetPreferences = usePreferencesStore((state) => state.reset)
   const spaceName = useSpaceStore((state) => state.name)
+  const met = useStoryStore((state) => state.met)
   const language = usePreferencesStore((state) => state.language)
   const { choice, resetChoice } = useThemeMode()
+
+  // The same figure the dashboard counts, from the same source — the day the
+  // couple recorded as the day they met. `daysSince` returns null when that day
+  // is missing or unparseable, and `CoupleHeader` draws no counter for null, so
+  // a pair who skipped the question see their names and nothing under them.
+  const daysTogether = daysSince(met?.value)
 
   const go = useCallback((href: string) => () => router.push(href as Href), [router])
 
@@ -95,6 +104,7 @@ export function SettingsHomeScreen() {
         photoUri={profile?.photoUri}
         partnerPhotoUri={partner?.photoUri}
         spaceName={spaceName}
+        daysTogether={daysTogether}
         daysLabel={COPY.daysTogether}
       />
 
