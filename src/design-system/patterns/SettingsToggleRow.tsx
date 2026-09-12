@@ -9,6 +9,8 @@ import { Text } from '@/design-system/primitives/Text'
 // to satisfy spacing scale updates.
 const TOUCH_TARGET_MIN = 48
 
+// Icon-well diameter in logical pixels. Must not scale with spacing; it is an
+// affordance size, not spacing.
 const ICON_WELL_SIZE = 32
 
 type SettingsToggleRowProps = {
