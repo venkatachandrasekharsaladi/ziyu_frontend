@@ -54,6 +54,21 @@ describe('SettingsRow', () => {
     expect(screen.queryByRole('button', { name: 'Version, 1.0.0' })).toBeNull()
   })
 
+  // A value that draws as a glyph — the tick on Language's chosen row — must
+  // not be what the row announces: '✓' is a character a screen reader may say
+  // as "check mark", as nothing, or as a beep.
+  it('announces a glyph value as the word behind it', async () => {
+    const onPress = jest.fn()
+
+    await renderScreen(
+      <SettingsRow icon="globe" label="English" value="✓" valueLabel="Chosen" onPress={onPress} />,
+    )
+
+    expect(screen.getByRole('button', { name: 'English, Chosen' })).toBeTruthy()
+    expect(screen.queryByRole('button', { name: 'English, ✓' })).toBeNull()
+    expect(screen.getByText('✓')).toBeTruthy()
+  })
+
   it('names a static row with no value by its label alone', async () => {
     await renderScreen(<SettingsRow icon="info" label="Version" />)
 

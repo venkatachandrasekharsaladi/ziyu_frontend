@@ -20,6 +20,15 @@ export const SETTINGS_LANGUAGE_COPY = {
   languageGroup: 'Language',
   notTranslated: 'Only English is translated so far. Your choice is remembered for when the rest arrive.',
 
+  /**
+   * The mark on the chosen language, and the word that mark announces. The
+   * glyph is a user-facing string like any other and belongs here, not typed
+   * into the screen; `chosenLabel` exists because "English, ✓" is what a
+   * screen reader was left to make of the character.
+   */
+  chosen: '✓',
+  chosenLabel: 'Chosen',
+
   dateGroup: 'Dates & time',
   dateFormatLabel: 'Date format',
   dmy: '31/12/2026',

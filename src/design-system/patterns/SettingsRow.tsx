@@ -24,6 +24,15 @@ type SettingsRowProps = {
   /** The current answer, right-aligned before the chevron. */
   value?: string
   /**
+   * What `value` ANNOUNCES, when what it draws is not a word. A tick in the
+   * value slot is the row saying "this is the one you chose", and it is the
+   * only confirmation a tap registered — but folded into the name it reads
+   * "English, ✓", which is a character a screen reader may render as "check
+   * mark", as "tick", or not at all. Give this and the fold uses the word
+   * instead; the drawn glyph is unchanged.
+   */
+  valueLabel?: string
+  /**
    * Omit for a row that only reports something — a version number, a plan
    * name. Without it the row is not a button and carries no chevron, which is
    * the same "honestly unavailable" rule `IconButton` and `BottomNav` follow.
@@ -41,7 +50,8 @@ type SettingsRowProps = {
  * and the answer, which is the whole point of the row, is a separate stop.
  * BOTH BRANCHES do it: the static row is the one where the value IS the row —
  * a version number, a plan name — so it is the last place that fold should have
- * been dropped, and it was.
+ * been dropped, and it was. A value that is a GLYPH rather than a word folds in
+ * as `valueLabel`, so a tick announces as a word and not as a character.
  *
  * `PressableScale` rather than a bare `Pressable`: every other tappable
  * surface in this app responds by scaling, and a settings list that does not
@@ -52,13 +62,14 @@ export function SettingsRow({
   label,
   detail,
   value,
+  valueLabel,
   onPress,
   tone = 'default',
   testID,
 }: SettingsRowProps) {
   const { theme } = useUnistyles()
   const iconColour = tone === 'danger' ? theme.colors.feedback.error : theme.colors.brand.primary
-  const accessibleName = value ? `${label}, ${value}` : label
+  const accessibleName = value ? `${label}, ${valueLabel ?? value}` : label
 
   const body = (
     <View style={rowShell.row}>

@@ -38,7 +38,9 @@ const WEEK_SEGMENTS: { value: WeekStart; label: string }[] = [
  *
  * Language is a LIST, not a segmented control: five options do not fit across
  * 320pt, and the three-choice ceiling is written into `SettingsChoiceRow`'s own
- * comment. The chosen one carries a tick in its value slot.
+ * comment. The chosen one carries a tick in its value slot — and announces the
+ * word behind it (`valueLabel`), because the tick is the only confirmation the
+ * tap registered and a bare '✓' is not something every screen reader speaks.
  *
  * NOTHING HERE PROMPTS A RESTART. A language change is the canonical reason an
  * app asks, and this app must not: settings do not persist, so a restart would
@@ -66,7 +68,8 @@ export function LanguageScreen() {
             key={code}
             icon="globe"
             label={LANGUAGE_NAMES[code]}
-            value={code === language ? '✓' : undefined}
+            value={code === language ? COPY.chosen : undefined}
+            valueLabel={COPY.chosenLabel}
             onPress={choose(code)}
           />
         ))}

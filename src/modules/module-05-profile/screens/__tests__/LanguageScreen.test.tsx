@@ -37,6 +37,33 @@ describe('LanguageScreen', () => {
     expect(usePreferencesStore.getState().language).toBe('es')
   })
 
+  // The tick is the only confirmation the tap registered, and it was untested:
+  // the value could be deleted outright and every other test here stayed green.
+  // It is checked as the row's NAME, not as loose text, because a screen reader
+  // reaches it as part of "English, Chosen" or not at all.
+  it('marks the chosen language, in a word a screen reader can say', async () => {
+    await renderScreen(<LanguageScreen />)
+
+    expect(
+      screen.getByRole('button', { name: `${LANGUAGE_NAMES.en}, ${COPY.chosenLabel}` }),
+    ).toBeTruthy()
+    expect(screen.getByText(COPY.chosen)).toBeTruthy()
+  })
+
+  it('moves the mark to the language just chosen', async () => {
+    const user = userEvent.setup()
+
+    await renderScreen(<LanguageScreen />)
+    await user.press(screen.getByRole('button', { name: new RegExp(LANGUAGE_NAMES.de) }))
+
+    expect(
+      screen.getByRole('button', { name: `${LANGUAGE_NAMES.de}, ${COPY.chosenLabel}` }),
+    ).toBeTruthy()
+    expect(
+      screen.queryByRole('button', { name: `${LANGUAGE_NAMES.en}, ${COPY.chosenLabel}` }),
+    ).toBeNull()
+  })
+
   it('never asks for a restart', async () => {
     const user = userEvent.setup()
 
