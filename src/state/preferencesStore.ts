@@ -87,8 +87,12 @@ type PreferencesState = Preferences & {
  * today — read receipts and typing indicators are on because chat renders them
  * unconditionally right now, and turning them off has to be a decision someone
  * made rather than the state they woke up in.
+ *
+ * Exported so the store's own test can assert the whole object at once rather
+ * than a hand-picked few of the forty fields — a `reset` that missed one would
+ * otherwise pass for as long as nobody thought to name it.
  */
-const DEFAULTS: Preferences = {
+export const PREFERENCE_DEFAULTS: Preferences = {
   textScale: 'default',
   reduceMotion: false,
   haptics: true,
@@ -157,11 +161,11 @@ const DEFAULTS: Preferences = {
  * plan's Task 1 note. `Preferences[K]` keeps it fully type-checked.
  */
 export const usePreferencesStore = create<PreferencesState>((set) => ({
-  ...DEFAULTS,
+  ...PREFERENCE_DEFAULTS,
 
   setPreference: (key, value) => set({ [key]: value } as Pick<Preferences, typeof key>),
 
   toggle: (key) => set((state) => ({ [key]: !state[key] }) as Pick<Preferences, typeof key>),
 
-  reset: () => set({ ...DEFAULTS }),
+  reset: () => set({ ...PREFERENCE_DEFAULTS }),
 }))

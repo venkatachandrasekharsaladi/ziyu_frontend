@@ -2,6 +2,7 @@ import { screen, userEvent } from '@testing-library/react-native'
 
 import { SettingsScreenLayout } from '@/design-system/patterns/SettingsScreenLayout'
 import { Text } from '@/design-system/primitives/Text'
+import { lavenderTheme } from '@/design-system/themes/theme'
 import { renderScreen } from '@/test/renderScreen'
 
 describe('SettingsScreenLayout', () => {
@@ -48,5 +49,26 @@ describe('SettingsScreenLayout', () => {
     )
 
     expect(screen.getByText('the content')).toBeTruthy()
+  })
+
+  // The single lever, proven — the same guard `AppScreenLayout` carries, and
+  // for the same reason twice over: a pushed settings page and a tab page have
+  // to measure identically, so a raw number here would go unnoticed until two
+  // screens in the same flow stopped lining up. `width: '100%'` is what a 320pt
+  // device leans on; `maxWidth` only engages once the frame is wider than
+  // `theme.layout.column`.
+  it.each([320, 430])('keeps the content column fluid at a %dpt frame', async (width) => {
+    await renderScreen(
+      <SettingsScreenLayout title="Appearance">
+        <Text variant="body">the content</Text>
+      </SettingsScreenLayout>,
+      { width },
+    )
+
+    const column = screen.getByTestId('settings-screen-column')
+
+    expect(column.props.style.width).toBe('100%')
+    expect(column.props.style.maxWidth).toBe(lavenderTheme.layout.column)
+    expect(typeof column.props.style.width).not.toBe('number')
   })
 })
