@@ -35,7 +35,11 @@ describe('DatesSettingsScreen', () => {
     await renderScreen(<DatesSettingsScreen />)
     // Each group renders its own set of segments, so scope the query to the
     // anniversary control rather than matching the first "Same day" on screen.
-    const anniversary = screen.getByTestId('lead-anniversary')
+    // Scoped by accessible name rather than testID: `SettingsChoiceRow` passes
+    // its `label` to `SegmentedControl`, which sets it as the
+    // `accessibilityLabel` on the radiogroup track, so `getByLabelText`
+    // resolves to exactly that control.
+    const anniversary = screen.getByLabelText(COPY.anniversary)
     await user.press(within(anniversary).getByText(COPY.sameDay))
 
     expect(usePreferencesStore.getState().anniversaryLead).toBe('sameDay')

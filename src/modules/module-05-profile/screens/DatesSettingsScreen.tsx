@@ -1,6 +1,5 @@
 import { useRouter } from 'expo-router'
 import { useCallback } from 'react'
-import { View } from 'react-native'
 
 import { SETTINGS_DATES_COPY as COPY } from '@/copy/settingsDates'
 import { SectionPanel } from '@/design-system/patterns/SectionPanel'
@@ -36,32 +35,26 @@ export function DatesSettingsScreen() {
   return (
     <SettingsScreenLayout title={COPY.title} lede={COPY.lede} onBack={goBack}>
       <SectionPanel title={COPY.leadGroup}>
-        <View testID="lead-anniversary">
-          <SettingsChoiceRow
-            label={COPY.anniversary}
-            segments={LEAD_SEGMENTS}
-            value={anniversaryLead}
-            onChange={(next) => setPreference('anniversaryLead', next)}
-          />
-        </View>
+        <SettingsChoiceRow
+          label={COPY.anniversary}
+          segments={LEAD_SEGMENTS}
+          value={anniversaryLead}
+          onChange={(next) => setPreference('anniversaryLead', next)}
+        />
 
-        <View testID="lead-birthday">
-          <SettingsChoiceRow
-            label={COPY.birthday}
-            segments={LEAD_SEGMENTS}
-            value={birthdayLead}
-            onChange={(next) => setPreference('birthdayLead', next)}
-          />
-        </View>
+        <SettingsChoiceRow
+          label={COPY.birthday}
+          segments={LEAD_SEGMENTS}
+          value={birthdayLead}
+          onChange={(next) => setPreference('birthdayLead', next)}
+        />
 
-        <View testID="lead-occasion">
-          <SettingsChoiceRow
-            label={COPY.occasion}
-            segments={LEAD_SEGMENTS}
-            value={occasionLead}
-            onChange={(next) => setPreference('occasionLead', next)}
-          />
-        </View>
+        <SettingsChoiceRow
+          label={COPY.occasion}
+          segments={LEAD_SEGMENTS}
+          value={occasionLead}
+          onChange={(next) => setPreference('occasionLead', next)}
+        />
       </SectionPanel>
 
       <SectionPanel title={COPY.datesGroup}>
