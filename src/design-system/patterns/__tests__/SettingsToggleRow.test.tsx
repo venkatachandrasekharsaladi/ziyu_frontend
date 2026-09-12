@@ -1,4 +1,4 @@
-import { screen, userEvent } from '@testing-library/react-native'
+import { fireEvent, screen, userEvent } from '@testing-library/react-native'
 
 import { SettingsToggleRow } from '@/design-system/patterns/SettingsToggleRow'
 import { renderScreen } from '@/test/renderScreen'
@@ -24,19 +24,18 @@ describe('SettingsToggleRow', () => {
 
   it('reports the next value when flipped', async () => {
     const onValueChange = jest.fn()
-    const user = userEvent.setup()
 
     await renderScreen(
       <SettingsToggleRow icon="eye" label="Read receipts" value onValueChange={onValueChange} />,
     )
-    await user.press(screen.getByRole('switch', { name: 'Read receipts' }))
+    fireEvent(screen.getByRole('switch', { name: 'Read receipts' }), 'valueChange', false)
 
     expect(onValueChange).toHaveBeenCalledWith(false)
+    expect(onValueChange).toHaveBeenCalledTimes(1)
   })
 
   it('does not fire while disabled', async () => {
     const onValueChange = jest.fn()
-    const user = userEvent.setup()
 
     await renderScreen(
       <SettingsToggleRow
@@ -47,7 +46,7 @@ describe('SettingsToggleRow', () => {
         disabled
       />,
     )
-    await user.press(screen.getByRole('switch', { name: 'Messages' }))
+    fireEvent(screen.getByRole('switch', { name: 'Messages' }), 'valueChange', false)
 
     expect(onValueChange).not.toHaveBeenCalled()
   })

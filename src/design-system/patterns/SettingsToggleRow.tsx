@@ -1,17 +1,14 @@
 import { Feather } from '@expo/vector-icons'
-import { Pressable, Switch, View } from 'react-native'
+import { Switch, View } from 'react-native'
 import { StyleSheet, useUnistyles } from 'react-native-unistyles'
 
 import type { FeatherName } from '@/design-system/patterns/SettingsRow'
 import { Text } from '@/design-system/primitives/Text'
 
-/**
- * Minimum touch target. A 1cm × 1cm square is the smallest reliably
- * tappable surface under a finger; 48pt matches that on a standard phone.
- */
+// Minimum touch target in logical pixels. Touch targets must never shrink
+// to satisfy spacing scale updates.
 const TOUCH_TARGET_MIN = 48
 
-/** Icon well diameter. */
 const ICON_WELL_SIZE = 32
 
 type SettingsToggleRowProps = {
@@ -66,27 +63,20 @@ export function SettingsToggleRow({
         ) : null}
       </View>
 
-      <Pressable
-        accessibilityRole="switch"
-        accessibilityLabel={label}
-        accessibilityState={{ checked: value }}
-        onPress={() => {
+      <Switch
+        value={value}
+        onValueChange={(newValue) => {
           if (!disabled) {
-            onValueChange(!value)
+            onValueChange(newValue)
           }
         }}
         disabled={disabled}
+        accessibilityLabel={label}
+        accessibilityState={{ checked: value }}
+        trackColor={{ false: theme.colors.border.field, true: theme.colors.brand.primary }}
+        thumbColor={theme.colors.text.onPrimary}
         testID={testID}
-      >
-        <Switch
-          value={value}
-          onValueChange={() => {}}
-          disabled={disabled}
-          trackColor={{ false: theme.colors.border.field, true: theme.colors.brand.primary }}
-          thumbColor={theme.colors.text.onPrimary}
-          pointerEvents="none"
-        />
-      </Pressable>
+      />
     </View>
   )
 }
