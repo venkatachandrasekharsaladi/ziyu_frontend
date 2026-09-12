@@ -52,6 +52,13 @@ describe('NotificationsScreen', () => {
     expect(screen.getByText(COPY.quietFrom)).toBeTruthy()
   })
 
+  it('is honest that the two times cannot be changed yet', async () => {
+    await renderScreen(<NotificationsScreen />)
+    await fireEvent(screen.getByRole('switch', { name: COPY.quietLabel }), 'valueChange', true)
+
+    expect(screen.getByText(COPY.quietTimesFixed)).toBeTruthy()
+  })
+
   it('starts with partner activity off', async () => {
     await renderScreen(<NotificationsScreen />)
 

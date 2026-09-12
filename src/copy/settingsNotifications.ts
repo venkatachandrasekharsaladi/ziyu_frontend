@@ -37,6 +37,14 @@ export const SETTINGS_NOTIFICATIONS_COPY = {
   quietDetail: 'Hold everything until morning.',
   quietFrom: 'From',
   quietTo: 'Until',
+  /**
+   * HONEST LIMIT: the two times are shown, not set — there is no time picker
+   * behind either row, so they report 22:00 and 07:00 and cannot be moved. A
+   * settings screen that displays a value a user cannot change has to say so;
+   * discovering it by tapping twice and getting nothing is the alternative.
+   * Same disclosure rule as `settingsLanguage.ts`.
+   */
+  quietTimesFixed: 'These two times cannot be changed yet. Quiet hours use them as they are.',
 
   soundGroup: 'Sound & vibration',
   sound: 'Sound',

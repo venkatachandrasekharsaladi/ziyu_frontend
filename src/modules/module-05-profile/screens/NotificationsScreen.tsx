@@ -6,6 +6,7 @@ import { SectionPanel } from '@/design-system/patterns/SectionPanel'
 import { SettingsRow } from '@/design-system/patterns/SettingsRow'
 import { SettingsScreenLayout } from '@/design-system/patterns/SettingsScreenLayout'
 import { SettingsToggleRow } from '@/design-system/patterns/SettingsToggleRow'
+import { Text } from '@/design-system/primitives/Text'
 import { usePreferencesStore } from '@/state/preferencesStore'
 
 /**
@@ -109,6 +110,16 @@ export function NotificationsScreen() {
           <>
             <SettingsRow icon="sunset" label={COPY.quietFrom} value={state.quietHoursFrom} />
             <SettingsRow icon="sunrise" label={COPY.quietTo} value={state.quietHoursTo} />
+
+            {/*
+              Neither row is pressable, and a row with no chevron is this app's
+              way of saying "nothing happens here" — but "nothing happens here"
+              is not the same as "you cannot change this at all", and only the
+              second one is true. So it is written down.
+            */}
+            <Text variant="footnote" tone="body">
+              {COPY.quietTimesFixed}
+            </Text>
           </>
         ) : null}
       </SectionPanel>

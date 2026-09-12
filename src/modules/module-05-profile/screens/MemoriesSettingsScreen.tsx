@@ -6,6 +6,7 @@ import { SectionPanel } from '@/design-system/patterns/SectionPanel'
 import { SettingsRow } from '@/design-system/patterns/SettingsRow'
 import { SettingsScreenLayout } from '@/design-system/patterns/SettingsScreenLayout'
 import { SettingsToggleRow } from '@/design-system/patterns/SettingsToggleRow'
+import { Text } from '@/design-system/primitives/Text'
 import { usePreferencesStore } from '@/state/preferencesStore'
 
 // `defaultAlbumKey` is typed `string` on the store, not the literal union
@@ -61,6 +62,17 @@ export function MemoriesSettingsScreen() {
           label={COPY.defaultAlbum}
           value={ALBUM_LABEL[state.defaultAlbumKey] ?? ALBUM_LABEL.all}
         />
+
+        {/*
+          The row reports an album and offers no way to pick another one. A
+          settings screen showing a value nobody can change has to say that out
+          loud, rather than leaving someone to tap it twice and conclude the
+          app is broken.
+        */}
+        <Text variant="footnote" tone="body">
+          {COPY.defaultAlbumFixed}
+        </Text>
+
         <SettingsToggleRow
           icon="bell"
           label={COPY.reminders}

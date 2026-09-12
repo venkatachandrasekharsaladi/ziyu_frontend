@@ -32,6 +32,12 @@ export const SETTINGS_MEMORIES_COPY = {
     favourites: 'Favourites',
     trips: 'Trips',
   },
+  /**
+   * HONEST LIMIT: the album is shown, not chosen — there is no picker behind
+   * the row, and the other two names above are where it will lead when there
+   * is one. Same disclosure rule as `settingsLanguage.ts`.
+   */
+  defaultAlbumFixed: 'Choosing a different album is not built yet. New memories go to the one shown here.',
   reminders: 'Memory reminders',
   remindersDetail: 'A nudge when it has been a while since you added anything.',
 } as const

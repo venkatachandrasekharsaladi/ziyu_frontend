@@ -43,6 +43,13 @@ describe('MemoriesSettingsScreen', () => {
     expect(usePreferencesStore.getState().autoAddChatPhotos).toBe(false)
   })
 
+  it('is honest that the default album cannot be chosen yet', async () => {
+    await renderScreen(<MemoriesSettingsScreen />)
+
+    expect(screen.getByText(COPY.defaultAlbum)).toBeTruthy()
+    expect(screen.getByText(COPY.defaultAlbumFixed)).toBeTruthy()
+  })
+
   it('turns memory reminders off', async () => {
     await renderScreen(<MemoriesSettingsScreen />)
     fireEvent(screen.getByRole('switch', { name: COPY.reminders }), 'valueChange', false)
