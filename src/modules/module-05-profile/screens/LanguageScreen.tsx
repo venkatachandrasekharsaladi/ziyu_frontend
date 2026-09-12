@@ -1,7 +1,11 @@
 import { useRouter } from 'expo-router'
 import { useCallback } from 'react'
 
-import { LANGUAGE_NAMES, SETTINGS_LANGUAGE_COPY as COPY } from '@/copy/settingsLanguage'
+import {
+  LANGUAGE_CODES,
+  LANGUAGE_NAMES,
+  SETTINGS_LANGUAGE_COPY as COPY,
+} from '@/copy/settingsLanguage'
 import { SectionPanel } from '@/design-system/patterns/SectionPanel'
 import { SettingsChoiceRow } from '@/design-system/patterns/SettingsChoiceRow'
 import { SettingsRow } from '@/design-system/patterns/SettingsRow'
@@ -14,8 +18,6 @@ import {
   type LanguageCode,
   type WeekStart,
 } from '@/state/preferencesStore'
-
-const LANGUAGES = Object.keys(LANGUAGE_NAMES) as LanguageCode[]
 
 const DATE_SEGMENTS: { value: DateFormat; label: string }[] = [
   { value: 'dmy', label: COPY.dmy },
@@ -63,7 +65,7 @@ export function LanguageScreen() {
   return (
     <SettingsScreenLayout title={COPY.title} lede={COPY.lede} onBack={goBack}>
       <SectionPanel title={COPY.languageGroup}>
-        {LANGUAGES.map((code) => (
+        {LANGUAGE_CODES.map((code) => (
           <SettingsRow
             key={code}
             icon="globe"

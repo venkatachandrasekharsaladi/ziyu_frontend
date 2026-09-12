@@ -5,6 +5,7 @@ import { StyleSheet } from 'react-native-unistyles'
 
 import { SETTINGS_APPEARANCE_COPY } from '@/copy/settingsAppearance'
 import { SETTINGS_HOME_COPY as COPY } from '@/copy/settingsHome'
+import { LANGUAGE_NAMES } from '@/copy/settingsLanguage'
 import { AppScreenLayout } from '@/design-system/patterns/AppScreenLayout'
 import { DangerRow } from '@/design-system/patterns/DangerRow'
 import { SectionPanel } from '@/design-system/patterns/SectionPanel'
@@ -17,30 +18,19 @@ import { authService } from '@/services/auth'
 import { useRelationshipStore } from '@/state/relationshipStore'
 import { useSpaceStore } from '@/state/spaceStore'
 import { useStoryStore } from '@/state/storyStore'
-import { usePreferencesStore, type LanguageCode } from '@/state/preferencesStore'
+import { usePreferencesStore } from '@/state/preferencesStore'
 import { daysSince } from '@/utils/daysUntil'
-
-/**
- * Keyed by `LanguageCode`, not by `string`. As `Record<string, string>` a sixth
- * language could be added to the store and this map would simply return
- * `undefined` for it — a row rendering an empty value, at runtime, on a screen
- * nobody was editing. Keyed by the union it fails to compile instead, which is
- * the only place that mistake is cheap to find.
- */
-const LANGUAGE_LABEL: Record<LanguageCode, string> = {
-  en: 'English',
-  es: 'Español',
-  fr: 'Français',
-  de: 'Deutsch',
-  hi: 'हिन्दी',
-}
 
 /**
  * The three theme names come from Appearance's own copy rather than being
  * retyped here. The hub's value and the screen it opens are showing the user the
  * same choice, and two copies of the same three words are two things that can
  * drift — the row would keep saying "Dark" after the screen started saying
- * something else. Same `Record<union, string>` rule as the languages above.
+ * something else. The five language names follow the same rule, read from
+ * `LANGUAGE_NAMES` in Language & Region's own copy (they were briefly retyped
+ * here, which is exactly the drift this comment was written to forbid), and
+ * both maps are `Record<union, string>` so a new member of either union fails
+ * to compile rather than rendering an empty value.
  */
 const THEME_LABEL: Record<ThemeChoice, string> = {
   light: SETTINGS_APPEARANCE_COPY.light,
@@ -175,7 +165,7 @@ export function SettingsHomeScreen() {
         <SettingsRow
           icon="globe"
           label={COPY.language}
-          value={LANGUAGE_LABEL[language]}
+          value={LANGUAGE_NAMES[language]}
           onPress={go('/(app)/settings/language')}
         />
       </SectionPanel>
