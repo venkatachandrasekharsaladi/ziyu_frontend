@@ -39,6 +39,9 @@ type SettingsRowProps = {
  * The accessible name folds the value into the label — "Language, English" —
  * because a screen reader moving row by row otherwise announces "Language",
  * and the answer, which is the whole point of the row, is a separate stop.
+ * BOTH BRANCHES do it: the static row is the one where the value IS the row —
+ * a version number, a plan name — so it is the last place that fold should have
+ * been dropped, and it was.
  *
  * `PressableScale` rather than a bare `Pressable`: every other tappable
  * surface in this app responds by scaling, and a settings list that does not
@@ -55,6 +58,7 @@ export function SettingsRow({
 }: SettingsRowProps) {
   const { theme } = useUnistyles()
   const iconColour = tone === 'danger' ? theme.colors.feedback.error : theme.colors.brand.primary
+  const accessibleName = value ? `${label}, ${value}` : label
 
   const body = (
     <View style={rowShell.row}>
@@ -88,18 +92,18 @@ export function SettingsRow({
 
   if (!onPress) {
     return (
-      <View style={styles.static} testID={testID}>
+      // `accessible` is what makes the fold mean anything: without it the row
+      // is three separate stops and the label carries no name of its own. It is
+      // NOT given a role — this row is not a button, and saying so was the
+      // point of the branch.
+      <View style={styles.static} testID={testID} accessible accessibilityLabel={accessibleName}>
         {body}
       </View>
     )
   }
 
   return (
-    <PressableScale
-      onPress={onPress}
-      accessibilityLabel={value ? `${label}, ${value}` : label}
-      testID={testID}
-    >
+    <PressableScale onPress={onPress} accessibilityLabel={accessibleName} testID={testID}>
       {body}
     </PressableScale>
   )

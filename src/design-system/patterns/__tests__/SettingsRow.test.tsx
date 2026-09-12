@@ -43,4 +43,20 @@ describe('SettingsRow', () => {
 
     expect(screen.getByRole('button', { name: 'Language, English' })).toBeTruthy()
   })
+
+  // The static row is the one where the value IS the row, so it is the last
+  // place the fold should be missing — and it was. Both branches now agree, and
+  // agree with the component's own header comment.
+  it('folds the value into its name when it is not a button either', async () => {
+    await renderScreen(<SettingsRow icon="info" label="Version" value="1.0.0" />)
+
+    expect(screen.getByLabelText('Version, 1.0.0')).toBeTruthy()
+    expect(screen.queryByRole('button', { name: 'Version, 1.0.0' })).toBeNull()
+  })
+
+  it('names a static row with no value by its label alone', async () => {
+    await renderScreen(<SettingsRow icon="info" label="Version" />)
+
+    expect(screen.getByLabelText('Version')).toBeTruthy()
+  })
 })

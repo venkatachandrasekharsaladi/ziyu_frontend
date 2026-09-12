@@ -60,9 +60,19 @@ export function SettingsToggleRow({
 
       <Switch
         value={value}
-        onValueChange={(newValue) => {
+        /*
+         * The `disabled` check looks redundant beside the `disabled` prop
+         * below, and on every real platform it is: a disabled switch emits
+         * nothing, native or web. It is kept for the test environment, where it
+         * is not redundant at all. `Switch` spreads its props onto the host
+         * component, so `fireEvent(switch, 'valueChange', …)` reaches THIS
+         * handler directly — RNTL delivers an event the platform never
+         * would, and without the check a disabled row would report a change.
+         * Removing it was tried and turned "does not fire while disabled" red.
+         */
+        onValueChange={(next) => {
           if (!disabled) {
-            onValueChange(newValue)
+            onValueChange(next)
           }
         }}
         disabled={disabled}
