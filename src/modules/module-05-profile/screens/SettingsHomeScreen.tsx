@@ -3,11 +3,13 @@ import { useCallback } from 'react'
 import { View } from 'react-native'
 import { StyleSheet } from 'react-native-unistyles'
 
+import { SETTINGS_APPEARANCE_COPY } from '@/copy/settingsAppearance'
 import { SETTINGS_HOME_COPY as COPY } from '@/copy/settingsHome'
 import { AppScreenLayout } from '@/design-system/patterns/AppScreenLayout'
 import { DangerRow } from '@/design-system/patterns/DangerRow'
 import { SectionPanel } from '@/design-system/patterns/SectionPanel'
 import { SettingsRow } from '@/design-system/patterns/SettingsRow'
+import type { ThemeChoice } from '@/design-system/themes/themeChoiceStore'
 import { useThemeMode } from '@/design-system/themes/useThemeMode'
 import { Text } from '@/design-system/primitives/Text'
 import { CoupleHeader } from '@/modules/module-05-profile/components/CoupleHeader'
@@ -15,10 +17,17 @@ import { authService } from '@/services/auth'
 import { useRelationshipStore } from '@/state/relationshipStore'
 import { useSpaceStore } from '@/state/spaceStore'
 import { useStoryStore } from '@/state/storyStore'
-import { usePreferencesStore } from '@/state/preferencesStore'
+import { usePreferencesStore, type LanguageCode } from '@/state/preferencesStore'
 import { daysSince } from '@/utils/daysUntil'
 
-const LANGUAGE_LABEL: Record<string, string> = {
+/**
+ * Keyed by `LanguageCode`, not by `string`. As `Record<string, string>` a sixth
+ * language could be added to the store and this map would simply return
+ * `undefined` for it — a row rendering an empty value, at runtime, on a screen
+ * nobody was editing. Keyed by the union it fails to compile instead, which is
+ * the only place that mistake is cheap to find.
+ */
+const LANGUAGE_LABEL: Record<LanguageCode, string> = {
   en: 'English',
   es: 'Español',
   fr: 'Français',
@@ -26,7 +35,18 @@ const LANGUAGE_LABEL: Record<string, string> = {
   hi: 'हिन्दी',
 }
 
-const THEME_LABEL = { light: 'Light', dark: 'Dark', auto: 'Auto' } as const
+/**
+ * The three theme names come from Appearance's own copy rather than being
+ * retyped here. The hub's value and the screen it opens are showing the user the
+ * same choice, and two copies of the same three words are two things that can
+ * drift — the row would keep saying "Dark" after the screen started saying
+ * something else. Same `Record<union, string>` rule as the languages above.
+ */
+const THEME_LABEL: Record<ThemeChoice, string> = {
+  light: SETTINGS_APPEARANCE_COPY.light,
+  dark: SETTINGS_APPEARANCE_COPY.dark,
+  auto: SETTINGS_APPEARANCE_COPY.auto,
+}
 
 /**
  * M05-S01 — the Profile tab, which IS the settings list.
