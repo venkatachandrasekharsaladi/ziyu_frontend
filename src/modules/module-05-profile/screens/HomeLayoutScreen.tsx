@@ -81,7 +81,7 @@ export function HomeLayoutScreen() {
           const isVisible = index !== -1
 
           return (
-            <View key={key} style={styles.card} testID={`card-${key}`}>
+            <View key={key} style={styles.card}>
               <SettingsToggleRow
                 icon={CARD_COPY[key].icon}
                 label={CARD_COPY[key].label}
@@ -90,17 +90,23 @@ export function HomeLayoutScreen() {
                 onValueChange={toggleCard(key)}
               />
 
+              {/*
+                Each button is named with ITS card — "Move Coming up down" —
+                rather than a bare "Move down" repeated three times. Six
+                controls sharing two names is unusable with a screen reader,
+                which is the audience this screen has instead of a drag.
+              */}
               <View style={styles.controls}>
                 <IconButton
                   icon="arrow-up"
-                  label={COPY.moveUp}
+                  label={COPY.moveUp(CARD_COPY[key].label)}
                   size="sm"
                   tone="quiet"
                   onPress={isVisible && index > 0 ? move(key, -1) : undefined}
                 />
                 <IconButton
                   icon="arrow-down"
-                  label={COPY.moveDown}
+                  label={COPY.moveDown(CARD_COPY[key].label)}
                   size="sm"
                   tone="quiet"
                   onPress={

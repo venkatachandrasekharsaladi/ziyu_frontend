@@ -1,4 +1,4 @@
-import { fireEvent, screen, userEvent, within } from '@testing-library/react-native'
+import { fireEvent, screen, userEvent } from '@testing-library/react-native'
 
 import { SETTINGS_HOME_LAYOUT_COPY as COPY } from '@/copy/settingsHomeLayout'
 import { HomeLayoutScreen } from '@/modules/module-05-profile/screens/HomeLayoutScreen'
@@ -39,12 +39,16 @@ describe('HomeLayoutScreen', () => {
     ])
   })
 
+  // Scoped by accessible name, not by a testID wrapper, the way
+  // DatesSettingsScreen scopes its three identical segment sets: each button
+  // names the card it moves, so the query that finds it is the same string a
+  // screen reader announces. A testID would have hidden the defect it was
+  // introduced to work around.
   it('moves a card down', async () => {
     const user = userEvent.setup()
 
     await renderScreen(<HomeLayoutScreen />)
-    const row = screen.getByTestId('card-featured')
-    await user.press(within(row).getByLabelText(COPY.moveDown))
+    await user.press(screen.getByLabelText(COPY.moveDown(COPY.featured)))
 
     expect(usePreferencesStore.getState().homeCards).toEqual([
       'comingUp',
@@ -53,13 +57,20 @@ describe('HomeLayoutScreen', () => {
     ])
   })
 
+  it('tells the three pairs of move buttons apart by name', async () => {
+    await renderScreen(<HomeLayoutScreen />)
+
+    expect(screen.getByLabelText(COPY.moveDown(COPY.featured))).toBeTruthy()
+    expect(screen.getByLabelText(COPY.moveDown(COPY.comingUp))).toBeTruthy()
+    expect(screen.getByLabelText(COPY.moveUp(COPY.littleThings))).toBeTruthy()
+  })
+
   it('cannot move the first card up', async () => {
     await renderScreen(<HomeLayoutScreen />)
 
-    const row = screen.getByTestId('card-featured')
-    expect(within(row).getByLabelText(COPY.moveUp).props.accessibilityState).toMatchObject({
-      disabled: true,
-    })
+    expect(
+      screen.getByLabelText(COPY.moveUp(COPY.featured)).props.accessibilityState,
+    ).toMatchObject({ disabled: true })
   })
 
   it('says so when everything is hidden', async () => {

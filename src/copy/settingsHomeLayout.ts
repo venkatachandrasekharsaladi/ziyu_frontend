@@ -35,7 +35,15 @@ export const SETTINGS_HOME_LAYOUT_COPY = {
   littleThings: HOME_DASHBOARD_COPY.littleThingsLabel,
   littleThingsDetail: 'Small notes and moments from each other.',
 
-  moveUp: 'Move up',
-  moveDown: 'Move down',
+  /**
+   * Named with the card they move, because there are three pairs of them on
+   * one screen. Static labels made six controls announce as two names —
+   * "Move up" three times over — on the screen that exists precisely because a
+   * drag cannot be operated by a screen reader. Built here rather than
+   * assembled in the screen: "Move X up" is a user-facing sentence, and this
+   * file is where this screen's sentences live.
+   */
+  moveUp: (card: string) => `Move ${card} up`,
+  moveDown: (card: string) => `Move ${card} down`,
   allHidden: 'Every card is hidden here. Your home screen still shows all of them for now.',
 } as const
