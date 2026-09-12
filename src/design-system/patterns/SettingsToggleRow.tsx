@@ -3,15 +3,8 @@ import { Switch, View } from 'react-native'
 import { StyleSheet, useUnistyles } from 'react-native-unistyles'
 
 import type { FeatherName } from '@/design-system/patterns/SettingsRow'
+import { rowShell } from '@/design-system/patterns/settingsRowShell'
 import { Text } from '@/design-system/primitives/Text'
-
-// Minimum touch target in logical pixels. Touch targets must never shrink
-// to satisfy spacing scale updates.
-const TOUCH_TARGET_MIN = 48
-
-// Icon-well diameter in logical pixels. Must not scale with spacing; it is an
-// affordance size, not spacing.
-const ICON_WELL_SIZE = 32
 
 type SettingsToggleRowProps = {
   icon: FeatherName
@@ -48,12 +41,12 @@ export function SettingsToggleRow({
   const { theme } = useUnistyles()
 
   return (
-    <View style={[styles.row, disabled && styles.disabled]}>
-      <View style={styles.iconWell}>
+    <View style={[rowShell.row, disabled && styles.disabled]}>
+      <View style={rowShell.iconWell}>
         <Feather name={icon} size={18} color={theme.colors.brand.primary} />
       </View>
 
-      <View style={styles.copy}>
+      <View style={rowShell.copy}>
         <Text variant="label" tone="heading">
           {label}
         </Text>
@@ -83,30 +76,10 @@ export function SettingsToggleRow({
   )
 }
 
-const styles = StyleSheet.create((theme) => ({
-  row: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: theme.spacing.md,
-    minHeight: TOUCH_TARGET_MIN,
-    paddingVertical: theme.spacing.sm,
-    paddingHorizontal: theme.spacing.lg,
-    borderRadius: theme.radii.tile,
-    backgroundColor: theme.colors.surface.card,
-  },
+// The card, the icon well and the copy column come from `settingsRowShell`,
+// shared with the other two rows. Only what is this row's own lives here.
+const styles = StyleSheet.create(() => ({
   disabled: {
     opacity: 0.5,
-  },
-  iconWell: {
-    width: ICON_WELL_SIZE,
-    height: ICON_WELL_SIZE,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderRadius: theme.radii.pill,
-    backgroundColor: theme.colors.surface.field,
-  },
-  copy: {
-    flex: 1,
-    gap: 2,
   },
 }))
