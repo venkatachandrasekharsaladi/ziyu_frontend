@@ -8,6 +8,14 @@
  * Read receipts are reciprocal and the copy says so. An app that lets you see
  * their receipts while hiding yours is one that quietly takes a side, and in a
  * product for exactly two people that asymmetry is the whole argument.
+ *
+ * HONEST LIMIT: clearing does not clear anything yet. The conversation lives
+ * inside `module-03-chat`'s own state and there is no store here to empty, so
+ * the confirmation asks the question the real action will ask and then says,
+ * plainly, that nothing was deleted. Copy that reported success would send
+ * someone away from this screen believing their messages were gone — the one
+ * mistake a settings screen must never let a user make about their own data.
+ * Same disclosure rule as `settingsLanguage.ts`.
  */
 export const SETTINGS_CHAT_COPY = {
   title: 'Chat',
@@ -33,11 +41,11 @@ export const SETTINGS_CHAT_COPY = {
 
   dangerGroup: 'History',
   clearHistory: 'Clear chat history',
-  clearHistoryDetail: 'Removes every message from this device.',
+  clearHistoryDetail: 'Not connected to your conversation yet.',
   clearConfirmTitle: 'Clear this conversation?',
   clearConfirmBody:
-    'Every message, photo and voice note in your conversation is removed from this device. This cannot be undone.',
+    'Clearing will take every message, photo and voice note in your conversation off this device, and that cannot be undone. It does not do that yet: this screen is not connected to your conversation, so nothing will disappear today.',
   clearConfirmCancel: 'Keep them',
   clearConfirmAction: 'Clear history',
-  cleared: 'Your chat history was cleared.',
+  clearNotWired: 'Nothing was deleted. Clearing is not connected to your conversation yet.',
 } as const

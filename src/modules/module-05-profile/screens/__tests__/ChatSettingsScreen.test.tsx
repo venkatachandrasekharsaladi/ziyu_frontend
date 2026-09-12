@@ -56,16 +56,22 @@ describe('ChatSettingsScreen', () => {
     await user.press(screen.getByRole('button', { name: new RegExp(COPY.clearHistory) }))
 
     expect(screen.getByText(COPY.clearConfirmTitle)).toBeTruthy()
-    expect(screen.queryByText(COPY.cleared)).toBeNull()
+    expect(screen.queryByText(COPY.clearNotWired)).toBeNull()
   })
 
-  it('confirms the clear once asked', async () => {
+  // The banner is the last thing someone reads before they put the phone down,
+  // possibly in someone else's hands. It has to say what happened, which is
+  // nothing — the second assertion is the one that stays even if the wording
+  // changes, because it catches any future copy that claims a deletion this
+  // screen cannot perform.
+  it('says plainly that nothing was deleted once the clear is confirmed', async () => {
     const user = userEvent.setup()
 
     await renderScreen(<ChatSettingsScreen />)
     await user.press(screen.getByRole('button', { name: new RegExp(COPY.clearHistory) }))
     await user.press(screen.getByRole('button', { name: COPY.clearConfirmAction }))
 
-    expect(screen.getByText(COPY.cleared)).toBeTruthy()
+    expect(screen.getByText(COPY.clearNotWired)).toBeTruthy()
+    expect(screen.queryAllByText(/cleared|deleted every|removed/i)).toHaveLength(0)
   })
 })
