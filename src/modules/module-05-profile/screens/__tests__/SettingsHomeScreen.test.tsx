@@ -1,8 +1,10 @@
 import { screen, userEvent, waitFor } from '@testing-library/react-native'
 
 import { SETTINGS_HOME_COPY as COPY } from '@/copy/settingsHome'
+import { useThemeChoiceStore } from '@/design-system/themes/themeChoiceStore'
 import { SettingsHomeScreen } from '@/modules/module-05-profile/screens/SettingsHomeScreen'
 import { authService } from '@/services/auth'
+import { usePreferencesStore } from '@/state/preferencesStore'
 import { useRelationshipStore } from '@/state/relationshipStore'
 import { renderScreen } from '@/test/renderScreen'
 
@@ -23,6 +25,8 @@ describe('SettingsHomeScreen', () => {
     // leaves it pending after the test ends.
     jest.spyOn(authService, 'signOut').mockResolvedValue(undefined)
     useRelationshipStore.getState().reset()
+    usePreferencesStore.getState().reset()
+    useThemeChoiceStore.getState().reset()
   })
 
   it('keeps the heading and lede the design drew', async () => {
@@ -82,11 +86,19 @@ describe('SettingsHomeScreen', () => {
     expect(useRelationshipStore.getState().partner).toBeNull()
   })
 
-  it('still signs out locally when the service rejects', async () => {
+  // Every store a signed-in account writes to, not only the relationship: a
+  // preference and the theme choice are here because leaving either behind
+  // hands the next person to sign in on this device the last person's app
+  // lock, quiet hours and dark mode. The rejection path is the one to assert
+  // it on, because that is where "runs whichever way the service settled"
+  // either holds or quietly stops holding.
+  it('still signs out locally — and clears every store — when the service rejects', async () => {
     jest.spyOn(authService, 'signOut').mockRejectedValue(new Error('offline'))
     const user = userEvent.setup()
     useRelationshipStore.getState().setPartner({ id: 'p1', name: 'Pedro' })
     useRelationshipStore.getState().setProfile({ name: 'Alex' })
+    usePreferencesStore.getState().setPreference('appLock', true)
+    useThemeChoiceStore.getState().setChoice('dark')
 
     await renderScreen(<SettingsHomeScreen />)
     await user.press(screen.getByRole('button', { name: COPY.signOut }))
@@ -97,6 +109,8 @@ describe('SettingsHomeScreen', () => {
     })
     expect(useRelationshipStore.getState().partner).toBeNull()
     expect(useRelationshipStore.getState().profile).toBeNull()
+    expect(usePreferencesStore.getState().appLock).toBe(false)
+    expect(useThemeChoiceStore.getState().choice).toBe('light')
   })
 
   it('offers delete account, and does not act on the first tap', async () => {

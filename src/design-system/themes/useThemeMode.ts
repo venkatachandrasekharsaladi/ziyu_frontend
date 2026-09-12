@@ -48,6 +48,7 @@ export function useThemeMode() {
   const name = themeNameOf(theme)
   const choice = useThemeChoiceStore((state) => state.choice)
   const setStoreChoice = useThemeChoiceStore((state) => state.setChoice)
+  const resetStoreChoice = useThemeChoiceStore((state) => state.reset)
 
   const setMode = useCallback((next: ThemeName) => {
     UnistylesRuntime.setTheme(next)
@@ -58,10 +59,8 @@ export function useThemeMode() {
     UnistylesRuntime.setRootViewBackgroundColor(themes[next].colors.surface.page)
   }, [])
 
-  const setChoice = useCallback(
+  const applyChoice = useCallback(
     (next: ThemeChoice) => {
-      setStoreChoice(next)
-
       if (next === 'auto') {
         setMode(FOR_SCHEME[Appearance.getColorScheme() === 'dark' ? 'dark' : 'light'])
         return
@@ -69,8 +68,30 @@ export function useThemeMode() {
 
       setMode(FOR_CHOICE[next])
     },
-    [setMode, setStoreChoice],
+    [setMode],
   )
+
+  const setChoice = useCallback(
+    (next: ThemeChoice) => {
+      setStoreChoice(next)
+      applyChoice(next)
+    },
+    [applyChoice, setStoreChoice],
+  )
+
+  /**
+   * Forget the choice and repaint on the default.
+   *
+   * Sign-out calls this. `themeChoiceStore.reset()` on its own would clear the
+   * RECORDED choice and leave `UnistylesRuntime` still painted in the previous
+   * account's palette — the half of the leak that is invisible in the store and
+   * unmissable on the screen. Applying the restored choice through the same
+   * `setMode` seam everything else uses is what makes the two agree again.
+   */
+  const resetChoice = useCallback(() => {
+    resetStoreChoice()
+    applyChoice(useThemeChoiceStore.getState().choice)
+  }, [applyChoice, resetStoreChoice])
 
   // Only subscribed while the choice is Auto. An explicit Light or Dark means
   // the device's own setting is no longer an input, and a listener still
@@ -102,5 +123,7 @@ export function useThemeMode() {
     setMode,
     /** Record a choice and apply it. What the Appearance screen calls. */
     setChoice,
+    /** Drop the choice and repaint on the default. What sign-out calls. */
+    resetChoice,
   }
 }

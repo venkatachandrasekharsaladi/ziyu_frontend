@@ -34,21 +34,30 @@ const THEME_LABEL = { light: 'Light', dark: 'Dark', auto: 'Auto' } as const
  * happened: the heading and lede are the design's and are kept verbatim, and
  * sign-out is now a `DangerRow` instead of a lone outline button.
  *
- * SIGN-OUT ORDER IS LOAD-BEARING and is carried over unchanged. `reset()` runs
- * before `router.replace`, unconditionally, whichever way the service call
- * went — the welcome screen must never be able to read a previous couple's
- * partner. The rejection is swallowed on purpose: there is nothing to tell
- * someone whose logout call failed, because they are signed out locally
- * either way, and a message here would imply they are not.
+ * SIGN-OUT ORDER IS LOAD-BEARING. EVERY reset runs before `router.replace`,
+ * unconditionally, whichever way the service call went — the welcome screen
+ * must never be able to read a previous couple's partner. The rejection is
+ * swallowed on purpose: there is nothing to tell someone whose logout call
+ * failed, because they are signed out locally either way, and a message here
+ * would imply they are not.
+ *
+ * WHAT gets reset is load-bearing too, and this is the whole device's state,
+ * not one store's. The relationship was cleared from the first day; the
+ * preferences and the theme were not, so the next person to sign in on this
+ * phone inherited the last person's app lock, notification previews,
+ * screenshot alerts, quiet hours and dark mode. Anything a signed-in account
+ * writes has to be cleared here, and a new store is not finished until its
+ * `reset` is on this list.
  */
 export function SettingsHomeScreen() {
   const router = useRouter()
   const profile = useRelationshipStore((state) => state.profile)
   const partner = useRelationshipStore((state) => state.partner)
-  const reset = useRelationshipStore((state) => state.reset)
+  const resetRelationship = useRelationshipStore((state) => state.reset)
+  const resetPreferences = usePreferencesStore((state) => state.reset)
   const spaceName = useSpaceStore((state) => state.name)
   const language = usePreferencesStore((state) => state.language)
-  const { choice } = useThemeMode()
+  const { choice, resetChoice } = useThemeMode()
 
   const go = useCallback((href: string) => () => router.push(href as Href), [router])
 
@@ -59,9 +68,11 @@ export function SettingsHomeScreen() {
       // Swallowed on purpose — see the header comment.
     }
 
-    reset()
+    resetRelationship()
+    resetPreferences()
+    resetChoice()
     router.replace('/(auth)/welcome')
-  }, [reset, router])
+  }, [resetRelationship, resetPreferences, resetChoice, router])
 
   const confirmSignOut = useCallback(() => {
     void signOut()
