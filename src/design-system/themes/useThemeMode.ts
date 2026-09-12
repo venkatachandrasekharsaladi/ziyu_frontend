@@ -47,7 +47,7 @@ export function useThemeMode() {
   const { theme } = useUnistyles()
   const name = themeNameOf(theme)
   const choice = useThemeChoiceStore((state) => state.choice)
-  const setPreference = useThemeChoiceStore((state) => state.setChoice)
+  const setStoreChoice = useThemeChoiceStore((state) => state.setChoice)
 
   const setMode = useCallback((next: ThemeName) => {
     UnistylesRuntime.setTheme(next)
@@ -60,7 +60,7 @@ export function useThemeMode() {
 
   const setChoice = useCallback(
     (next: ThemeChoice) => {
-      setPreference(next)
+      setStoreChoice(next)
 
       if (next === 'auto') {
         setMode(FOR_SCHEME[Appearance.getColorScheme() === 'dark' ? 'dark' : 'light'])
@@ -69,7 +69,7 @@ export function useThemeMode() {
 
       setMode(FOR_CHOICE[next])
     },
-    [setMode, setPreference],
+    [setMode, setStoreChoice],
   )
 
   // Only subscribed while the choice is Auto. An explicit Light or Dark means
