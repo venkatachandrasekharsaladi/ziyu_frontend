@@ -21,7 +21,7 @@ type SettingsScreenLayoutProps = {
 /**
  * Chrome for a pushed settings page.
  *
- * The counterpart to `AppScreenLayout`, and deliberately the same 350pt column
+ * The counterpart to `AppScreenLayout`, and deliberately the same 448pt column
  * and the same scroll behaviour — the two differences are the ones the
  * navigation model asks for: this bar carries the SCREEN's title rather than
  * the brand wordmark, and there is NO `BottomNav`. A settings detail page is a

@@ -5,12 +5,6 @@ import { UnistylesRuntime, useUnistyles } from 'react-native-unistyles'
 import { themeNameOf, themes, type ThemeName } from '@/design-system/themes/theme'
 import { useThemeChoiceStore, type ThemeChoice } from '@/design-system/themes/themeChoiceStore'
 
-/** Where each theme goes when the user asks for the other one. */
-const OPPOSITE: Record<ThemeName, ThemeName> = {
-  lavender: 'midnight',
-  midnight: 'lavender',
-}
-
 /** What the device's own light/dark setting means in this app's theme names. */
 const FOR_SCHEME: Record<'light' | 'dark', ThemeName> = {
   light: 'lavender',
