@@ -23,7 +23,7 @@ type AppScreenLayoutProps = {
 }
 
 /**
- * Shared chrome for every screen inside `(app)`: header, the 350pt content
+ * Shared chrome for every screen inside `(app)`: header, the 448pt content
  * column, and the bottom bar.
  *
  * The counterpart to `AuthScreenLayout`, and deliberately the same shape — same
