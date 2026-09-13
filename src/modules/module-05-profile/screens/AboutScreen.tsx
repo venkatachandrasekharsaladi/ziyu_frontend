@@ -14,6 +14,14 @@ import { SettingsScreenLayout } from '@/design-system/patterns/SettingsScreenLay
  * from a constant somebody has to remember to bump. Both fall back to a dash
  * rather than rendering `undefined`, because under Jest and in some web builds
  * the manifest is not populated.
+ *
+ * THE ONLY LINKS OUT ARE INWARD. The design asks this screen to link out, and
+ * the credits row does — to Licenses, which is the real, complete answer to
+ * "what is this built on". The website row carries no `onPress` because there
+ * is no website: inventing a URL to make a row pressable would be the one lie
+ * this cluster has refused everywhere else, and a dead link is worse than an
+ * honest line. Give `BRAND` a real address and this row becomes an
+ * `openBrowserAsync` call and nothing else changes.
  */
 export function AboutScreen() {
   const router = useRouter()
@@ -31,6 +39,22 @@ export function AboutScreen() {
         <SettingsRow icon="info" label={COPY.version} value={version} />
         <SettingsRow icon="package" label={COPY.build} value={build} />
         <SettingsRow icon="heart" label={COPY.madeFor} detail={COPY.madeForDetail} />
+      </SectionPanel>
+
+      <SectionPanel title={COPY.creditsGroup}>
+        <SettingsRow
+          icon="code"
+          label={COPY.builtWith}
+          detail={COPY.builtWithDetail}
+          onPress={go('/(app)/settings/legal/licenses')}
+        />
+        <SettingsRow
+          icon="mail"
+          label={COPY.contact}
+          detail={COPY.contactDetail}
+          onPress={go('/(app)/settings/feedback')}
+        />
+        <SettingsRow icon="globe" label={COPY.website} detail={COPY.websiteDetail} />
       </SectionPanel>
 
       <SectionPanel title={COPY.legalGroup}>
