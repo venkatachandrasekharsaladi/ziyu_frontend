@@ -10,9 +10,11 @@ import { useThemeMode } from '@/design-system/themes/useThemeMode'
  *
  * Deliberately propless and self-contained: it reads the active theme itself
  * and needs nothing from whatever renders it. Moving it — to a header, a
- * settings row, a modal — is moving one line, which is the point, because the
- * settings hub it currently sits in (`OurSpaceScreen`) is still a stub and this
- * is not its final home.
+ * settings row, a modal — is moving one line, which is the point, and is what
+ * happened: choosing a theme now lives on `AppearanceScreen`, as a three-way
+ * Light / Dark / Auto choice this two-state toggle cannot express. No screen
+ * renders this today; it is kept as the one-tap flip for wherever that turns
+ * out to be worth having.
  *
  * Built on `Button` rather than a bespoke pressable. That primitive's own doc
  * calls itself "the only button in the app" and it already owns the control

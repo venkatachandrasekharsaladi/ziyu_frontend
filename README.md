@@ -1,60 +1,100 @@
-# Welcome to your Expo app 👋
+# LoveOS — frontend
 
-Tech: Expo · React Native · TypeScript · expo-router · Zustand · TanStack Query
+A private app for a couple: exactly two paired people. Chat, a shared memory
+archive, and the story of how they got here.
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+**This repository is the Expo frontend only.** There is no server, database or
+API in it — every service is a typed boundary with an in-memory fake behind it.
+See [TECH.md](TECH.md#backend-integration--start-here) if you are wiring up a
+backend; that is the fastest way in.
 
-## Get started
+---
 
-1. Install dependencies
+## Requirements
 
-   ```bash
-   npm install
-   ```
+| | |
+|---|---|
+| Node | 20 LTS or newer |
+| npm | 10+ (repo uses `package-lock.json` — don't switch to yarn/pnpm) |
+| Expo SDK | ~57 |
+| Android | Android Studio + an emulator, only for `npm run android` |
+| iOS | Xcode + a simulator, macOS only |
 
-2. Start the app
+You do **not** need Android Studio or Xcode to work on this. The web target
+runs everything and is the fastest loop.
 
-   ```bash
-   npx expo start
-   ```
-
-In the output, you'll find options to open the app in a
-
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
-
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
+## Getting started
 
 ```bash
-npm run reset-project
+npm install
+cp .env.example .env     # see TECH.md — safe to leave defaults while on mocks
+npm run web
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+That serves the app at `http://localhost:8081`. If that port is busy Expo will
+ask to use another; pass one explicitly with `npx expo start --web --port 8090`.
 
-### Other setup steps
+## Scripts
 
-- To set up ESLint for linting, run `npx expo lint`, or follow our guide on ["Using ESLint and Prettier"](https://docs.expo.dev/guides/using-eslint/)
-- If you'd like to set up unit testing, follow our guide on ["Unit Testing with Jest"](https://docs.expo.dev/develop/unit-testing/)
-- Learn more about the TypeScript setup in this template in our guide on ["Using TypeScript"](https://docs.expo.dev/guides/typescript/)
+| Command | What it does |
+|---|---|
+| `npm start` | Expo dev server, pick a target from the menu |
+| `npm run web` | Web target — the fastest loop, no emulator needed |
+| `npm run android` | Build and run on a connected device/emulator |
+| `npm run ios` | Build and run on a simulator (macOS only) |
+| `npm test` | Full Jest suite — runs **twice**, once per theme |
+| `npm run test:watch` | Jest in watch mode |
+| `npm run typecheck` | `tsc --noEmit` |
+| `npm run lint` | ESLint via `expo lint` |
 
-## Learn more
+## Before you push
 
-To learn more about developing your project with Expo, look at the following resources:
+```bash
+npm run typecheck && npm test
+```
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+Both must be clean. The suite is currently **178 suites / 2042 tests** and takes
+a few minutes, because every test runs under both themes (see below).
 
-## Join the community
+## How this project is laid out
 
-Join our community of developers creating universal apps.
+```
+src/
+  app/              expo-router routes — file-based, one file per screen
+    (auth)/         sign in, sign up, reset          — no session yet
+    (onboarding)/   pairing and story capture        — session, no partner yet
+    (app)/          the real app                     — session + partner
+  modules/          feature modules, one folder each
+    module-00-auth  module-01-onboarding  module-02-home
+    module-03-chat  module-03-memories    module-05-profile
+  design-system/    tokens, primitives, patterns, themes
+  services/         the backend seam — see TECH.md
+  copy/             all user-facing strings, per module
+  state/            zustand stores
+  config/           the only place process.env is read
+```
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+Screens hold no strings and no colours. Copy lives in `src/copy/`, and every
+colour, size, spacing and duration is a token read off the theme.
 
-# ziyu_frontend
+## Two things that surprise people
+
+**The suite runs twice.** There is a light theme (`lavender`) and a dark one
+(`midnight`), and Jest runs every test under each as separate projects. A
+failure reported against `midnight` is a dark-mode bug. This exists because the
+Unistyles Jest mock cannot switch themes at runtime, so the only way to test
+dark mode is to configure it first and run again.
+
+**Nothing persists.** Reload and you are back to seed data. There is no storage
+layer yet — deliberately, until a real backend exists.
+
+## Deployment
+
+`.github/workflows/deploy-web.yml` builds the web target and publishes it to
+GitHub Pages on push.
+
+## Further reading
+
+- [TECH.md](TECH.md) — stack, and the backend integration guide
+- [docs/build-status.md](docs/build-status.md) — what is built, what is mocked,
+  and what does not work yet

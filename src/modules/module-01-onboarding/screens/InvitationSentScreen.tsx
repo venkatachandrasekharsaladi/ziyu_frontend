@@ -25,7 +25,8 @@ import { useRelationshipStore } from '@/state/relationshipStore'
  * The confirmation is `ConfirmDialog`, not `Alert.alert` — `Alert` has no
  * implementation in react-native-web, so on web the confirmation would never
  * have appeared and Cancel Invitation would have been unreachable, same bug
- * as `OurSpaceScreen`'s sign-out. See `ConfirmDialog`'s own header comment.
+ * as the sign-out on `SettingsHomeScreen`. See `ConfirmDialog`'s own header
+ * comment.
  */
 export function InvitationSentScreen() {
   const router = useRouter()

@@ -1,6 +1,6 @@
 # Build status
 
-[← Product docs index](PRODUCT.md)
+_Kept in the repo because it answers the one question anyone integrating with this app needs answered first: what is real and what is a fake. The rest of our product notes (ideas, research, audits) are internal and deliberately untracked — see `.gitignore`._
 
 ### 1. What exists
 
@@ -211,7 +211,7 @@ Whether to add `expo-clipboard`, `expo-image-picker`, and `expo-auth-session`
 
 #### 5.2 The strategic one
 
-[`docs/research/couples-app-strategy.md`](research/couples-app-strategy.md) argues the product's central hypothesis
+Our internal strategy note (untracked) argues the product's central hypothesis
 is currently **untestable**: nothing persists and neither partner can be
 notified, so "will a couple open this daily?" cannot be answered by the build
 that exists.
