@@ -38,6 +38,7 @@
       "react-native-edge-to-edge"
     ],
     "experiments": {
+      "baseUrl": "/ziyu_frontend",
       "typedRoutes": true,
       "reactCompiler": true
     }
