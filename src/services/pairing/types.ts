@@ -26,18 +26,6 @@ export type Profile = {
   birthday?: string
   pronouns?: string
   photoUri?: string
-  /**
-   * E.164, digits and a leading `+`. Optional because nothing in onboarding
-   * asks for it — it is collected in Settings → Personal Details, and the only
-   * feature that requires it is the phone gate on account deletion.
-   *
-   * NOT IN ANY BACKEND CONTRACT. Added for the settings cluster; whoever
-   * writes the real pairing contract has to add it there too. See the spec's
-   * open items.
-   */
-  phone?: string
-  /** True only after the code sent to `phone` has been entered correctly. */
-  phoneVerified?: boolean
 }
 
 export type Partner = {

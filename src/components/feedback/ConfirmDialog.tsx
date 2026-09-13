@@ -28,9 +28,8 @@ type Props = {
  * A confirm/cancel dialog that actually reaches the user on every platform.
  *
  * `Alert.alert` is the obvious tool for "are you sure?", and it is what both
- * call sites here (the sign-out now on `SettingsHomeScreen`, via `DangerRow`,
- * and `InvitationSentScreen`'s cancel-invitation) used to reach for — but
- * `Alert` has NO implementation in
+ * call sites here (`OurSpaceScreen`'s sign-out, `InvitationSentScreen`'s
+ * cancel-invitation) used to reach for — but `Alert` has NO implementation in
  * `react-native-web`. On web the call silently did nothing: no dialog, no
  * buttons, and therefore no way to ever reach the destructive action it was
  * gating. That was the entire root cause of "Sign Out doesn't work" on web.
