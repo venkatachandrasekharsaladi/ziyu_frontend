@@ -16,17 +16,7 @@ import { DateField } from '@/design-system/primitives/DateField'
 import { Input } from '@/design-system/primitives/Input'
 import { Text } from '@/design-system/primitives/Text'
 import { useRelationshipStore } from '@/state/relationshipStore'
-
-/**
- * E.164-ish: a leading `+`, then 8 to 15 digits, spaces allowed for readability.
- *
- * Deliberately loose. Strict per-country validation needs a library this app
- * does not have, and a settings screen is the wrong place to start rejecting
- * real numbers from countries nobody on the team thought about. What this
- * catches is the actual mistake: a number typed with no country code, which
- * cannot be sent to at all.
- */
-const PHONE = /^\+[\d\s]{8,18}$/
+import { isPhoneNumber } from '@/utils/phone'
 
 const schema = z.object({
   name: z.string().trim().min(1, COPY.nameRequired),
@@ -37,7 +27,7 @@ const schema = z.object({
     .string()
     .trim()
     .optional()
-    .refine((value) => !value || PHONE.test(value), COPY.phoneInvalid),
+    .refine((value) => !value || isPhoneNumber(value), COPY.phoneInvalid),
 })
 
 type FormValues = z.infer<typeof schema>

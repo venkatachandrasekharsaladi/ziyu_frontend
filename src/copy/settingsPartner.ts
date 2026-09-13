@@ -17,8 +17,11 @@ export const SETTINGS_PARTNER_COPY = {
 
   codeGroup: 'Your invite code',
   codeHint: 'Share this with your partner so they can find you.',
+  shareCode: 'Share code',
   copyCode: 'Copy code',
   copied: 'Copied.',
+  shareCopied: 'Your browser has no share sheet, so the invite is on your clipboard instead.',
+  copyUnavailable: 'Copying needs a clipboard module this build does not have. Read it out, or share it.',
 
   dangerGroup: 'Ending it',
   unlink: 'Unlink partner',

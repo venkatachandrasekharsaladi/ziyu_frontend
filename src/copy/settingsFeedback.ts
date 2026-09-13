@@ -20,6 +20,15 @@ export const SETTINGS_FEEDBACK_COPY = {
   messageRequired: 'Write a line or two so we know what to look at.',
   messageTooShort: 'A few more words would help us find it.',
 
+  attachGroup: 'Anything to show us',
+  attachLabel: 'Attach a screenshot',
+  attachDetail:
+    'Not yet — picking an image needs a library this build does not ship. Describe what you saw instead.',
+
+  rateGroup: 'Somewhere else',
+  rate: 'Rate the app',
+  rateDetail: 'There is no store listing yet, so there is nothing to rate.',
+
   send: 'Send',
   notSent:
     'Nothing was sent — this app has no server yet, so there is nowhere for it to go. Your words are still on this screen.',

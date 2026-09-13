@@ -7,6 +7,7 @@ import { z } from 'zod'
 import { SETTINGS_FEEDBACK_COPY as COPY } from '@/copy/settingsFeedback'
 import { SectionPanel } from '@/design-system/patterns/SectionPanel'
 import { SettingsChoiceRow } from '@/design-system/patterns/SettingsChoiceRow'
+import { SettingsRow } from '@/design-system/patterns/SettingsRow'
 import { SettingsScreenLayout } from '@/design-system/patterns/SettingsScreenLayout'
 import { Button } from '@/design-system/primitives/Button'
 import { Input } from '@/design-system/primitives/Input'
@@ -37,6 +38,14 @@ type FormValues = z.infer<typeof schema>
  * nothing was sent. Every other honest-limit note in this cluster costs the
  * user nothing to discover late; this one would cost them a reply they sat and
  * waited for.
+ *
+ * THE SCREENSHOT ROW AND RATE THE APP CARRY NO `onPress`, which is this
+ * cluster's way of drawing something that genuinely cannot be done yet —
+ * `SettingsRow` then renders no chevron and is not a button. Attaching an image
+ * needs `expo-image-picker`, which is not installed; rating needs a store
+ * listing, and this app has never been submitted to one. Both say which, in the
+ * row, rather than being quietly absent — a person who came here to send a
+ * screenshot deserves to learn that in the place they looked for it.
  */
 export function FeedbackScreen() {
   const router = useRouter()
@@ -80,6 +89,10 @@ export function FeedbackScreen() {
         />
       </SectionPanel>
 
+      <SectionPanel title={COPY.attachGroup}>
+        <SettingsRow icon="image" label={COPY.attachLabel} detail={COPY.attachDetail} />
+      </SectionPanel>
+
       <Button label={COPY.send} onPress={handleSubmit(onSubmit)} />
 
       {isSubmitted ? (
@@ -87,6 +100,10 @@ export function FeedbackScreen() {
           {COPY.notSent}
         </Text>
       ) : null}
+
+      <SectionPanel title={COPY.rateGroup}>
+        <SettingsRow icon="star" label={COPY.rate} detail={COPY.rateDetail} />
+      </SectionPanel>
     </SettingsScreenLayout>
   )
 }
