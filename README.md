@@ -95,10 +95,6 @@ GitHub Pages on push.
 
 ## Further reading
 
-- **[CODEBASE.md](CODEBASE.md) — start here if you are changing the UI.** How to
-  find the file behind any screen you can see, what an ID like `M05-S10` means,
-  and where colours, sizes, spacing and text actually live. (There is no
-  Tailwind in this project; that doc explains what replaces it.)
 - [TECH.md](TECH.md) — stack, and the backend integration guide
 - [docs/build-status.md](docs/build-status.md) — what is built, what is mocked,
   and what does not work yet

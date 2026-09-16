@@ -15,7 +15,8 @@
  *   What it remembers     src/state/preferencesStore.ts
  *   Colours, sizes, gaps  src/design-system/tokens/  (never a hex here)
  *
- * New here? Read CODEBASE.md at the repo root — it explains this layout,
- * what an ID like M05-S10 means, and how to find any screen in seconds.
+ * New here? The ID above (M05-S10 = module 05, screen 10) is permanent and
+ * greppable. The fastest way to find any screen: grep src/copy/ for a
+ * sentence you can read on it.
  */
 export { PrivacyScreen as default } from '@/modules/module-05-profile/screens/PrivacyScreen'
