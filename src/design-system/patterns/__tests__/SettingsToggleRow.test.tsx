@@ -1,4 +1,4 @@
-import { fireEvent, screen, userEvent } from '@testing-library/react-native'
+import { fireEvent, screen } from '@testing-library/react-native'
 
 import { SettingsToggleRow } from '@/design-system/patterns/SettingsToggleRow'
 import { renderScreen } from '@/test/renderScreen'

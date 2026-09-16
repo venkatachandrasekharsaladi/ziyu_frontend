@@ -5,11 +5,10 @@ import {
   type NativeScrollEvent,
   type NativeSyntheticEvent,
   Modal,
-  Pressable,
   ScrollView,
   View,
 } from 'react-native'
-import { StyleSheet, useUnistyles } from 'react-native-unistyles'
+import { StyleSheet } from 'react-native-unistyles'
 
 import { IconButton } from '@/design-system/patterns/IconButton'
 import { Text } from '@/design-system/primitives/Text'
@@ -53,7 +52,6 @@ export function PhotoLightbox({
   onClose,
   caption,
 }: PhotoLightboxProps) {
-  const { theme } = useUnistyles()
   const [size, setSize] = useState({ width: 0, height: 0 })
   const [index, setIndex] = useState(initialIndex)
 

@@ -1,5 +1,5 @@
 import { Feather } from '@expo/vector-icons'
-import { Pressable, View } from 'react-native'
+import { Pressable } from 'react-native'
 import Animated from 'react-native-reanimated'
 import { StyleSheet, useUnistyles } from 'react-native-unistyles'
 
