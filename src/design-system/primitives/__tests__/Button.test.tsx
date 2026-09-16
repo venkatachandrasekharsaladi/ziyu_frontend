@@ -97,9 +97,9 @@ describe('Button', () => {
 
   it('lets a caller override the screen-reader label', async () => {
     await render(
-      <Button label="Sign In" onPress={() => {}} accessibilityLabel="Sign in to LoveOS" />,
+      <Button label="Sign In" onPress={() => {}} accessibilityLabel="Sign in to Tales of Two" />,
     )
 
-    expect(screen.getByRole('button', { name: 'Sign in to LoveOS' })).toBeTruthy()
+    expect(screen.getByRole('button', { name: 'Sign in to Tales of Two' })).toBeTruthy()
   })
 })

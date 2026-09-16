@@ -21,7 +21,7 @@ one test in a file is relevant, the test name.
 | CHAT-003 | Chat Home | 3390:764 | Newest message body is 46 characters, over the row's 34-character budget | Open the Chat tab | Preview is cut at a word boundary with a trailing `…`; the text before the ellipsis is a clean prefix of the real body (next character in the original was a space) | Yes | `screens/__tests__/ChatHome.test.tsx` — "truncates the preview at a word boundary, never mid-word"; unit-level in `__tests__/truncate.test.ts` — "cuts at a word boundary" |
 | CHAT-004 | Chat Home | 3390:764 | Newest message body is 14 characters, under budget | Open the Chat tab | Preview renders the full body verbatim, no ellipsis | Yes | `screens/__tests__/ChatHome.test.tsx` — "leaves a short preview exactly as written" |
 | CHAT-005 | Chat Home | 3390:764 | On Chat Home | Tap the conversation row | Navigates to the thread (`/(app)/chat/conversation`) | **No** | Gap, not a hardware limitation: no test presses the row or asserts `router.push` was called. `ChatHomeScreen.openConversation` is wired (reads `router.push('/(app)/chat/conversation')` in the source) but unexercised by any test in this suite. |
-| CHAT-006 | Chat Home | 3390:764 | On Chat Home | — | Both dashboard cards ("Drafted note", "LoveOS AI") render their eyebrow labels | Yes | `__tests__/DesignParity.test.tsx` — "draws the card eyebrows as the frame's upper-cased text…" |
+| CHAT-006 | Chat Home | 3390:764 | On Chat Home | — | Both dashboard cards ("Drafted note", "Tales of Two AI") render their eyebrow labels | Yes | `__tests__/DesignParity.test.tsx` — "draws the card eyebrows as the frame's upper-cased text…" |
 
 ## Conversation — `3390:665`
 

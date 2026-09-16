@@ -186,4 +186,4 @@ export function formatPrice(minor: number, currency: string): string {
  * a fixture, and it is in a file named `mock.ts` in the client bundle for that
  * reason.
  */
-export const MOCK_PASSWORD = 'loveos-demo'
+export const MOCK_PASSWORD = 'talesoftwo-demo'

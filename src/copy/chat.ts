@@ -1,8 +1,13 @@
+import { BRAND } from '@/config/brand'
+
 /**
  * Copy for Module 03 — Chat Home. Figma `Ziyu` 3390:764.
  *
  * The frame draws one populated thread ("Chandu & Sweatcha") plus two static
- * cards below it, "DRAFTED NOTE" and "LOVEOS AI". Neither card has a service
+ * cards below it, "DRAFTED NOTE" and the AI card — the frame still draws the
+ * old name there, so the eyebrow reads from `BRAND` and has drifted from Figma
+ * on purpose (`__tests__/DesignParity.test.tsx` records the drift). Neither
+ * card has a service
  * or a store behind it yet — no task in the 16-task plan builds one — so
  * both stay non-interactive here, same as the frame shows them: a label and
  * a line of body copy, nothing to press. `Text`'s `caption` variant already
@@ -21,9 +26,9 @@ export const CHAT_COPY = {
       eyebrow: 'Drafted note',
       body: 'A little something is being written for you.',
     },
-    loveosAi: {
-      eyebrow: 'LoveOS AI',
-      body: 'Ask LoveOS anything about the two of you.',
+    assistant: {
+      eyebrow: `${BRAND.name} AI`,
+      body: `Ask ${BRAND.name} anything about the two of you.`,
     },
   },
   /**

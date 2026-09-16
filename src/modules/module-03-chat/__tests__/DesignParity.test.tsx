@@ -1,6 +1,7 @@
 import { act, waitFor } from '@testing-library/react-native'
 
 import fixture from '@/modules/module-03-chat/__fixtures__/figma-chat.json'
+import { BRAND } from '@/config/brand'
 import { CHAT_COPY } from '@/copy/chat'
 import { lavenderTheme } from '@/design-system/themes/theme'
 import { ChatHomeScreen } from '@/modules/module-03-chat/screens/ChatHomeScreen'
@@ -311,8 +312,13 @@ describe('design parity — Chat Home (3390:764)', () => {
     expect(getByText('Drafted note')).toBeTruthy()
     expect('Drafted note'.toUpperCase()).toBe(textNode(CHAT_HOME, '3390:801').characters)
 
-    expect(getByText('LoveOS AI')).toBeTruthy()
-    expect('LoveOS AI'.toUpperCase()).toBe(textNode(CHAT_HOME, '3390:812').characters)
+    // The AI card is the one eyebrow that has deliberately drifted: the frame
+    // still draws the pre-rename product name, while the app reads `BRAND`.
+    // Same treatment as 'Chandu & Sarah' above — assert both sides, not that
+    // they match, so a Figma refresh is a visible change rather than a
+    // silently passing test.
+    expect(getByText(`${BRAND.name} AI`)).toBeTruthy()
+    expect(textNode(CHAT_HOME, '3390:812').characters).toBe('LOVEOS AI')
 
     // NOT asserted: the two cards' BODY copy. `copy/chat.ts`'s own comment
     // documents why it's generic filler rather than Figma's illustrative

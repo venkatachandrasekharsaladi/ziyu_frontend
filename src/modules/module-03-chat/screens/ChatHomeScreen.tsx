@@ -24,7 +24,7 @@ const PREVIEW_MAX = 34
  * `live: false`. One conversation row — this app has exactly one thread, the
  * same one `ChatHeader` and the mock service both assume — opens
  * `ConversationScreen`. Below it, the two cards the frame draws but nothing
- * in the 16-task plan wires up yet: "Drafted note" and "LoveOS AI" render as
+ * in the 16-task plan wires up yet: "Drafted note" and the AI card render as
  * static copy, not buttons to nowhere.
  *
  * The preview is built from the newest message in the store, the same
@@ -129,10 +129,10 @@ export function ChatHomeScreen() {
 
       <Card>
         <Text variant="caption" tone="muted">
-          {COPY.cards.loveosAi.eyebrow}
+          {COPY.cards.assistant.eyebrow}
         </Text>
         <Text variant="body" tone="body">
-          {COPY.cards.loveosAi.body}
+          {COPY.cards.assistant.body}
         </Text>
       </Card>
     </AppScreenLayout>

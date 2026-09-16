@@ -1,5 +1,6 @@
 import { screen, userEvent } from '@testing-library/react-native'
 
+import { BRAND } from '@/config/brand'
 import { RELATIONSHIP_SETUP_COPY as COPY } from '@/copy/relationshipSetup'
 import { RelationshipSetupScreen } from '@/modules/module-01-onboarding/screens/RelationshipSetupScreen'
 import { renderScreen } from '@/test/renderScreen'
@@ -27,7 +28,7 @@ describe('RelationshipSetupScreen', () => {
 
     // The lede interpolates BRAND.name; a hard-coded string would survive a
     // rename and silently go stale.
-    expect(COPY.lede).toContain('LoveOS')
+    expect(COPY.lede).toContain(BRAND.name)
   })
 
   it('offers all three paths', async () => {

@@ -10,7 +10,7 @@ type FooterPromptProps = {
 }
 
 /**
- * "Prompt text + inline link" — M00-S02's "New to LoveOS? Create an account"
+ * "Prompt text + inline link" — M00-S02's "New to Tales of Two? Create an account"
  * and M00-S03's mirror of it.
  *
  * M00-S02 underlined the link at 30% opacity, which reads as a rendering fault.
