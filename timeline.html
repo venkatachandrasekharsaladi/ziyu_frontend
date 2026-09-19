@@ -1,0 +1,797 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <title>Spiral — Photo Timeline Concept</title>
+
+    <style>
+        *, *::before, *::after { box-sizing: border-box; }
+        * { margin: 0; }
+
+        :root {
+            color-scheme: light;
+            --ink: #30271f;
+            --muted: #7b6c5d;
+            --paper: #f5eddf;
+            --paper-deep: #e8dac6;
+            --brass: #a56d2a;
+            --brass-light: #e1b66e;
+            --wine: #7a3c32;
+            --ease-page: cubic-bezier(.2, .72, .18, 1);
+        }
+
+        body {
+            min-height: 100vh;
+            overflow-x: hidden;
+            background:
+                radial-gradient(circle at 18% 12%, rgba(255,255,255,.92) 0 4%, transparent 31%),
+                radial-gradient(circle at 83% 78%, rgba(164,106,46,.12), transparent 34%),
+                #d9cbb9;
+            color: var(--ink);
+            font-family: Georgia, 'Times New Roman', serif;
+            padding: clamp(20px, 4vw, 48px) 20px 56px;
+        }
+
+        .page-shell {
+            width: min(1040px, 100%);
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: minmax(280px, 390px) minmax(250px, 1fr);
+            gap: clamp(34px, 7vw, 88px);
+            align-items: center;
+        }
+
+        .intro { max-width: 470px; }
+
+        .eyebrow {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 20px;
+            color: #8b5627;
+            font: 700 11px/1.2 -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            letter-spacing: .19em;
+            text-transform: uppercase;
+        }
+
+        .eyebrow::before { content: ''; width: 26px; height: 1px; background: currentColor; }
+
+        .intro h1 {
+            max-width: 430px;
+            font-size: clamp(40px, 6vw, 68px);
+            font-weight: 400;
+            line-height: .98;
+            letter-spacing: -.045em;
+        }
+
+        .intro h1 em { color: var(--wine); font-style: italic; }
+
+        .intro-copy {
+            max-width: 420px;
+            margin-top: 24px;
+            color: #66584b;
+            font: 400 15px/1.72 -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        }
+
+        .controls-note {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 9px;
+            margin-top: 30px;
+            padding-top: 22px;
+            border-top: 1px solid rgba(74, 54, 37, .18);
+        }
+
+        .control-chip {
+            min-height: 68px;
+            padding: 11px 10px;
+            border: 1px solid rgba(78, 57, 39, .14);
+            border-radius: 12px;
+            background: rgba(255,255,255,.25);
+            color: #766452;
+            font: 600 10px/1.35 -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            letter-spacing: .03em;
+        }
+
+        .control-chip span {
+            display: block;
+            margin-bottom: 5px;
+            color: #8b5627;
+            font-size: 17px;
+        }
+
+        .phone-wrap { position: relative; justify-self: center; }
+
+        .phone-shadow {
+            position: absolute;
+            z-index: -1;
+            left: 11%; right: 11%; bottom: -24px;
+            height: 42px;
+            border-radius: 50%;
+            background: rgba(51, 36, 25, .29);
+            filter: blur(20px);
+        }
+
+        .phone {
+            position: relative;
+            width: min(390px, calc(100vw - 34px));
+            aspect-ratio: 390 / 844;
+            overflow: hidden;
+            border: 8px solid #28231f;
+            border-radius: 44px;
+            background: var(--paper);
+            box-shadow:
+                0 38px 80px rgba(58,39,24,.24),
+                0 7px 18px rgba(58,39,24,.2),
+                inset 0 0 0 1px #51483f;
+            touch-action: none;
+            user-select: none;
+            -webkit-user-select: none;
+            cursor: grab;
+        }
+
+        .phone:active { cursor: grabbing; }
+
+        .phone::before {
+            content: '';
+            position: absolute;
+            z-index: 20;
+            top: 8px; left: 50%;
+            width: 104px; height: 25px;
+            transform: translateX(-50%);
+            border-radius: 18px;
+            background: #28231f;
+            pointer-events: none;
+        }
+
+        .phone::after {
+            content: '';
+            position: absolute;
+            z-index: 19;
+            inset: 0;
+            opacity: .19;
+            pointer-events: none;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.17'/%3E%3C/svg%3E");
+            mix-blend-mode: multiply;
+        }
+
+        .app-bar {
+            position: absolute;
+            z-index: 15;
+            top: 0; left: 0; right: 0;
+            height: 115px;
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-between;
+            padding: 0 23px 18px;
+            background: linear-gradient(180deg, rgba(245,237,223,.98) 42%, rgba(245,237,223,.88) 76%, transparent);
+            pointer-events: none;
+        }
+
+        .app-name { font-size: 25px; font-weight: 400; letter-spacing: -.04em; }
+        .app-name i { color: var(--wine); }
+
+        .year-chip {
+            padding: 6px 10px 5px;
+            border: 1px solid rgba(122,60,50,.28);
+            border-radius: 999px;
+            color: var(--wine);
+            font: 700 10px/1 -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            letter-spacing: .1em;
+        }
+
+        .timeline-viewport {
+            position: absolute;
+            inset: 88px 0 56px;
+            overflow: hidden;
+            perspective: 980px;
+            perspective-origin: 50% 46%;
+        }
+
+        .timeline-viewport .ambient-light {
+            position: absolute;
+            z-index: 0;
+            left: 50%; top: 34%;
+            width: 310px; height: 310px;
+            transform: translate(-50%, -50%);
+            border-radius: 50%;
+            background: rgba(255,255,255,.55);
+            filter: blur(24px);
+        }
+
+        .timeline-viewport .pole-shadow {
+            position: absolute;
+            z-index: 1;
+            left: calc(50% + 18px); top: 56px; bottom: -30px;
+            width: 18px;
+            transform: skewY(-12deg);
+            border-radius: 50%;
+            background: rgba(76,49,25,.18);
+            filter: blur(9px);
+        }
+
+        .timeline-viewport .pole {
+            position: absolute;
+            z-index: 5;
+            left: 50%; top: 38px; bottom: -34px;
+            width: 11px;
+            transform: translateX(-50%);
+            border: 1px solid #81511f;
+            border-radius: 9px;
+            background: linear-gradient(90deg, #69401b 0%, #c78e43 30%, #edc982 49%, #a66b29 72%, #5c3718 100%);
+            box-shadow: 3px 0 8px rgba(56,33,15,.25), inset -1px 0 rgba(255,255,255,.35);
+        }
+
+        .timeline-viewport .pole::before {
+            content: '';
+            position: absolute;
+            top: -12px; left: 50%;
+            width: 22px; height: 22px;
+            transform: translateX(-50%);
+            border: 1px solid #70431b;
+            border-radius: 50%;
+            background: radial-gradient(circle at 35% 27%, #f1d79e, #b67932 47%, #70421a 74%);
+            box-shadow: 0 4px 8px rgba(65,38,16,.28);
+        }
+
+        .timeline-viewport .spiral-ring {
+            position: absolute;
+            z-index: 4;
+            left: 50%;
+            width: 155px; height: 32px;
+            transform: translateX(-50%) rotate(-6deg);
+            border: 2px solid rgba(158,101,39,.55);
+            border-left-color: rgba(225,182,110,.9);
+            border-radius: 50%;
+            pointer-events: none;
+        }
+
+        .timeline-viewport .ring-one { top: 192px; }
+        .timeline-viewport .ring-two { top: 424px; transform: translateX(-50%) rotate(7deg); }
+        .timeline-viewport .ring-three { top: 648px; }
+
+        .timeline-viewport .cards {
+            position: absolute;
+            z-index: 7;
+            inset: 0;
+            transform-style: preserve-3d;
+        }
+
+        .memory-card {
+            --rel: 0;
+            --abs: 0;
+            --side: 0px;
+            --depth: 0px;
+            --tilt: 0deg;
+            --page: 0deg;
+            --scale: 1;
+            --opacity: 1;
+            --saturate: 1;
+            --brightness: 1;
+            position: absolute;
+            top: 158px; left: 50%;
+            width: 222px;
+            height: 292px;
+            padding: 9px 9px 35px;
+            border: 1px solid rgba(111,82,56,.19);
+            border-radius: 4px 7px 6px 4px;
+            background: #fffaf0;
+            box-shadow: 0 19px 31px rgba(62,39,22,.26), 0 3px 8px rgba(62,39,22,.18);
+            transform-origin: 10px 50%;
+            transform-style: preserve-3d;
+            backface-visibility: hidden;
+            will-change: transform, opacity;
+            transition: transform 680ms var(--ease-page), opacity 420ms ease, filter 420ms ease;
+            transform:
+                translate3d(calc(-50% + var(--side)), calc(var(--rel) * 308px), var(--depth))
+                rotateY(var(--page)) rotateZ(var(--tilt))
+                scale(var(--scale));
+            opacity: var(--opacity);
+            filter: saturate(var(--saturate)) brightness(var(--brightness));
+            pointer-events: none;
+        }
+
+        .memory-card::before {
+            content: '';
+            position: absolute;
+            z-index: -1;
+            top: 50%;
+            width: 98px; height: 6px;
+            background: linear-gradient(#d7a656, #87531f);
+            border: 1px solid #75461b;
+            border-radius: 5px;
+            box-shadow: 0 4px 5px rgba(62,38,17,.2);
+        }
+
+        .memory-card[data-side="right"]::before {
+            right: 100%;
+            transform-origin: right;
+            transform: rotate(5deg);
+        }
+
+        .memory-card[data-side="left"]::before {
+            left: 100%;
+            transform-origin: left;
+            transform: rotate(-5deg);
+        }
+
+        .memory-card::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            width: 14px; height: 14px;
+            margin-top: -5px;
+            border-radius: 50%;
+            border: 1px solid #784817;
+            background: radial-gradient(circle at 35% 30%, #f5d89a, #a46827 55%, #714318);
+            box-shadow: 0 2px 4px rgba(53,30,13,.3);
+        }
+
+        .memory-card[data-side="right"]::after { right: calc(100% + 89px); }
+        .memory-card[data-side="left"]::after { left: calc(100% + 89px); }
+
+        .photo {
+            position: relative;
+            height: 230px;
+            overflow: hidden;
+            border: 1px solid rgba(73,51,33,.12);
+            background: #d5c4aa;
+            box-shadow: inset 0 0 18px rgba(45,29,16,.17);
+        }
+
+        .photo svg { display: block; width: 100%; height: 100%; }
+
+        .photo img {
+            position: absolute;
+            z-index: 1;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            filter: saturate(.82) contrast(.96) sepia(.08);
+            transition: opacity 260ms ease;
+            -webkit-user-drag: none;
+        }
+
+        .photo img.loading { opacity: 0; }
+
+        .photo::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(115deg, rgba(255,255,255,.18), transparent 37%, rgba(75,42,20,.08));
+            pointer-events: none;
+        }
+
+        .card-meta {
+            display: flex;
+            align-items: baseline;
+            justify-content: space-between;
+            gap: 8px;
+            padding: 9px 2px 0;
+            color: #57483a;
+        }
+
+        .caption {
+            overflow: hidden;
+            font-size: 13px;
+            font-style: italic;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+        }
+
+        .date {
+            flex: none;
+            color: #8b6e50;
+            font: 700 8px/1 -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            letter-spacing: .08em;
+            text-transform: uppercase;
+        }
+
+        .binding {
+            position: absolute;
+            z-index: 4;
+            top: 44px; bottom: -20px; left: 50%;
+            width: 1px;
+            background: linear-gradient(transparent, rgba(84,52,24,.32) 7%, rgba(84,52,24,.32) 94%, transparent);
+            pointer-events: none;
+        }
+
+        .timeline-footer {
+            position: absolute;
+            z-index: 16;
+            left: 0; right: 0; bottom: 0;
+            height: 74px;
+            display: flex;
+            align-items: flex-start;
+            justify-content: center;
+            padding-top: 16px;
+            background: linear-gradient(0deg, rgba(245,237,223,.98) 48%, transparent);
+            pointer-events: none;
+        }
+
+        .progress {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .progress-dot {
+            width: 4px; height: 4px;
+            border-radius: 50%;
+            background: rgba(90,64,43,.3);
+            transition: width 300ms ease, border-radius 300ms ease, background 300ms ease;
+        }
+
+        .progress-dot.active { width: 21px; border-radius: 5px; background: var(--wine); }
+
+        .gesture-hint {
+            position: absolute;
+            left: 50%; bottom: 18px;
+            transform: translateX(-50%);
+            color: #796a5d;
+            font: 650 8px/1 -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            letter-spacing: .16em;
+            text-transform: uppercase;
+            white-space: nowrap;
+            transition: opacity 450ms ease;
+        }
+
+        .phone.interacted .gesture-hint { opacity: 0; }
+
+        .toast {
+            position: absolute;
+            z-index: 25;
+            left: 50%; top: 104px;
+            transform: translate(-50%, -12px);
+            padding: 8px 12px;
+            border-radius: 999px;
+            background: rgba(48,39,31,.88);
+            color: #fff9ef;
+            font: 600 9px/1 -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            letter-spacing: .07em;
+            opacity: 0;
+            transition: opacity 220ms ease, transform 220ms ease;
+            pointer-events: none;
+        }
+
+        .toast.show { opacity: 1; transform: translate(-50%, 0); }
+
+        @media (max-width: 780px) {
+            body { padding: 18px 12px 42px; }
+            .page-shell { grid-template-columns: 1fr; gap: 28px; }
+            .intro { width: min(390px, calc(100vw - 34px)); justify-self: center; order: 2; }
+            .intro h1 { font-size: 42px; }
+            .intro-copy { margin-top: 16px; }
+            .controls-note { margin-top: 20px; }
+            .phone-wrap { order: 1; }
+        }
+
+        @media (max-height: 760px) and (min-width: 781px) {
+            .phone { width: 335px; }
+            .page-shell { grid-template-columns: 335px 1fr; }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after {
+                scroll-behavior: auto !important;
+                transition-duration: 1ms !important;
+                animation-duration: 1ms !important;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <main class="page-shell">
+        <div class="phone-wrap">
+            <div class="phone-shadow"></div>
+            <section class="phone" id="phone" tabindex="0" aria-label="Interactive spiral photo timeline. Drag horizontally or use arrow keys to move through memories.">
+                <header class="app-bar">
+                    <div class="app-name">memo<i>ir</i></div>
+                    <div class="year-chip" id="yearChip">2026</div>
+                </header>
+
+                <div class="timeline-viewport" aria-live="polite">
+                    <div class="ambient-light"></div>
+                    <div class="pole-shadow"></div>
+                    <div class="spiral-ring ring-one"></div>
+                    <div class="spiral-ring ring-two"></div>
+                    <div class="spiral-ring ring-three"></div>
+                    <div class="binding"></div>
+                    <div class="pole"></div>
+                    <div class="cards" id="cards"></div>
+                </div>
+
+                <div class="toast" id="toast">A new page, a new memory</div>
+                <footer class="timeline-footer">
+                    <div class="progress" id="progress" aria-hidden="true"></div>
+                    <div class="gesture-hint">Swipe or scroll right&nbsp; →</div>
+                </footer>
+            </section>
+        </div>
+
+        <aside class="intro">
+            <div class="eyebrow">First visual direction</div>
+            <h1>Your life,<br>around a <em>spine.</em></h1>
+            <p class="intro-copy">
+                A tactile photo timeline built like a spiral staircase. Each memory is fixed to one central spine;
+                moving through time lifts the next photograph from below and opens it into view like a page.
+            </p>
+            <div class="controls-note" aria-label="Interaction instructions">
+                <div class="control-chip"><span>↔</span>Drag anywhere on the phone</div>
+                <div class="control-chip"><span>⌁</span>Scroll horizontally to travel</div>
+                <div class="control-chip"><span>← →</span>Use arrow keys to step</div>
+            </div>
+        </aside>
+    </main>
+
+    <script>
+        const memories = [
+            { title: 'First light', date: 'Sep 19 · 2026', year: '2026', palette: ['#e7b26d', '#cf7450', '#547b78'], scene: 'coast', photo: 'https://picsum.photos/seed/memoir-coast/600/800' },
+            { title: 'Roads less taken', date: 'Aug 02 · 2026', year: '2026', palette: ['#c8a36d', '#6e8a70', '#334b50'], scene: 'road', photo: 'https://picsum.photos/seed/memoir-road/600/800' },
+            { title: 'Quiet Sundays', date: 'Jun 14 · 2026', year: '2026', palette: ['#d5b688', '#b96749', '#64715a'], scene: 'home', photo: 'https://picsum.photos/seed/memoir-home/600/800' },
+            { title: 'Under open skies', date: 'Mar 27 · 2026', year: '2026', palette: ['#c99168', '#607a85', '#293b4f'], scene: 'mountain', photo: 'https://picsum.photos/seed/memoir-mountain/600/800' },
+            { title: 'Golden hour', date: 'Nov 05 · 2025', year: '2025', palette: ['#e0a45b', '#9d573f', '#4d6c65'], scene: 'field', photo: 'https://picsum.photos/seed/memoir-field/600/800' },
+            { title: 'City after rain', date: 'Jul 18 · 2025', year: '2025', palette: ['#a98c77', '#596a78', '#312f3a'], scene: 'city', photo: 'https://picsum.photos/seed/memoir-city/600/800' },
+            { title: 'A table for two', date: 'Feb 11 · 2025', year: '2025', palette: ['#d1a677', '#874c3f', '#48534d'], scene: 'table', photo: 'https://picsum.photos/seed/memoir-dinner/600/800' }
+        ];
+
+        const sceneArt = {
+            coast: (p) => `
+                <svg viewBox="0 0 240 270" role="img" aria-label="Illustrated sunset coast">
+                    <defs>
+                        <linearGradient id="s" x2="0" y2="1">
+                            <stop stop-color="${p[0]}" />
+                            <stop offset="1" stop-color="${p[1]}" />
+                        </linearGradient>
+                    </defs>
+                    <rect width="240" height="270" fill="url(#s)" />
+                    <circle cx="174" cy="80" r="30" fill="#ffe2a3" opacity=".8" />
+                    <path d="M0 145 Q58 126 111 149T240 137V270H0Z" fill="${p[2]}" />
+                    <path d="M0 170 Q64 147 125 173T240 159" fill="none" stroke="#f6d6ad" stroke-width="4" opacity=".55" />
+                    <path d="M70 270 Q91 211 111 152" fill="none" stroke="#3e524d" stroke-width="12" opacity=".72" />
+                </svg>
+            `,
+            road: (p) => `
+                <svg viewBox="0 0 240 270" role="img" aria-label="Illustrated winding road">
+                    <rect width="240" height="270" fill="${p[0]}" />
+                    <path d="M0 80L57 28l39 54 35-38 48 53 61-45v218H0Z" fill="${p[2]}" />
+                    <path d="M0 131Q70 86 132 119t108-4v155H0Z" fill="${p[1]}" />
+                    <path d="M106 270Q91 212 132 171q31-29 13-76" fill="none" stroke="#d7c7a6" stroke-width="31" />
+                    <path d="M106 270Q91 212 132 171q31-29 13-76" fill="none" stroke="#fff2cc" stroke-width="2" stroke-dasharray="10 10" />
+                </svg>
+            `,
+            home: (p) => `
+                <svg viewBox="0 0 240 270" role="img" aria-label="Illustrated warm home interior">
+                    <rect width="240" height="270" fill="${p[0]}" />
+                    <rect x="31" y="34" width="178" height="164" rx="4" fill="#eadcc3" />
+                    <rect x="52" y="55" width="82" height="102" fill="${p[2]}" />
+                    <circle cx="102" cy="87" r="20" fill="#ddb170" />
+                    <path d="M52 131Q92 99 134 124v33H52Z" fill="${p[1]}" />
+                    <path d="M29 207h182v63H29z" fill="#82553b" />
+                    <path d="M144 99h45M166 77v45" stroke="#9e7653" stroke-width="5" />
+                    <circle cx="166" cy="99" r="32" fill="none" stroke="#9e7653" stroke-width="4" />
+                </svg>
+            `,
+            mountain: (p) => `
+                <svg viewBox="0 0 240 270" role="img" aria-label="Illustrated mountain landscape">
+                    <defs>
+                        <linearGradient id="m" y2="1">
+                            <stop stop-color="${p[1]}" />
+                            <stop offset="1" stop-color="${p[0]}" />
+                        </linearGradient>
+                    </defs>
+                    <rect width="240" height="270" fill="url(#m)" />
+                    <circle cx="55" cy="65" r="24" fill="#efcf9a" />
+                    <path d="M-16 238L71 92l41 65 35-63 109 144Z" fill="${p[2]}" />
+                    <path d="M71 92l-18 72 32-28 27 21Z" fill="#e9ddc5" opacity=".8" />
+                    <path d="M147 94l-16 64 19-20 24 30Z" fill="#e9ddc5" opacity=".7" />
+                    <path d="M0 220q64-34 126 0t114-3v53H0Z" fill="#263a40" />
+                </svg>
+            `,
+            field: (p) => `
+                <svg viewBox="0 0 240 270" role="img" aria-label="Illustrated golden field">
+                    <rect width="240" height="270" fill="${p[0]}" />
+                    <circle cx="178" cy="64" r="33" fill="#ffe4a0" />
+                    <path d="M0 148q56-25 119 1t121-3v124H0Z" fill="${p[2]}" />
+                    <g stroke="${p[1]}" stroke-width="3" opacity=".8">
+                        <path d="M37 270q8-66-9-111M82 270q-5-77 16-128M153 270q9-86-3-126M205 270q-2-66 17-113" />
+                        <path d="M26 180l-13-12m16 5 13-14M98 160l-14-15m14 7 15-17M150 161l-16-13m17 4 14-17M217 179l-13-14m15 5 14-13" />
+                    </g>
+                </svg>
+            `,
+            city: (p) => `
+                <svg viewBox="0 0 240 270" role="img" aria-label="Illustrated city after rain">
+                    <rect width="240" height="270" fill="${p[2]}" />
+                    <g fill="${p[1]}">
+                        <rect x="11" y="79" width="45" height="146" />
+                        <rect x="62" y="43" width="56" height="182" />
+                        <rect x="125" y="95" width="39" height="130" />
+                        <rect x="171" y="60" width="58" height="165" />
+                    </g>
+                    <g fill="#e7bd78" opacity=".75">
+                        <rect x="75" y="64" width="11" height="15" />
+                        <rect x="93" y="64" width="11" height="15" />
+                        <rect x="180" y="78" width="12" height="16" />
+                        <rect x="201" y="106" width="12" height="16" />
+                        <rect x="25" y="101" width="13" height="17" />
+                    </g>
+                    <path d="M0 225h240v45H0z" fill="${p[0]}" opacity=".48" />
+                    <path d="M30 242h174" stroke="#f0d398" stroke-width="3" stroke-dasharray="25 16" opacity=".65" />
+                </svg>
+            `,
+            table: (p) => `
+                <svg viewBox="0 0 240 270" role="img" aria-label="Illustrated dinner table">
+                    <rect width="240" height="270" fill="${p[2]}" />
+                    <circle cx="120" cy="68" r="41" fill="${p[0]}" opacity=".42" />
+                    <path d="M38 172h164l25 98H13Z" fill="${p[1]}" />
+                    <ellipse cx="87" cy="181" rx="37" ry="15" fill="#e6d6bd" />
+                    <ellipse cx="155" cy="181" rx="37" ry="15" fill="#e6d6bd" />
+                    <path d="M116 109h8v59h-8z" fill="#dbc18f" />
+                    <path d="M102 168h36" stroke="#dbc18f" stroke-width="5" />
+                    <path d="M108 91q12-35 24 0-4 21-12 25-8-4-12-25" fill="#efbb66" />
+                    <g fill="#caa77c">
+                        <circle cx="87" cy="179" r="18" />
+                        <circle cx="155" cy="179" r="18" />
+                    </g>
+                </svg>
+            `
+        };
+
+        const cardsEl = document.getElementById('cards');
+        const phone = document.getElementById('phone');
+        const progressEl = document.getElementById('progress');
+        const yearChip = document.getElementById('yearChip');
+        const toast = document.getElementById('toast');
+        const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        let activeIndex = 0;
+        let busy = false;
+        let pointerStartX = 0;
+        let pointerId = null;
+        let wheelTotal = 0;
+        let wheelTimer;
+        let toastTimer;
+
+        function modulo(value, divisor) { return ((value % divisor) + divisor) % divisor; }
+
+        function createCards() {
+            cardsEl.innerHTML = '';
+            for (let slot = -2; slot <= 3; slot += 1) {
+                const memoryIndex = modulo(activeIndex + slot, memories.length);
+                const memory = memories[memoryIndex];
+                const card = document.createElement('article');
+                card.className = 'memory-card';
+                card.dataset.slot = String(slot);
+                card.innerHTML = `
+                    <div class="photo">
+                        ${sceneArt[memory.scene](memory.palette)}
+                        <img class="loading" src="${memory.photo}" alt="Dummy photo for ${memory.title}" draggable="false">
+                    </div>
+                    <div class="card-meta">
+                        <span class="caption">${memory.title}</span>
+                        <time class="date">${memory.date}</time>
+                    </div>
+                `;
+                const image = card.querySelector('img');
+                image.addEventListener('load', () => image.classList.remove('loading'));
+                image.addEventListener('error', () => image.remove());
+                cardsEl.appendChild(card);
+            }
+            updateCardPositions(false);
+            updateChrome();
+        }
+
+        function updateCardPositions(animate = true) {
+            [...cardsEl.children].forEach((card) => {
+                const rel = Number(card.dataset.slot);
+                const abs = Math.abs(rel);
+                const angle = rel * 1.17;
+                const side = Math.sin(angle) * 82;
+                const depth = (Math.cos(angle) - 1) * 115;
+                const tilt = Math.sin(angle) * -6;
+                const page = rel > 0 ? Math.min(76, rel * 38) : Math.max(-78, rel * 30);
+
+                card.dataset.side = side >= 0 ? 'right' : 'left';
+                card.style.setProperty('--rel', rel.toFixed(3));
+                card.style.setProperty('--abs', abs.toFixed(3));
+                card.style.setProperty('--side', `${side.toFixed(2)}px`);
+                card.style.setProperty('--depth', `${depth.toFixed(2)}px`);
+                card.style.setProperty('--tilt', `${tilt.toFixed(2)}deg`);
+                card.style.setProperty('--page', `${page.toFixed(2)}deg`);
+                card.style.setProperty('--scale', String(1 - Math.min(abs, 3) * .075));
+                card.style.setProperty('--opacity', String(1 - Math.min(abs, 3.4) * .22));
+                card.style.setProperty('--saturate', String(1 - Math.min(abs, 3) * .12));
+                card.style.setProperty('--brightness', String(1 - Math.min(abs, 3) * .055));
+                card.style.zIndex = String(20 - Math.round(abs * 3));
+                if (!animate) card.style.transition = 'none';
+            });
+
+            if (!animate) {
+                requestAnimationFrame(() => [...cardsEl.children].forEach((card) => card.style.transition = ''));
+            }
+        }
+
+        function updateChrome() {
+            const memory = memories[modulo(activeIndex, memories.length)];
+            yearChip.textContent = memory.year;
+            progressEl.innerHTML = memories.map((_, index) => `<span class="progress-dot ${index === modulo(activeIndex, memories.length) ? 'active' : ''}"></span>`).join('');
+        }
+
+        function showToast() {
+            toast.classList.add('show');
+            clearTimeout(toastTimer);
+            toastTimer = setTimeout(() => toast.classList.remove('show'), 1150);
+        }
+
+        function step(direction) {
+            if (busy || direction === 0) return;
+            busy = true;
+            phone.classList.add('interacted');
+
+            [...cardsEl.children].forEach((card) => {
+                card.dataset.slot = String(Number(card.dataset.slot) - direction);
+            });
+
+            updateCardPositions(true);
+            activeIndex += direction;
+            updateChrome();
+
+            if (direction > 0 && activeIndex === 1) showToast();
+
+            setTimeout(() => {
+                createCards();
+                busy = false;
+            }, reducedMotion ? 20 : 700);
+        }
+
+        phone.addEventListener('wheel', (event) => {
+            const horizontal = Math.abs(event.deltaX) > Math.abs(event.deltaY) ? event.deltaX : event.deltaY;
+            if (Math.abs(horizontal) < 1) return;
+            event.preventDefault();
+            wheelTotal += horizontal;
+            clearTimeout(wheelTimer);
+            wheelTimer = setTimeout(() => { wheelTotal = 0; }, 180);
+            if (Math.abs(wheelTotal) > 55) {
+                step(wheelTotal > 0 ? 1 : -1);
+                wheelTotal = 0;
+            }
+        }, { passive: false });
+
+        phone.addEventListener('pointerdown', (event) => {
+            pointerId = event.pointerId;
+            pointerStartX = event.clientX;
+            phone.setPointerCapture(pointerId);
+        });
+
+        phone.addEventListener('pointerup', (event) => {
+            if (pointerId !== event.pointerId) return;
+            const distance = event.clientX - pointerStartX;
+            phone.releasePointerCapture(pointerId);
+            pointerId = null;
+            if (Math.abs(distance) > 38) step(distance < 0 ? 1 : -1);
+        });
+
+        phone.addEventListener('pointercancel', () => {
+            pointerId = null;
+        });
+
+        phone.addEventListener('dragstart', (event) => event.preventDefault());
+        phone.addEventListener('keydown', (event) => {
+            if (event.key === 'ArrowRight') {
+                event.preventDefault();
+                step(1);
+            }
+            if (event.key === 'ArrowLeft') {
+                event.preventDefault();
+                step(-1);
+            }
+        });
+
+        createCards();
+    </script>
+</body>
+
+</html>
