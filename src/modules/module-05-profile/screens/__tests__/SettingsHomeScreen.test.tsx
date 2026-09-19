@@ -36,15 +36,14 @@ describe('SettingsHomeScreen', () => {
     expect(screen.getByText(COPY.lede)).toBeTruthy()
   })
 
-  // The last tab is Space, not Profile — the About Page board renamed it and
-  // moved its destination to the Space hub. This list is still what the cog in
-  // that hub's header opens, so it still reports itself as the tab you are on.
-  it('sits on the space tab, so the bar knows where you are', async () => {
+  // Profile gave up its seat in the bottom bar to Space and became the
+  // header's top-right control, so this list is a page you back out of rather
+  // than a tab you are inside. No bar, and a back arrow.
+  it('is a pushed page rather than a tab', async () => {
     await renderScreen(<SettingsHomeScreen />)
 
-    expect(screen.getByLabelText('Space').props.accessibilityState).toMatchObject({
-      selected: true,
-    })
+    expect(screen.getByLabelText('Go back')).toBeTruthy()
+    expect(screen.queryByLabelText('Profile')).toBeNull()
   })
 
   it('routes to Appearance', async () => {

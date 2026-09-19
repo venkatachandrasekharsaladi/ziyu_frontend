@@ -6,9 +6,10 @@
  * The file path under src/app/ IS the URL; the (brackets) are grouping
  * folders and do not appear in it. See `(auth)/welcome.tsx` for the rule.
  *
- * REACHED FROM: the Space tab, last stop on the bottom bar. This replaced
- * Profile as that tab's destination — the settings list it used to open is
- * still at `/settings`, now behind the cog in this screen's header.
+ * REACHED FROM: the Space tab, fourth stop on the bottom bar.
+ *
+ * NOT the Profile tab, which is still its own destination and still opens the
+ * settings list. Space is the couple's shared world; Profile is the admin.
  *
  * TO CHANGE WHAT YOU SEE, EDIT THESE — not this file:
  *
