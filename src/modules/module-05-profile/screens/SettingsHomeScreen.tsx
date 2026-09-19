@@ -98,7 +98,7 @@ export function SettingsHomeScreen() {
   }, [signOut])
 
   return (
-    <AppScreenLayout activeTab="profile">
+    <AppScreenLayout activeTab="space">
       <View style={styles.copy}>
         <Text variant="h2" tone="heading">
           {COPY.heading}

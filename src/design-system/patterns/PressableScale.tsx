@@ -24,6 +24,15 @@ type PressableScaleProps = {
   accessibilityLabel: string
   children: ReactNode
   testID?: string
+  /**
+   * Defaults to `button`, which is what almost every caller is. Pass `radio`
+   * when the pressable is one option in a set where only one can win — five
+   * mood cards read as five unrelated buttons otherwise, and a screen reader
+   * has no way to learn that choosing one un-chooses the rest.
+   */
+  accessibilityRole?: 'button' | 'radio'
+  /** Pair with `accessibilityRole="radio"`: which option is the chosen one. */
+  accessibilityState?: { selected?: boolean; disabled?: boolean }
 }
 
 /**
@@ -40,6 +49,8 @@ export function PressableScale({
   accessibilityLabel,
   children,
   testID,
+  accessibilityRole = 'button',
+  accessibilityState,
 }: PressableScaleProps) {
   const reduced = useReducedMotion()
   const scale = useSharedValue(1)
@@ -60,7 +71,8 @@ export function PressableScale({
       onPressOut={() => {
         if (!reduced) scale.value = withSpring(1, press)
       }}
-      accessibilityRole="button"
+      accessibilityRole={accessibilityRole}
+      accessibilityState={accessibilityState}
       accessibilityLabel={accessibilityLabel}
       style={style}
       testID={testID}
