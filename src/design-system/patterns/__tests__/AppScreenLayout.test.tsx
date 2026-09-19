@@ -82,6 +82,33 @@ describe('AppScreenLayout', () => {
     expect(mockReplace).not.toHaveBeenCalled()
   })
 
+  // Profile is no longer one of the four tabs — it is the header's top-right
+  // control, and it has to be on every `(app)` screen or it is unreachable.
+  it('carries the profile control in the header', async () => {
+    await renderScreen(<AppScreenLayout activeTab="home" />)
+
+    expect(screen.getByLabelText('Profile and settings')).toBeTruthy()
+  })
+
+  // A push, not a replace: you back out of settings to the screen you were on,
+  // not to whichever tab happened to be selected.
+  it('pushes to profile rather than replacing the tab', async () => {
+    const user = userEvent.setup()
+
+    await renderScreen(<AppScreenLayout activeTab="home" />)
+    await user.press(screen.getByLabelText('Profile and settings'))
+
+    expect(mockPush).toHaveBeenCalledWith('/(app)/profile')
+    expect(mockReplace).not.toHaveBeenCalled()
+  })
+
+  it('keeps Profile out of the bottom bar', async () => {
+    await renderScreen(<AppScreenLayout activeTab="home" />)
+
+    expect(APP_NAV.tabs).toHaveLength(4)
+    expect(APP_NAV.tabs.map((t) => t.key)).toEqual(['home', 'memories', 'chat', 'space'])
+  })
+
   it('has no back button on a screen that is a destination', async () => {
     await renderScreen(<AppScreenLayout activeTab="home" />)
 
