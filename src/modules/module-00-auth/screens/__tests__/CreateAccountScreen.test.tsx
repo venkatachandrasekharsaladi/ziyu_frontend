@@ -36,7 +36,7 @@ describe('CreateAccountScreen', () => {
   })
 
   it('interpolates the brand name into the lede rather than hardcoding it', async () => {
-    // Matching /LoveOS/ on screen is ambiguous — the header wordmark carries it
+    // Matching the product name on screen is ambiguous — the header wordmark carries it
     // too. The claim worth asserting is that the copy module derives it.
     expect(COPY.lede).toContain(BRAND.name)
 

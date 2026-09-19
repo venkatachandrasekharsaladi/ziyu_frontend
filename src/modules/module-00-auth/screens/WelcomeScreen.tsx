@@ -15,7 +15,7 @@ import { HeroCollage } from '@/modules/module-00-auth/components/HeroCollage'
 import { PrivacyFooter } from '@/modules/module-00-auth/components/PrivacyFooter'
 
 /**
- * M00-S01 — Welcome to LoveOS. Figma 522:266.
+ * M00-S01 — Welcome to Tales of Two. Figma 522:266.
  *
  * The first screen a new user sees. Presentation only: no session check, no
  * auth. Both buttons hand off to Module 00's other screens.

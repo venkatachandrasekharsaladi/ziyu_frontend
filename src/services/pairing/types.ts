@@ -44,6 +44,16 @@ export type Partner = {
   id: string
   name: string
   photoUri?: string
+  /**
+   * How you refer to them. Mirrors `Profile.nickname` — the same question,
+   * asked about the other person, on Space -> Edit Partner Details.
+   *
+   * NOT IN ANY BACKEND CONTRACT, exactly like `Profile.phone` above. Added for
+   * the Space cluster; whoever writes the real pairing contract has to add both
+   * of these there too.
+   */
+  nickname?: string
+  pronouns?: string
 }
 
 export type Invite = {

@@ -101,6 +101,23 @@ export type ThemeColors = {
    */
   accents: readonly { readonly soft: string; readonly ink: string }[]
   /**
+   * The five space moods, as the wash behind each mood card's photograph.
+   *
+   * NAMED rather than an ordered list, unlike `accents`. An accent is cycled by
+   * position and any tint will do; a mood is a thing the couple CHOSE, stored
+   * by name in `spaceStore`, and it has to come back as the same colour every
+   * time. Position would not survive adding a sixth mood.
+   *
+   * Decorative only — see the palette's note. Nothing draws text on these.
+   */
+  moods: {
+    lavenderCalm: string
+    warmMorning: string
+    roseGlow: string
+    goldenHour: string
+    midnightQuiet: string
+  }
+  /**
    * The focus ring, as the colour inside a `boxShadow` spread.
    *
    * A colour and not an `elevation` string, because `elevation` is shared by
@@ -220,6 +237,13 @@ export const lavenderTheme = {
       { soft: palette.mintTint, ink: palette.green700 },
       { soft: palette.lavender200, ink: palette.purple900 },
     ],
+    moods: {
+      lavenderCalm: palette.moodLavenderCalm,
+      warmMorning: palette.moodWarmMorning,
+      roseGlow: palette.moodRoseGlow,
+      goldenHour: palette.moodGoldenHour,
+      midnightQuiet: palette.moodMidnightQuiet,
+    },
     focusRing: palette.focusRingPurple,
     shadow: palette.shadowSoft,
     chat: {
@@ -298,6 +322,13 @@ export const midnightTheme = {
       { soft: dark.mintTint, ink: dark.mintInk },
       { soft: dark.indigo600, ink: dark.lavender300 },
     ],
+    moods: {
+      lavenderCalm: dark.moodLavenderCalm,
+      warmMorning: dark.moodWarmMorning,
+      roseGlow: dark.moodRoseGlow,
+      goldenHour: dark.moodGoldenHour,
+      midnightQuiet: dark.moodMidnightQuiet,
+    },
     focusRing: dark.focusRingLavender,
     shadow: dark.shadowSoft,
     chat: {

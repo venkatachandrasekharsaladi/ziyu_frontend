@@ -29,6 +29,25 @@ export function formatDate(value: string | undefined): string {
 }
 
 /**
+ * `1994-07-21` -> `Jul 21`. Returns `''` for anything malformed.
+ *
+ * Year dropped on purpose: every caller is a RECURRING date — a birthday, an
+ * anniversary — where the year is the year it first happened and printing it
+ * beside "coming up" reads as the wrong date entirely. Figma `3430:2253`.
+ */
+export function formatDayMonth(value: string | undefined): string {
+  if (!value) return ''
+
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value)
+  if (!match) return ''
+
+  const month = MONTHS[Number(match[2]) - 1]
+  if (!month) return ''
+
+  return `${month.slice(0, 3)} ${Number(match[3])}`
+}
+
+/**
  * Formats a date to the precision it was actually given.
  *
  * A date entered as "sometime in 2019" is stored as `2019-01-01`, and printing

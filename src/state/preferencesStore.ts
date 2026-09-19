@@ -10,6 +10,22 @@ export type LanguageCode = 'en' | 'es' | 'fr' | 'de' | 'hi'
 export type ReminderLead = 'sameDay' | 'dayBefore' | 'weekBefore'
 export type HomeCardKey = 'featured' | 'comingUp' | 'littleThings'
 
+/**
+ * How much of the couple's space the assistant may read. Figma `3430:545`.
+ *
+ * Two levels, not a switch, because "off" is not one of the options the frame
+ * offers — the assistant always sees something. Naming the floor `nudges`
+ * rather than calling the whole thing `assistantEnabled: false` keeps that
+ * honest.
+ */
+export type AssistantAccess = 'nudges' | 'full'
+
+/** The assistant's voice. Figma `3430:1349` onward. */
+export type AssistantTone = 'quiet' | 'warm' | 'playful' | 'deep'
+
+/** How often it speaks up. Figma `3430:1392`, drawn as a three-stop slider. */
+export type AssistantFrequency = 'rarely' | 'balanced' | 'often'
+
 export type Preferences = {
   /** Accessibility. */
   textScale: TextScale
@@ -69,6 +85,54 @@ export type Preferences = {
   /** Data & storage. */
   autoDownload: AutoDownload
   uploadQuality: UploadQuality
+
+  /**
+   * Our Preferences — Figma `3430:1878`. Eight switches in three groups:
+   * what the space REMEMBERS, what it REMINDS us of, and how it RESPONDS.
+   *
+   * Prefixed `space` and kept here rather than in `spaceStore` because that
+   * store holds what the space IS — its name, its mood, its texture. These are
+   * preferences about behaviour, which is what this store is for, and splitting
+   * them would mean two `reset`s to remember on sign-out instead of one.
+   */
+  spaceDates: boolean
+  spaceMemories: boolean
+  spaceTimeline: boolean
+  spaceMeaningfulMoments: boolean
+  spaceUnfinishedMemories: boolean
+  spaceMilestones: boolean
+  spaceDaysTogether: boolean
+  spaceHomePersonalization: boolean
+
+  /**
+   * The assistant's three standing permissions. Figma `3430:2292`.
+   *
+   * Separate from the `space*` group above even though both are switches on a
+   * Space screen: these govern what the ASSISTANT may do unprompted, and the
+   * difference between "show me our dates" and "let something suggest things to
+   * me" is the one a person most wants to be able to find and turn off.
+   */
+  assistantDateNightIdeas: boolean
+  assistantMemorySuggestions: boolean
+  assistantAnniversaryIdeas: boolean
+  assistantAccess: AssistantAccess
+
+  /**
+   * The two suggestions Assistant Preferences (`3430:1276`) offers that the
+   * LoveOS Assistant frame (`3430:2279`) does not.
+   *
+   * FLAGGED FOR THE DESIGNER: `assistantMemoryRecaps` here and
+   * `assistantMemorySuggestions` above are two names for adjacent ideas —
+   * "weekly this time last year" versus "gentle reminders of past moments".
+   * They are kept apart rather than merged because merging them would have
+   * meant deciding which of the two frames was wrong, which is not a decision
+   * to make quietly in a store.
+   */
+  assistantMemoryRecaps: boolean
+  assistantConversationStarters: boolean
+
+  assistantTone: AssistantTone
+  assistantFrequency: AssistantFrequency
 }
 
 /** Every key whose value is a boolean — the only keys `toggle` accepts. */
@@ -141,6 +205,30 @@ export const PREFERENCE_DEFAULTS: Preferences = {
 
   autoDownload: 'wifi',
   uploadQuality: 'high',
+
+  // The frame draws these three on and these three off — 3430:1902 onward.
+  spaceDates: true,
+  spaceMemories: true,
+  spaceTimeline: false,
+  spaceMeaningfulMoments: true,
+  spaceUnfinishedMemories: false,
+  spaceMilestones: true,
+  spaceDaysTogether: true,
+  spaceHomePersonalization: false,
+
+  // Two on, one off - the states frame 3430:2306 onward draws.
+  assistantDateNightIdeas: true,
+  assistantMemorySuggestions: true,
+  assistantAnniversaryIdeas: false,
+
+  // The frame selects the narrower of the two levels by default.
+  assistantAccess: 'nudges',
+
+  // States drawn on 3430:1308 onward: two on, one off, warm, balanced.
+  assistantMemoryRecaps: true,
+  assistantConversationStarters: false,
+  assistantTone: 'warm',
+  assistantFrequency: 'balanced',
 }
 
 /**

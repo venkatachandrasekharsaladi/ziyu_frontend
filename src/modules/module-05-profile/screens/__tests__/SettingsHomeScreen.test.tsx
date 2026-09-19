@@ -36,10 +36,13 @@ describe('SettingsHomeScreen', () => {
     expect(screen.getByText(COPY.lede)).toBeTruthy()
   })
 
-  it('sits on the profile tab, so the bar knows where you are', async () => {
+  // The last tab is Space, not Profile — the About Page board renamed it and
+  // moved its destination to the Space hub. This list is still what the cog in
+  // that hub's header opens, so it still reports itself as the tab you are on.
+  it('sits on the space tab, so the bar knows where you are', async () => {
     await renderScreen(<SettingsHomeScreen />)
 
-    expect(screen.getByLabelText('Profile').props.accessibilityState).toMatchObject({
+    expect(screen.getByLabelText('Space').props.accessibilityState).toMatchObject({
       selected: true,
     })
   })

@@ -1,4 +1,4 @@
-# LoveOS — frontend
+# Tales of Two — frontend
 
 A private app for a couple: exactly two paired people. Chat, a shared memory
 archive, and the story of how they got here.
