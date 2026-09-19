@@ -12,6 +12,7 @@ import { SpacePortraits } from '@/modules/module-05-profile/components/SpacePort
 import { useRelationshipStore } from '@/state/relationshipStore'
 import { useStoryStore } from '@/state/storyStore'
 import { formatStoryDate } from '@/utils/formatStoryDate'
+import { useBackTo } from '@/hooks/useBackTo'
 
 /**
  * M05-S25 — Space → Partner & Connection. Figma `3430:1645`.
@@ -39,7 +40,7 @@ export function PartnerConnectionScreen() {
   const partner = useRelationshipStore((state) => state.partner)
   const met = useStoryStore((state) => state.met)
 
-  const back = useCallback(() => router.back(), [router])
+  const back = useBackTo('/(app)/space/preferences')
   const go = useCallback((href: string) => () => router.push(href as Href), [router])
 
   const you = profile?.name ?? 'You'

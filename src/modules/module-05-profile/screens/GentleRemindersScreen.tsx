@@ -12,6 +12,7 @@ import { useRelationshipStore } from '@/state/relationshipStore'
 import { useStoryStore } from '@/state/storyStore'
 import { daysUntilNextOccurrence } from '@/utils/daysUntil'
 import { formatDayMonth } from '@/utils/formatStoryDate'
+import { useBackTo } from '@/hooks/useBackTo'
 
 /**
  * M05-S27 — Space → Gentle Reminders. Figma `3430:2209`.
@@ -34,7 +35,7 @@ export function GentleRemindersScreen() {
   const keyDates = useStoryStore((state) => state.keyDates)
   const met = useStoryStore((state) => state.met)
 
-  const back = useCallback(() => router.back(), [router])
+  const back = useBackTo('/(app)/space/preferences')
   const go = useCallback((href: string) => () => router.push(href as Href), [router])
 
   // The anniversary falls back to the day they met: a pair who answered the

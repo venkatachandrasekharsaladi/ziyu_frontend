@@ -11,6 +11,7 @@ import { Text } from '@/design-system/primitives/Text'
 import { useRelationshipStore } from '@/state/relationshipStore'
 import { useStoryStore } from '@/state/storyStore'
 import { formatStoryDate } from '@/utils/formatStoryDate'
+import { useBackTo } from '@/hooks/useBackTo'
 
 /**
  * M05-S21b — Space → Our Identity, the refined frame. Figma `3430:1813`.
@@ -34,7 +35,7 @@ export function OurIdentityRefinedScreen() {
   const [isSaved, setIsSaved] = useState(false)
 
   const go = useCallback((href: string) => () => router.push(href as Href), [router])
-  const back = useCallback(() => router.back(), [router])
+  const back = useBackTo('/(app)/space')
   const onSave = useCallback(() => setIsSaved(true), [])
 
   const you = profile?.name ?? 'You'

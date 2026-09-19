@@ -10,6 +10,7 @@ import { SettingsRow } from '@/design-system/patterns/SettingsRow'
 import { Button } from '@/design-system/primitives/Button'
 import { Text } from '@/design-system/primitives/Text'
 import { usePreferencesStore, type BooleanPreferenceKey } from '@/state/preferencesStore'
+import { useBackTo } from '@/hooks/useBackTo'
 
 /**
  * M05-S28 — Space → LoveOS Assistant. Figma `3430:2279`.
@@ -37,7 +38,7 @@ export function LoveOsAssistantScreen() {
   )
   const [isSaved, setIsSaved] = useState(false)
 
-  const back = useCallback(() => router.back(), [router])
+  const back = useBackTo('/(app)/space/preferences')
   const go = useCallback((href: string) => () => router.push(href as Href), [router])
 
   const onSave = useCallback(() => {

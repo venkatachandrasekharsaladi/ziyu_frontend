@@ -14,6 +14,7 @@ import { PressableScale } from '@/design-system/patterns/PressableScale'
 import { Button } from '@/design-system/primitives/Button'
 import { Text } from '@/design-system/primitives/Text'
 import { usePreferencesStore } from '@/state/preferencesStore'
+import { useBackTo } from '@/hooks/useBackTo'
 
 /**
  * M05-S33 — Space → Keep Our Space Private. Figma `3430:489`.
@@ -36,7 +37,7 @@ export function KeepOurSpacePrivateScreen() {
   const access = usePreferencesStore((state) => state.assistantAccess)
   const setPreference = usePreferencesStore((state) => state.setPreference)
 
-  const back = useCallback(() => router.back(), [router])
+  const back = useBackTo('/(app)/space/preferences')
   const go = useCallback((href: string) => () => router.push(href as Href), [router])
 
   return (

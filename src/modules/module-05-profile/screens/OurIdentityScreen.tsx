@@ -13,6 +13,7 @@ import { IdentityCard } from '@/modules/module-05-profile/components/IdentityCar
 import { useRelationshipStore } from '@/state/relationshipStore'
 import { useStoryStore } from '@/state/storyStore'
 import { formatStoryDate } from '@/utils/formatStoryDate'
+import { useBackTo } from '@/hooks/useBackTo'
 
 /**
  * M05-S21 — Space → Our Identity. Figma `3430:138`, "Our Identity (Module 05)".
@@ -41,7 +42,7 @@ export function OurIdentityScreen() {
   const [isSaved, setIsSaved] = useState(false)
 
   const go = useCallback((href: string) => () => router.push(href as Href), [router])
-  const back = useCallback(() => router.back(), [router])
+  const back = useBackTo('/(app)/space')
   const onSave = useCallback(() => setIsSaved(true), [])
 
   return (

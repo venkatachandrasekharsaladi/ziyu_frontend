@@ -15,6 +15,7 @@ import { memoriesService } from '@/services/memories'
 import { useStoryStore } from '@/state/storyStore'
 import { daysSince } from '@/utils/daysUntil'
 import { formatStoryDate } from '@/utils/formatStoryDate'
+import { useBackTo } from '@/hooks/useBackTo'
 
 /**
  * M05-S35 — Space → About Our Space. Figma `3430:927`.
@@ -64,7 +65,7 @@ export function AboutOurSpaceScreen() {
     }
   }, [])
 
-  const back = useCallback(() => router.back(), [router])
+  const back = useBackTo('/(app)/space/preferences')
 
   const days = daysSince(met?.value)
   const moments = [firstDate, becameUs, firstMemory].filter(Boolean).length

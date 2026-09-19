@@ -16,6 +16,7 @@ import { SettingsScreenLayout } from '@/design-system/patterns/SettingsScreenLay
 import { SegmentedControl } from '@/design-system/primitives/SegmentedControl'
 import { Text } from '@/design-system/primitives/Text'
 import { usePreferencesStore, type AssistantFrequency } from '@/state/preferencesStore'
+import { useBackTo } from '@/hooks/useBackTo'
 
 /**
  * M05-S34 — Space → Assistant Preferences. Figma `3430:1276`.
@@ -42,7 +43,7 @@ export function AssistantPreferencesScreen() {
   const toggle = usePreferencesStore((state) => state.toggle)
   const setPreference = usePreferencesStore((state) => state.setPreference)
 
-  const back = useCallback(() => router.back(), [router])
+  const back = useBackTo('/(app)/space/assistant')
 
   const onFrequency = useCallback(
     (next: AssistantFrequency) => setPreference('assistantFrequency', next),

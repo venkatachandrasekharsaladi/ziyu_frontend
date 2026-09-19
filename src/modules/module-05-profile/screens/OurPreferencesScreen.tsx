@@ -13,6 +13,7 @@ import { SettingsRow } from '@/design-system/patterns/SettingsRow'
 import { Text } from '@/design-system/primitives/Text'
 import { PreferenceGroup } from '@/modules/module-05-profile/components/PreferenceGroup'
 import { usePreferencesStore } from '@/state/preferencesStore'
+import { useBackTo } from '@/hooks/useBackTo'
 
 /**
  * M05-S24 — Space → Our Preferences. Figma `3430:1878`.
@@ -32,7 +33,7 @@ export function OurPreferencesScreen() {
   const preferences = usePreferencesStore()
   const toggle = usePreferencesStore((state) => state.toggle)
 
-  const back = useCallback(() => router.back(), [router])
+  const back = useBackTo('/(app)/space')
   const go = useCallback((href: string) => () => router.push(href as Href), [router])
 
   return (

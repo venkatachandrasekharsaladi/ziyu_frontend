@@ -9,6 +9,7 @@ import { Button } from '@/design-system/primitives/Button'
 import { Text } from '@/design-system/primitives/Text'
 import { MoodCard } from '@/modules/module-05-profile/components/MoodCard'
 import { useSpaceStore, type SpaceMood } from '@/state/spaceStore'
+import { useBackTo } from '@/hooks/useBackTo'
 
 /**
  * M05-S22 — Space → Space Mood. Figma `3430:2036`, "Space Mood (Refined)".
@@ -31,7 +32,7 @@ export function SpaceMoodScreen() {
   const [choice, setChoice] = useState<SpaceMood>(stored)
   const [isSaved, setIsSaved] = useState(false)
 
-  const back = useCallback(() => router.back(), [router])
+  const back = useBackTo('/(app)/space/preferences')
 
   const onSave = useCallback(() => {
     setMood(choice)

@@ -14,6 +14,7 @@ import { Button } from '@/design-system/primitives/Button'
 import { Text } from '@/design-system/primitives/Text'
 import { PersonalizeSection } from '@/modules/module-05-profile/components/PersonalizeSection'
 import { SpaceOptionTile } from '@/modules/module-05-profile/components/SpaceOptionTile'
+import { useBackTo } from '@/hooks/useBackTo'
 import {
   useSpaceStore,
   type CardStyle,
@@ -48,7 +49,7 @@ export function PersonalizeOurSpaceScreen() {
   const [cardStyle, setCardStyle] = useState<CardStyle>(storedCard)
   const [isSaved, setIsSaved] = useState(false)
 
-  const back = useCallback(() => router.back(), [router])
+  const back = useBackTo('/(app)/space')
 
   const onSave = useCallback(() => {
     setRoom({ mood, memoryStyle, cardStyle })

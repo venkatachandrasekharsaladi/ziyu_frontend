@@ -11,6 +11,7 @@ import type { Moment } from '@/services/story/types'
 import { useStoryStore } from '@/state/storyStore'
 import { daysSince } from '@/utils/daysUntil'
 import { formatDate, formatStoryDate } from '@/utils/formatStoryDate'
+import { useBackTo } from '@/hooks/useBackTo'
 
 /**
  * M05-S32 — Space → Relationship Details. Figma `3430:1187`.
@@ -35,7 +36,7 @@ export function RelationshipDetailsScreen() {
   const firstDate = useStoryStore((state) => state.firstDate)
   const firstMemory = useStoryStore((state) => state.firstMemory)
 
-  const back = useCallback(() => router.back(), [router])
+  const back = useBackTo('/(app)/space/identity')
   const go = useCallback((href: string) => () => router.push(href as Href), [router])
 
   const days = daysSince(met?.value)
