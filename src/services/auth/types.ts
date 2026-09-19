@@ -69,6 +69,8 @@ export type ResetPassword = {
 }
 
 export type AuthService = {
+  /** Restores the authenticated principal after persisted-token hydration. */
+  getCurrentSession: () => Promise<Result<Session>>
   signIn: (input: Credentials) => Promise<Result<Session>>
   signUp: (input: Credentials) => Promise<Result<Session>>
   /** Always resolves ok for a valid address — see the enumeration note in `mock.ts`. */

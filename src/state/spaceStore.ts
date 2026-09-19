@@ -1,5 +1,7 @@
 import { create } from 'zustand'
 
+import type { SpaceStatus } from '@/services/pairing/types'
+
 export type CoverStyle = 'dawn' | 'dusk' | 'night'
 
 /**
@@ -20,7 +22,7 @@ export type MemoryStyle = 'polaroid' | 'filmstrip' | 'clean'
 /** The texture of a note card. Figma `3430:1764`, "Card Style". */
 export type CardStyle = 'paper' | 'glass' | 'flat'
 
-type SpaceState = {
+export type SpaceState = {
   /** How the couple's shared space is named. */
   name: string | null
   shortName: string | null
@@ -40,6 +42,7 @@ type SpaceState = {
   personalizePromptDismissed: boolean
 
   setSpace: (input: { name: string; shortName?: string; coverStyle: CoverStyle }) => void
+    syncWithServer: (space: SpaceStatus) => void
   dismissPersonalizePrompt: () => void
   setMood: (mood: SpaceMood) => void
   setRoom: (input: { mood: SpaceMood; memoryStyle: MemoryStyle; cardStyle: CardStyle }) => void
@@ -74,6 +77,9 @@ export const useSpaceStore = create<SpaceState>((set) => ({
 
   setSpace: ({ name, shortName, coverStyle }) =>
     set({ name, shortName: shortName?.trim() || null, coverStyle }),
+
+  syncWithServer: ({ name, shortName, coverStyle }) =>
+    set({ name: name ?? null, shortName: shortName ?? null, coverStyle }),
 
   dismissPersonalizePrompt: () => set({ personalizePromptDismissed: true }),
 

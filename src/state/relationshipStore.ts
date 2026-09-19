@@ -1,10 +1,16 @@
 import { create } from 'zustand'
 
-import type { Partner, Profile } from '@/services/pairing/types'
+import type { Partner, Profile, SpaceStatus } from '@/services/pairing/types'
 
-export type RelationshipStatus = 'none' | 'inviting' | 'pending' | 'connected'
+export type RelationshipStatus =
+  | 'none'
+  | 'inviting'
+  | 'pending'
+  | 'connected'
+  | 'paused'
+  | 'archived'
 
-type RelationshipState = {
+export type RelationshipState = {
   status: RelationshipStatus
   /** The invite code this user issued, if they are the inviter. */
   code: string | null
@@ -15,6 +21,7 @@ type RelationshipState = {
   setInvite: (code: string) => void
   setPartner: (partner: Partner) => void
   connect: () => void
+  syncWithServer: (space: SpaceStatus) => void
   reset: () => void
 }
 
@@ -38,5 +45,10 @@ export const useRelationshipStore = create<RelationshipState>((set) => ({
   setInvite: (code) => set({ code, status: 'inviting' }),
   setPartner: (partner) => set({ partner, status: 'pending' }),
   connect: () => set({ status: 'connected' }),
+  syncWithServer: (space) => set((current) => ({
+    status: space.status,
+    code: space.status === 'none' ? null : current.code,
+    partner: space.partner ?? (space.status === 'inviting' ? null : current.partner),
+  })),
   reset: () => set({ status: 'none', code: null, partner: null, profile: null }),
 }))

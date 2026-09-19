@@ -56,6 +56,25 @@ export type Partner = {
   pronouns?: string
 }
 
+export type SpaceStatus = {
+  coupleId?: string
+  name?: string
+  shortName?: string
+  coverStyle: 'dawn' | 'dusk' | 'night'
+  status: 'none' | 'inviting' | 'pending' | 'connected' | 'paused' | 'archived'
+  partner?: Partner
+}
+
+export type CoupleLifecycle = {
+  status: 'connected' | 'paused' | 'archived'
+  sharedWritesAllowed: boolean
+  unpairPending: boolean
+  unpairRequestedByMe: boolean
+  pausedAt?: string
+  unpairRequestedAt?: string
+  unpairExpiresAt?: string
+}
+
 export type Invite = {
   /** Six characters, no separator. The separator is display only. */
   code: string
@@ -70,4 +89,10 @@ export type PairingService = {
   /** Commits the relationship. */
   confirmPartner: (input: { partnerId: string }) => Promise<Result<null>>
   cancelInvite: (input: { code: string }) => Promise<Result<null>>
+  getSpace: () => Promise<Result<SpaceStatus>>
+  getLifecycle: () => Promise<Result<CoupleLifecycle>>
+  pause: () => Promise<Result<CoupleLifecycle>>
+  reactivate: () => Promise<Result<CoupleLifecycle>>
+  requestUnpair: () => Promise<Result<CoupleLifecycle>>
+  cancelUnpair: () => Promise<Result<CoupleLifecycle>>
 }

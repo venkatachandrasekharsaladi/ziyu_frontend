@@ -53,6 +53,8 @@ export type Story = {
 }
 
 export type StoryService = {
+  /** Restores the server copy after authentication and pairing hydration. */
+  getStory: () => Promise<Result<Story>>
   /** Persists the whole story. Called once, when the user commits on M01-S17. */
   saveStory: (input: Story) => Promise<Result<Story>>
 }
