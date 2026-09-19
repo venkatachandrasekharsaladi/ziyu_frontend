@@ -15,6 +15,7 @@ import { Input } from '@/design-system/primitives/Input'
 import { Text } from '@/design-system/primitives/Text'
 import { useRelationshipStore } from '@/state/relationshipStore'
 import { useStoryStore } from '@/state/storyStore'
+import { useBackTo } from '@/hooks/useBackTo'
 
 const schema = z.object({
   name: z.string().trim().min(1, COPY.nameRequired),
@@ -60,7 +61,7 @@ export function EditPartnerDetailsScreen() {
     },
   })
 
-  const back = useCallback(() => router.back(), [router])
+  const back = useBackTo('/(app)/space/identity')
   const go = useCallback((href: string) => () => router.push(href as Href), [router])
 
   const onSubmit = useCallback(

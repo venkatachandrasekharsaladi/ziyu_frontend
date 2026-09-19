@@ -8,6 +8,7 @@ import { PRIVACY_PILLARS, SPACE_PRIVACY_COPY as COPY } from '@/copy/spacePrivacy
 import { AppScreenLayout } from '@/design-system/patterns/AppScreenLayout'
 import { Text } from '@/design-system/primitives/Text'
 import { SpacePillarCard } from '@/modules/module-05-profile/components/SpacePillarCard'
+import { useBackTo } from '@/hooks/useBackTo'
 
 /**
  * M05-S26 — Space → Privacy Details. Figma `3430:1563`.
@@ -26,7 +27,7 @@ export function PrivacyDetailsScreen() {
   const router = useRouter()
   const { theme } = useUnistyles()
 
-  const back = useCallback(() => router.back(), [router])
+  const back = useBackTo('/(app)/space/preferences')
 
   return (
     <AppScreenLayout activeTab="space" onBack={back}>

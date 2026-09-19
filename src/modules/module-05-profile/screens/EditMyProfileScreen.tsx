@@ -14,6 +14,7 @@ import { DateField } from '@/design-system/primitives/DateField'
 import { Input } from '@/design-system/primitives/Input'
 import { Text } from '@/design-system/primitives/Text'
 import { useRelationshipStore } from '@/state/relationshipStore'
+import { useBackTo } from '@/hooks/useBackTo'
 
 const schema = z.object({
   name: z.string().trim().min(1, COPY.nameRequired),
@@ -56,7 +57,7 @@ export function EditMyProfileScreen() {
     },
   })
 
-  const back = useCallback(() => router.back(), [router])
+  const back = useBackTo('/(app)/space/identity')
 
   const onSubmit = useCallback(
     (values: FormValues) => {

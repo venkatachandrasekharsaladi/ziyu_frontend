@@ -83,6 +83,31 @@ describe('Space navigation', () => {
     },
   )
 
+  /*
+   * A Back control has to go somewhere even when the screen was opened
+   * directly — a pasted URL, a browser reload, a deep link. Bare
+   * `router.back()` is a dead control there, and expo-router logs
+   *   "The action 'GO_BACK' was not handled by any navigator".
+   * `useBackTo(fallback)` keeps the ordinary pop and gives that case a real
+   * destination. Every Space screen with a back arrow must use it.
+   */
+  it('gives every Space screen a Back that always goes somewhere', () => {
+    const SCREENS = path.join(process.cwd(), 'src', 'modules', 'module-05-profile', 'screens')
+    const offenders: string[] = []
+
+    for (const file of fs.readdirSync(SCREENS) as string[]) {
+      if (!file.endsWith('.tsx')) continue
+
+      const src = fs.readFileSync(path.join(SCREENS, file), 'utf8')
+      // Only the Space cluster is in scope; the older settings screens predate
+      // this rule and are tracked separately.
+      if (!/activeTab="space"|SPACE_[A-Z_]+_COPY/.test(src)) continue
+      if (src.includes('router.back()')) offenders.push(file)
+    }
+
+    expect(offenders).toEqual([])
+  })
+
   it('documents why each unlinked route is unlinked', () => {
     for (const [route, reason] of Object.entries(NOT_PUSHED)) {
       expect(routes).toContain(route)

@@ -20,6 +20,7 @@ import { useSpaceStore } from '@/state/spaceStore'
 import { useStoryStore } from '@/state/storyStore'
 import { usePreferencesStore } from '@/state/preferencesStore'
 import { daysSince } from '@/utils/daysUntil'
+import { useBackTo } from '@/hooks/useBackTo'
 
 /**
  * The three theme names come from Appearance's own copy rather than being
@@ -85,7 +86,7 @@ export function SettingsHomeScreen() {
   const daysTogether = daysSince(met?.value)
 
   const go = useCallback((href: string) => () => router.push(href as Href), [router])
-  const back = useCallback(() => router.back(), [router])
+  const back = useBackTo('/(app)/home')
 
   const signOut = useCallback(async () => {
     try {
