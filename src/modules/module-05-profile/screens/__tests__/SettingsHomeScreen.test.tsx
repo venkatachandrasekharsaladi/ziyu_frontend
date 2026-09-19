@@ -36,14 +36,12 @@ describe('SettingsHomeScreen', () => {
     expect(screen.getByText(COPY.lede)).toBeTruthy()
   })
 
-  // Profile gave up its seat in the bottom bar to Space and became the
-  // header's top-right control, so this list is a page you back out of rather
-  // than a tab you are inside. No bar, and a back arrow.
-  it('is a pushed page rather than a tab', async () => {
+  it('sits on the profile tab, so the bar knows where you are', async () => {
     await renderScreen(<SettingsHomeScreen />)
 
-    expect(screen.getByLabelText('Go back')).toBeTruthy()
-    expect(screen.queryByLabelText('Profile')).toBeNull()
+    expect(screen.getByLabelText('Profile').props.accessibilityState).toMatchObject({
+      selected: true,
+    })
   })
 
   it('routes to Appearance', async () => {

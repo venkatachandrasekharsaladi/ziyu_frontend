@@ -50,13 +50,6 @@ export function AppScreenLayout({
     [router, activeTab],
   )
 
-  // Profile is not a tab any more; it is the header's right-hand stop, and it
-  // is a PUSH rather than a `replace` because you back out of settings to the
-  // screen you were on, not to whatever tab was last selected.
-  const onProfile = useCallback(() => {
-    router.push('/(app)/profile')
-  }, [router])
-
   const body = (
     <View testID="app-screen-column" style={styles.column}>
       {children}
@@ -68,7 +61,7 @@ export function AppScreenLayout({
       <ThemedStatusBar />
 
       <View style={{ paddingTop: insets.top }}>
-        <AppHeader onBack={onBack} onProfile={onProfile} />
+        <AppHeader onBack={onBack} />
       </View>
 
       {scroll ? (

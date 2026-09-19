@@ -6,7 +6,7 @@ import { StyleSheet } from 'react-native-unistyles'
 import { SETTINGS_APPEARANCE_COPY } from '@/copy/settingsAppearance'
 import { SETTINGS_HOME_COPY as COPY } from '@/copy/settingsHome'
 import { LANGUAGE_NAMES } from '@/copy/settingsLanguage'
-import { SettingsScreenLayout } from '@/design-system/patterns/SettingsScreenLayout'
+import { AppScreenLayout } from '@/design-system/patterns/AppScreenLayout'
 import { DangerRow } from '@/design-system/patterns/DangerRow'
 import { SectionPanel } from '@/design-system/patterns/SectionPanel'
 import { SettingsRow } from '@/design-system/patterns/SettingsRow'
@@ -60,12 +60,6 @@ const THEME_LABEL: Record<ThemeChoice, string> = {
  * screenshot alerts, quiet hours and dark mode. Anything a signed-in account
  * writes has to be cleared here, and a new store is not finished until its
  * `reset` is on this list.
- *
- * A PUSHED PAGE, not a tab. Profile lost its seat in the bottom bar to Space
- * and moved to the header's top-right control, so this list is something you
- * open and back out of. `SettingsScreenLayout` is the chrome for exactly that
- * — no bottom bar, a back arrow, and the screen's own title in the bar — and
- * it is what the other twenty settings pages already use.
  */
 export function SettingsHomeScreen() {
   const router = useRouter()
@@ -85,7 +79,6 @@ export function SettingsHomeScreen() {
   const daysTogether = daysSince(met?.value)
 
   const go = useCallback((href: string) => () => router.push(href as Href), [router])
-  const back = useCallback(() => router.back(), [router])
 
   const signOut = useCallback(async () => {
     try {
@@ -105,7 +98,16 @@ export function SettingsHomeScreen() {
   }, [signOut])
 
   return (
-    <SettingsScreenLayout title={COPY.heading} lede={COPY.lede} onBack={back}>
+    <AppScreenLayout activeTab="profile">
+      <View style={styles.copy}>
+        <Text variant="h2" tone="heading">
+          {COPY.heading}
+        </Text>
+        <Text variant="body" tone="body">
+          {COPY.lede}
+        </Text>
+      </View>
+
       <CoupleHeader
         name={profile?.name ?? 'You'}
         partnerName={partner?.name}
@@ -220,7 +222,7 @@ export function SettingsHomeScreen() {
           onPress={go('/(app)/settings/delete-account')}
         />
       </View>
-    </SettingsScreenLayout>
+    </AppScreenLayout>
   )
 }
 
