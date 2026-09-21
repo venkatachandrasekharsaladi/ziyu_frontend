@@ -15,6 +15,7 @@ import { useThemeMode } from '@/design-system/themes/useThemeMode'
 import { Text } from '@/design-system/primitives/Text'
 import { CoupleHeader } from '@/modules/module-05-profile/components/CoupleHeader'
 import { authService } from '@/services/auth'
+import { useSessionStore } from '@/state/sessionStore'
 import { useRelationshipStore } from '@/state/relationshipStore'
 import { useSpaceStore } from '@/state/spaceStore'
 import { useStoryStore } from '@/state/storyStore'
@@ -65,6 +66,7 @@ export function SettingsHomeScreen() {
   const router = useRouter()
   const profile = useRelationshipStore((state) => state.profile)
   const partner = useRelationshipStore((state) => state.partner)
+  const resetSession = useSessionStore((state) => state.reset)
   const resetRelationship = useRelationshipStore((state) => state.reset)
   const resetPreferences = usePreferencesStore((state) => state.reset)
   const spaceName = useSpaceStore((state) => state.name)
@@ -87,6 +89,9 @@ export function SettingsHomeScreen() {
       // Swallowed on purpose — see the header comment.
     }
 
+    // Clears the guard's input too. Without this, signing out left the session
+    // in place and `(app)` stayed reachable by typing its path.
+    resetSession()
     resetRelationship()
     resetPreferences()
     resetChoice()

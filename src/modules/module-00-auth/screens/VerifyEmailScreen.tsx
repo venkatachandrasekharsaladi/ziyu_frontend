@@ -6,6 +6,7 @@ import { StyleSheet } from 'react-native-unistyles'
 import { useBackTo } from '@/hooks/useBackTo'
 import { authErrorMessage } from '@/copy/errors'
 import { VERIFY_EMAIL_COPY as COPY } from '@/copy/verifyEmail'
+import { useSessionStore } from '@/state/sessionStore'
 import { Button } from '@/design-system/primitives/Button'
 import { Text } from '@/design-system/primitives/Text'
 import { AuthScreenLayout } from '@/modules/module-00-auth/components/AuthScreenLayout'
@@ -29,6 +30,7 @@ function formatCooldown(seconds: number): string {
  */
 export function VerifyEmailScreen() {
   const router = useRouter()
+  const emailVerified = useSessionStore((state) => state.emailVerified)
   const back = useBackTo('/(auth)/welcome')
   // Explicit `number`: COPY is `as const`, so inference would narrow this to the
   // literal 60 and reject every decrement.
@@ -65,7 +67,19 @@ export function VerifyEmailScreen() {
   }, [])
 
   const goToOnboarding = useCallback(
-    () => router.replace('/(onboarding)/setup'),
+    () => {
+      /*
+       * Marks the session verified on the way through.
+       *
+       * There is no provider to ask, so "I have clicked the link" is the only
+       * signal this build has — the same assumption `copy/verifyEmail.ts`
+       * already documents. Without it the onboarding guard would hold, but the
+       * `(app)` guard behind it never would, and the user would be bounced back
+       * to Welcome at the end of onboarding having done everything right.
+       */
+      emailVerified()
+      router.replace('/(onboarding)/setup')
+    },
     [router],
   )
 

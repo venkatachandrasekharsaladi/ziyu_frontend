@@ -1,4 +1,5 @@
 import { zodResolver } from '@hookform/resolvers/zod'
+import { useSessionStore } from '@/state/sessionStore'
 import { useRouter } from 'expo-router'
 import { useCallback } from 'react'
 import { useForm, useWatch } from 'react-hook-form'
@@ -27,6 +28,7 @@ import { authService } from '@/services/auth'
  */
 export function CreateAccountScreen() {
   const router = useRouter()
+  const signedIn = useSessionStore((state) => state.signedIn)
   const back = useBackTo('/(auth)/welcome')
 
   const { control, handleSubmit, setError, formState } = useForm<SignUpValues>({
@@ -41,6 +43,10 @@ export function CreateAccountScreen() {
     const result = await authService.signUp(values)
 
     if (result.ok) {
+      // A brand-new account is never verified yet, so this always goes to the
+      // mail step — but the session is kept so `(auth)/verify-email` and the
+      // onboarding group behind it have something to stand on.
+      signedIn(result.value)
       router.push('/(auth)/verify-email')
       return
     }
