@@ -21,9 +21,22 @@ means a swap point, not a server:
 | `story` | 2026-08-15 | mock |
 | `memories` | 2026-08-23 | mock |
 | `chat` | 2026-08-30 | mock |
+| `plans` | 2026-09-21 | types only |
+| `planner` | 2026-09-21 | mock |
 
 Each `index.ts` is one line — `export const chatService = createMockChatService()`
 — so a real provider replaces one line per service and nothing else.
+
+`plans` is the odd one out: it is a `types.ts` with no implementation, because
+the Plans cluster reads and writes `src/state/plansStore.ts` directly rather
+than through a service. The types are still the contract a backend would have
+to satisfy.
+
+`planner` is the one to hand to whoever builds the first real backend.
+`services/planner/types.ts` is the entire contract — `TripDraft` in, `Trip`
+out, `PlannerStage` for progress, errors as codes — and its mock genuinely
+plans rather than returning a fixture, so the screens above it are already
+written against real behaviour.
 
 **Nothing persists.** `src/state/relationshipStore.ts` says so deliberately:
 "Nothing persists. There is no token or record to keep until a real provider
@@ -36,7 +49,7 @@ placeholder assets meant to be replaced with the couple's real photographs.
 #### 1.2 Modules
 
 Built, with real screens: `module-00-auth`, `module-01-onboarding`,
-`module-02-home`, `module-03-chat`, `module-03-memories`.
+`module-02-home`, `module-03-chat`, `module-03-memories`, `module-06-plans`.
 
 Empty scaffolding — directories and `.gitkeep` only: `module-04-timeline`,
 `module-06-memories`, and most of `module-05-profile` beyond the Our Space
@@ -48,8 +61,11 @@ confusing; noted rather than renamed.
 
 #### 1.3 Test and quality state
 
-At the time of writing: **168 suites, 1964 tests passing**, `tsc --noEmit`
+At the time of writing: **258 suites, 3234 tests passing**, `tsc --noEmit`
 clean. The suite runs twice, once per theme (`lavender`, `midnight`).
+
+(Was 168 suites / 1964 tests before the 2026-09-21 session; the Plans cluster
+and its tests account for the difference.)
 
 One caveat worth keeping: an intermittent single-test failure was observed once
 in six full-suite runs (~17%). It did not reproduce in isolation — the chat
@@ -146,6 +162,158 @@ fixes. On its first run it found the lint error above that eleven prior reviews
 had missed, and it critiqued its own definition, which was then sharpened.
 
 Note: new agent definitions only register after a Claude Code restart.
+
+---
+
+### 2B. Work completed in the 2026-09-21 session — the Plans cluster
+
+Source: Figma `Tales of Two`, page `New Features` (node 3483:4729). Ten frames,
+built as thirteen routes under `/plans` in `module-06-plans`.
+
+#### 2B.1 What shipped
+
+| Figma node | Route | Screen |
+|---|---|---|
+| 3482:3155 | `/plans` | Our Plans — the hub |
+| 3482:374 | `/plans/trip/new` | Plan Something Together (setup form) |
+| 3482:15 | `/plans/trip` | The itinerary |
+| 3482:1345 | `/plans/year` | Our Year Together — couple bingo |
+| 3482:1672 | `/plans/lifetime` | Once in a Lifetime — shared promises |
+| 3482:2146 | `/plans/capsules`, `/capsules/new` | Time capsule vault + 3-step wizard |
+| 3483:4305 | `/plans/letters`, `/new`, `/[id]` | Letters vault, composer, reading view |
+| 3482:2738 | `/plans/watch` | Watch Together |
+| 3482:2499 | `/plans/places` | Where we are — shared map |
+| 3482:965 | `/plans/trip/preview` | An **alternate** design of the itinerary |
+| — | `/plans/trip/generating` | The planner's progress screen (no frame) |
+
+Three frames are whole flows on one artboard, which is why ten frames became
+thirteen routes.
+
+**3482:965 and 3482:15 are two iterations of the same screen.** The refined one
+ships. The earlier one is rebuilt in our own colour tokens — rather than its
+original placeholder greys, which would have made it lose on looking unfinished
+instead of on its layout — and parked behind a flag so it can be shown to people
+and then kept or deleted. `modules/module-06-plans/preview/README.md` has the
+removal steps, and there are three.
+
+Two sticky-notes on that Figma page are **ideas only, never designed**, and are
+deliberately not built: a "story of the proposal from each other's perspective"
+screen, and "upload a pic, transparent image will be the background of the card".
+
+#### 2B.2 Navigation
+
+The bottom bar gains a **Plans** tab in third place, where 3482:965 draws it.
+Profile stays a tab. This is additive on purpose: the previous attempt at this
+bar (9cdb245) moved Profile into the header and was reverted in 2cec3f4 as not
+what was asked for.
+
+The other frames on that page disagree with each other about the fifth slot —
+one draws "Timeline", one "Space", one "Where", one "Watch" — because they are
+iterations rather than one design. Rather than pick a winner among four, the bar
+gains the one tab every variant agrees on, and the rest of the cluster is
+reached through it.
+
+Home also names the cluster: `NextAdventureCard` sits on the dashboard and shows
+the trip being planned, or an invitation to plan one. Six features behind a tab
+nobody presses is six features nobody finds.
+
+#### 2B.3 The planner — where a backend plugs in
+
+`/plans/trip/new` → "Create our plan" → a progress screen reporting five stages
+→ the finished itinerary.
+
+`services/planner/mock.ts` **actually plans.** It resolves a destination, scores
+45 catalogued moments against the chosen vibes, drops what the daily budget
+cannot carry, and lays the survivors out one per slot per day without repeating
+any. Changing the budget or the vibes changes the answer, and the tests assert
+exactly that — a planner that only looked clever would demo identically today
+and be a rewrite the day a server arrives.
+
+| To do this | Change this |
+|---|---|
+| Build the real planner | Satisfy `services/planner/types.ts` |
+| Switch to it | One line in `services/planner/index.ts` |
+| Drop the fake data | Delete `sample/plannerCatalogue.ts` — nothing else reads it |
+
+The progress screen's stage lines each name something the planner genuinely
+does. Nothing says "AI is thinking" or quotes a number of sources it did not
+read. When a real planner does more, those lines get to say more — and not
+before.
+
+**Known limits of the fake:** it knows five destinations (Paris, Kyoto, Amalfi,
+Lisbon, Reykjavík) and refuses the rest by name rather than failing oddly, and
+its ceiling is 4 nights. That ceiling is not a literal — the form reads
+`plannerService.maxNights`, so a real backend raises it without anyone editing
+the form.
+
+#### 2B.4 State
+
+One store for the cluster (`src/state/plansStore.ts`), because these features
+read each other: sealing a letter changes a count on the hub. Nothing persists,
+as everywhere else in this app. The seed is sample content so the designed
+layout is what you see; the empty states are still built and still tested, and
+the seed becomes empty when a backend lands.
+
+#### 2B.5 Bugs found and fixed
+
+Found by the test suites and by review, not by the original implementation:
+
+1. **`ProgressBar` was invisible to screen readers.** It set
+   `accessibilityRole="progressbar"` without `accessible`, so neither the role
+   nor the percentage ever reached VoiceOver or TalkBack.
+2. **"3 saved spots" over a trip where nothing was saved.** Both the hub and the
+   Home card summed every moment under a label that means something narrower.
+   Now one shared `selectSavedSpots` selector, so the two cannot drift apart —
+   which is exactly how they disagreed in the first place.
+3. **The setup form sold trips the planner could not build.** The night stepper
+   ran to a hardcoded 14 against a catalogue that fills three days: the *default*
+   4-night request already produced an empty day, and 14 produced eleven, under
+   a header reading "9 of 41 moments planned". The ceiling now comes from the
+   planner.
+4. **`Reykjavík` could not be found by typing `Reykjavík`.** The resolver
+   lowercased but did not fold accents, so the couple hit a dead end for the
+   spelling the app's own suggestion chip had just shown them.
+5. **The retry chip on the planner's error screen was a dead end.** It replaces
+   onto the same route; if the navigator reuses the component, a run-once
+   boolean left the planner never re-running. The guard is now keyed on the
+   draft, which also closes a latent render loop.
+6. **Unvalidated URL params** reached the planner as `NaN`.
+7. **Hardcoded counts** on two screens — "14 titles watched" above a list of 3.
+8. **"Until Off" reported "Active: 0 minutes remaining."** The indefinite
+   sharing window fell through to the countdown formatter, so live location
+   sharing displayed as expired. On a privacy panel, wrong in the reassuring
+   direction.
+
+Two repo rules caught real mistakes and are worth knowing about:
+`expoImageStyles.test.ts` (a Unistyles style handed to `expo-image` is stripped,
+and the image draws 0×0) and `noUntokenisedColours.test.ts` (the video
+letterbox is now an enumerated exemption, with its reason written down).
+
+A caution from this session: two tests written against known defects pinned
+those defects with literal constants and a *replica* of the code under test.
+Both kept passing after the bugs were fixed — green tests certifying bugs that
+no longer existed. Both were rewritten to go through the real service.
+
+#### 2B.6 Honest gaps, all commented where they live
+
+- **Watch Together's frame-lock badge is drawn, not implemented.** Two devices
+  staying in sync is a server with a clock in it. The seam is
+  `WatchRoom.connected` / `position`.
+- **The privacy sentence on Shared Places describes an intention, not a
+  mechanism.** Nothing leaves the device because nothing is sent anywhere yet.
+  Whoever wires the transport owns making that sentence true.
+- **"Add to Memories" on Watch Together** flips a button label and writes
+  nothing to the memories service.
+- **No screen in this cluster has been seen rendering.** Verification is `tsc`
+  plus Jest, which catches logic, wiring, accessibility labels and the repo's
+  own design rules — not "this looks wrong on a phone".
+
+#### 2B.7 What a device run needs first
+
+1. `npm run android` / `npm run ios` — `expo-video` and `expo-maps` are native
+   modules, so **this cluster will not load in Expo Go**.
+2. A Google Maps API key in `app.json`, or the map on `/plans/places` renders as
+   an empty grey grid. The rest of that screen works regardless.
 
 ---
 
