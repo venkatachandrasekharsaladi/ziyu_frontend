@@ -41,6 +41,19 @@ const DELIBERATE: Record<string, { colour: string; why: string }[]> = {
         '`surface.scrim` at 45% could not be reused for it.',
     },
   ],
+  'modules/module-06-plans/screens/WatchTogetherScreen.tsx': [
+    {
+      colour: '#0B0A12',
+      why:
+        'The letterbox behind the shared video player, and the same argument as ' +
+        "PhotoLightbox's ground: a player is a window onto someone else's " +
+        'picture, and a lavender surround tints the film inside it. Near-black ' +
+        'in both themes, so there is no per-theme value to name. Not reusing ' +
+        "`surface.page` from the midnight theme, because that would make a film's " +
+        'framing follow the app\'s light/dark setting, which is exactly the ' +
+        'coupling this colour exists to avoid.',
+    },
+  ],
 }
 
 /** Strips block and line comments. Neither renders, so neither counts. */
