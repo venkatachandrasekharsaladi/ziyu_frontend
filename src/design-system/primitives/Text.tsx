@@ -40,6 +40,16 @@ type TextProps = Omit<RNTextProps, 'style'> & {
   variant?: TextVariant
   tone?: TextTone
   align?: 'left' | 'center'
+  /**
+   * Strikes the line through — a promise already lived, a bingo tile already
+   * stamped. Figma `Tales of Two` / `New Features` / 3482:1672 draws it on every
+   * completed row.
+   *
+   * A variant rather than a `style` override, per the rule below. It is on this
+   * component and not a wrapper because strikethrough has to inherit the exact
+   * line-height of the variant it decorates; a wrapper would have had to guess.
+   */
+  strike?: boolean
   children: ReactNode
 }
 
@@ -55,10 +65,11 @@ export function Text({
   variant = 'body',
   tone = 'body',
   align = 'left',
+  strike = false,
   children,
   ...rest
 }: TextProps) {
-  styles.useVariants({ variant, tone, align })
+  styles.useVariants({ variant, tone, align, strike })
 
   return (
     <RNText style={styles.text} {...rest}>
@@ -99,6 +110,10 @@ const styles = StyleSheet.create((theme) => ({
       align: {
         left: { textAlign: 'left' },
         center: { textAlign: 'center' },
+      },
+      strike: {
+        true: { textDecorationLine: 'line-through' },
+        false: { textDecorationLine: 'none' },
       },
     },
   },
