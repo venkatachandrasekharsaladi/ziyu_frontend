@@ -6,7 +6,6 @@ import { StyleSheet, useUnistyles } from 'react-native-unistyles'
 
 import { TRIP_SETUP_COPY } from '@/copy/trips'
 import { AppScreenLayout } from '@/design-system/patterns/AppScreenLayout'
-import { PressableScale } from '@/design-system/patterns/PressableScale'
 import { Button } from '@/design-system/primitives/Button'
 import { Input } from '@/design-system/primitives/Input'
 import { Text } from '@/design-system/primitives/Text'

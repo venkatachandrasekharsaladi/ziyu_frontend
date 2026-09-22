@@ -116,37 +116,77 @@ export function TripGeneratingScreen() {
   const signature = `${destination}|${nights}|${budgetBand}|${styles_.join(',')}`
   const startedFor = useRef<string | null>(null)
 
-  const run = useCallback(async () => {
-    setFailure(null)
-    setStageIndex(0)
-    setStage(null)
-
-    const result = await plannerService.generate({
-      draft: { destination, nights, budgetBand, styles: styles_ },
-      onProgress: (next, index) => {
-        setStage(next)
-        setStageIndex(index)
-      },
-    })
-
-    if (!result.ok) {
-      setFailure(result.error.code)
-
-      return
-    }
-
-    setGeneratedTrip(result.value)
-    // `replace`, not `push`: pressing back from the finished itinerary should
-    // return to the setup form, not to a progress screen with nothing left to do.
-    router.replace('/(app)/plans/trip')
-  }, [budgetBand, destination, nights, router, setGeneratedTrip, styles_])
-
+  /*
+   * The work lives IN the effect rather than in a `useCallback` the effect
+   * calls.
+   *
+   * It was a `useCallback`, and the React Compiler refused to compile it:
+   * `styles_` is a fresh array from `split()` and `router` a fresh object from
+   * `useRouter()`, so the dependency list could never be satisfied and the
+   * memoization it claimed was a fiction. `react-hooks/preserve-manual-
+   * memoization` is what flagged it.
+   *
+   * Nothing else called `run`, so there was nothing for the callback identity to
+   * be stable FOR. `signature` above is the real guard, and it is a string.
+   *
+   * `cancelled` drops a result that arrives after the draft changed — press a
+   * retry chip mid-flight and the first plan must not overwrite the second.
+   */
   useEffect(() => {
     if (startedFor.current === signature) return
 
     startedFor.current = signature
-    void run()
-  }, [run, signature])
+
+    let cancelled = false
+
+    void (async () => {
+      setFailure(null)
+      setStageIndex(0)
+      setStage(null)
+
+      const result = await plannerService.generate({
+        draft: { destination, nights, budgetBand, styles: styles_ },
+        onProgress: (next, index) => {
+          if (cancelled) return
+
+          setStage(next)
+          setStageIndex(index)
+        },
+      })
+
+      if (cancelled) return
+
+      if (!result.ok) {
+        setFailure(result.error.code)
+
+        return
+      }
+
+      setGeneratedTrip(result.value)
+      // `replace`, not `push`: pressing back from the finished itinerary should
+      // return to the setup form, not a progress screen with nothing left to do.
+      router.replace('/(app)/plans/trip')
+    })()
+
+    return () => {
+      cancelled = true
+    }
+    /*
+     * `signature` ALONE, deliberately.
+     *
+     * It is the draft flattened to a string, and every field read inside is one
+     * of its parts — so nothing can change without it changing.
+     *
+     * `router` and `setGeneratedTrip` are NOT listed, and listing them is a bug
+     * rather than a nicety: `useRouter()` returns a fresh object every render,
+     * so the effect would re-run on every render, and React runs the previous
+     * cleanup first. That sets `cancelled = true` on the run still in flight;
+     * the re-entry then returns early on the guard, and the plan never arrives.
+     * It cost eight tests to find. Both values are safe to close over — a
+     * router instance navigates the same app, and a zustand action is stable.
+     */
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [signature])
 
   /* ---------------- it did not work ---------------- */
 

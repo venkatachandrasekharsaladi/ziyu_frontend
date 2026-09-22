@@ -1,7 +1,7 @@
 import { PLANNER_CATALOGUE, type CatalogueDestination, type CatalogueMoment } from '@/sample/plannerCatalogue'
 import { samplePhoto } from '@/sample/photos'
 import type { ItineraryDay, ItineraryMoment, Trip, TripDraft } from '@/services/plans/types'
-import type { PlannerProgress, PlannerService, Result } from '@/services/planner/types'
+import type { PlannerService, Result } from '@/services/planner/types'
 
 const wait = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms))
 

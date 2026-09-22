@@ -37,12 +37,19 @@ export function CountUp({
   const reduced = useReducedMotion()
   const [shown, setShown] = useState(value)
 
-  useEffect(() => {
-    if (reduced || typeof requestAnimationFrame !== 'function') {
-      setShown(value)
+  /**
+   * Whether this render ramps at all. Reduce-motion, and any environment
+   * without `requestAnimationFrame` (Jest, SSR), show the final number outright.
+   *
+   * This is a DERIVED value rather than an effect that pushes `value` into
+   * `shown`. Copying a prop into state from inside an effect means the old
+   * number is painted first and corrected on the next render — a visible flash
+   * of the previous count for precisely the users who asked for less motion.
+   */
+  const animates = !reduced && typeof requestAnimationFrame === 'function'
 
-      return
-    }
+  useEffect(() => {
+    if (!animates) return
 
     let frame = 0
     const started = Date.now()
@@ -61,11 +68,11 @@ export function CountUp({
     frame = requestAnimationFrame(tick)
 
     return () => cancelAnimationFrame(frame)
-  }, [value, duration, reduced])
+  }, [value, duration, animates])
 
   return (
     <Text variant={variant} tone={tone} align={align} accessibilityLabel={format(value)}>
-      {format(shown)}
+      {format(animates ? shown : value)}
     </Text>
   )
 }

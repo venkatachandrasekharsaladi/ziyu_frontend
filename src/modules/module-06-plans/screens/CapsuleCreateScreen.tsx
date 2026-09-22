@@ -99,9 +99,26 @@ export function CapsuleCreateScreen() {
   /* ---------------- the confirmation ---------------- */
 
   if (sealed) {
+    /*
+     * Measured from when the capsule was CREATED, not from now.
+     *
+     * "Time locked: 365 days" is a property of the capsule — how long it was
+     * sealed for — so it should read the same whenever this screen is looked
+     * at. Reading `Date.now()` here also made the render impure, which
+     * `react-hooks/purity` flags: the same component would render different
+     * text on two renders with identical props.
+     *
+     * The vault screen's "478 days remaining" is the opposite and correctly
+     * uses now — that one is a countdown, and a countdown that ignores today
+     * is the lie the Figma frame told.
+     */
     const lockedDays = Math.max(
       0,
-      Math.ceil((new Date(`${sealed.opensAt}T00:00:00`).getTime() - Date.now()) / 86_400_000),
+      Math.round(
+        (new Date(`${sealed.opensAt}T00:00:00`).getTime() -
+          new Date(`${sealed.createdAt}T00:00:00`).getTime()) /
+          86_400_000,
+      ),
     )
 
     return (

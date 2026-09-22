@@ -49,16 +49,21 @@ export function PressableScale({
   const { theme } = useUnistyles()
   const press = theme.motion.spring.press
 
-  const style = useAnimatedStyle(() => ({ transform: [{ scale: scale.value }] }))
+  // `.get()`/`.set()` rather than `.value`. React Compiler treats whatever a hook
+  // hands back as immutable, so `scale.value = …` reads to it as writing to a
+  // value React owns and `react-hooks/immutability` rejects it. Reanimated added
+  // this accessor pair for exactly that reason: it is the same shared value and
+  // the same UI-thread write, expressed in a form the compiler can reason about.
+  const style = useAnimatedStyle(() => ({ transform: [{ scale: scale.get() }] }))
 
   return (
     <AnimatedPressable
       onPress={onPress}
       onPressIn={() => {
-        if (!reduced) scale.value = withSpring(PRESSED_SCALE, press)
+        if (!reduced) scale.set(withSpring(PRESSED_SCALE, press))
       }}
       onPressOut={() => {
-        if (!reduced) scale.value = withSpring(1, press)
+        if (!reduced) scale.set(withSpring(1, press))
       }}
       accessibilityRole="button"
       accessibilityLabel={accessibilityLabel}
