@@ -1,3 +1,4 @@
+import * as Clipboard from 'expo-clipboard'
 import { LinearGradient } from 'expo-linear-gradient'
 import { useRouter } from 'expo-router'
 import { useEffect, useMemo, useRef, useState } from 'react'
@@ -7,7 +8,9 @@ import { StyleSheet, useUnistyles } from 'react-native-unistyles'
 
 import { FeedbackBanner, type FeedbackTone } from '@/components/feedback/FeedbackBanner'
 import { CHAT_COPY } from '@/copy/chat'
+import { PHOTO_PICK_COPY } from '@/copy/photoPick'
 import { Overlay } from '@/design-system/patterns/Overlay'
+import { mediaService } from '@/services/media'
 import { ThemedStatusBar } from '@/design-system/patterns/ThemedStatusBar'
 import { AttachmentSheet } from '@/modules/module-03-chat/components/AttachmentSheet'
 import { ChatHeader } from '@/modules/module-03-chat/components/ChatHeader'
@@ -67,6 +70,60 @@ export function ConversationScreen() {
       })
     })()
   }
+
+  /**
+   * Copies the selected message's text.
+   *
+   * Uses the same `feedback` channel as Save Memory, so both rows of the
+   * context menu confirm themselves identically. A copy that says nothing is
+   * indistinguishable from a copy that failed.
+   */
+  const handleCopyMessage = () => {
+    const id = s.selectedMessageId
+    const body = id ? s.messages.find((m) => m.id === id)?.body : undefined
+
+    if (!body) return
+
+    void (async () => {
+      await Clipboard.setStringAsync(body)
+      s.clearSelection()
+      setFeedback({ key: Date.now(), tone: 'success', message: CHAT_COPY.feedback.copied })
+    })()
+  }
+
+  /*
+   * Attaching a photo, for real — this replaced `stagePhoto('file://sample.jpg')`.
+   *
+   * Cancelling stages nothing and says nothing: the sheet simply closes, which
+   * is what changing your mind should look like. A refusal is worth a sentence,
+   * and it reuses the shared picker copy rather than inventing chat-specific
+   * wording for the same three outcomes.
+   */
+  const stagePicked = (open: 'pick' | 'capture') => {
+    void (async () => {
+      const result =
+        open === 'pick' ? await mediaService.pickPhoto() : await mediaService.takePhoto()
+
+      s.closeAttachments()
+
+      if (result.ok) {
+        s.stagePhoto(result.value.uri)
+
+        return
+      }
+
+      if (result.error.code === 'CANCELLED') return
+
+      setFeedback({
+        key: Date.now(),
+        tone: 'error',
+        message: PHOTO_PICK_COPY.errors[result.error.code],
+      })
+    })()
+  }
+
+  const handleAttachPhoto = () => stagePicked('pick')
+  const handleCapturePhoto = () => stagePicked('capture')
 
   const replyBody = s.replyTarget
     ? s.messages.find((m) => m.id === s.replyTarget)?.body
@@ -222,13 +279,10 @@ export function ConversationScreen() {
           />
           <MessageContextMenu
             onReply={() => s.startReply(s.selectedMessageId!)}
-            // There is no clipboard package in this project (checked:
-            // nothing matching "clipboard" in package.json) and adding one
-            // is outside this task's scope. `onCopy` left unset rather than
-            // aliased to `clearSelection` — `MessageContextMenu` renders
-            // "Copy" `disabled` when it has no handler, so the row honestly
-            // reads as unavailable instead of pretending a tap dismissed it
-            // on purpose.
+            // Live now that `expo-clipboard` is installed. The row used to be
+            // left unset on purpose so it rendered `disabled` rather than
+            // looking pressable; it no longer has to be.
+            onCopy={handleCopyMessage}
             onSaveMemory={handleSaveMemory}
           />
         </Overlay>
@@ -242,12 +296,10 @@ export function ConversationScreen() {
       {s.attachmentSheetOpen && (
         <Overlay onDismiss={s.closeAttachments} dismissLabel="Dismiss attachments" align="bottom">
           <AttachmentSheet
-            // Real photo picking (`expo-image-picker`) is out of scope for
-            // this mock, same as `PhotoPicker.tsx` elsewhere in the app —
-            // this stages a placeholder uri so the rest of the send flow
-            // (preview → send → optimistic bubble) is real and testable
-            // today. Swap this for the real picker when it lands.
-            onPickPhoto={() => s.stagePhoto('file://sample.jpg')}
+            // The real picker, replacing the `file://sample.jpg` placeholder
+            // that stood in while `expo-image-picker` was uninstalled.
+            onPickPhoto={handleAttachPhoto}
+            onCamera={handleCapturePhoto}
             // The recorder and the store action behind it (`startRecording`)
             // already exist — `Composer`'s own mic button already reaches
             // for the exact same one. The sheet's tile had just never been

@@ -6,6 +6,7 @@ import { StyleSheet } from 'react-native-unistyles'
 import { useBackTo } from '@/hooks/useBackTo'
 import { MEMORIES_COPY as COPY } from '@/copy/memories'
 import { AppScreenLayout } from '@/design-system/patterns/AppScreenLayout'
+import { usePhotoPick } from '@/hooks/usePhotoPick'
 import { PhotoPicker } from '@/design-system/patterns/PhotoPicker'
 import { Button } from '@/design-system/primitives/Button'
 import { DateField } from '@/design-system/primitives/DateField'
@@ -52,6 +53,8 @@ export function AddMemoryScreen() {
       note: note.trim() || undefined,
       tags: [],
       addedBy: profile?.name,
+      // Local uri from the picker. Nothing is uploaded — see `services/media`.
+      photoUri: photoUri ?? undefined,
     })
 
     setSaving(false)
@@ -66,7 +69,14 @@ export function AddMemoryScreen() {
     router.replace('/(app)/memories')
   }, [title, date, caption, location, note, profile, router])
 
-  const onPickPhoto = useCallback(() => {}, [])
+  const [photoUri, setPhotoUri] = useState<string | null>(null)
+  /*
+   * The real picker. This was `useCallback(() => {}, [])` while
+   * `expo-image-picker` was uninstalled — a control that looked live and did
+   * nothing. `usePhotoPick` owns the permission dance and treats cancelling as
+   * a decision rather than an error; see the hook.
+   */
+  const { pick, error: photoError } = usePhotoPick(setPhotoUri, { allowsEditing: true, aspect: [4, 3] })
 
   return (
     <AppScreenLayout activeTab="memories" onBack={back}>
@@ -75,7 +85,13 @@ export function AddMemoryScreen() {
       </Text>
 
       <View style={styles.photo}>
-        <PhotoPicker label={COPY.add.photoLabel} name={title} onPick={onPickPhoto} />
+        <PhotoPicker label={COPY.add.photoLabel} name={title} uri={photoUri} onPick={pick} />
+
+        {photoError ? (
+          <Text variant="footnote" tone="error" align="center">
+            {photoError}
+          </Text>
+        ) : null}
       </View>
 
       <View style={styles.form}>

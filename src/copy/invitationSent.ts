@@ -16,6 +16,8 @@ export const INVITATION_SENT_COPY = {
   shareMessage: (code: string) => `Join me on ${BRAND.name}. My code is ${code}.`,
   /** Shown when there is no OS share sheet to hand off to (see `onShare`'s web fallback). */
   shareCopied: 'Copied your invite to the clipboard.',
+  /** Shown after the Copy Code button, which copies the bare code, not the message. */
+  codeCopied: 'Copied your code.',
 
   confirmTitle: 'Cancel this invitation?',
   confirmBody: 'Your partner may already have this code. Cancelling makes it stop working.',

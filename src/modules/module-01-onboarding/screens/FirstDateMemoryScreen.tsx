@@ -5,6 +5,7 @@ import { StyleSheet } from 'react-native-unistyles'
 
 import { useBackTo } from '@/hooks/useBackTo'
 import { FIRST_DATE_COPY as COPY } from '@/copy/firstDate'
+import { usePhotoPick } from '@/hooks/usePhotoPick'
 import { PhotoPicker } from '@/design-system/patterns/PhotoPicker'
 import { Button } from '@/design-system/primitives/Button'
 import { DateField } from '@/design-system/primitives/DateField'
@@ -34,6 +35,14 @@ export function FirstDateMemoryScreen() {
   const [date, setDate] = useState('')
   const [location, setLocation] = useState('')
   const [note, setNote] = useState('')
+  const [photoUri, setPhotoUri] = useState<string | null>(null)
+  /*
+   * The real picker. This was `useCallback(() => {}, [])` while
+   * `expo-image-picker` was uninstalled — a control that looked live and did
+   * nothing. `usePhotoPick` owns the permission dance and treats cancelling as
+   * a decision rather than an error; see the hook.
+   */
+  const { pick, error: photoError } = usePhotoPick(setPhotoUri, { allowsEditing: true, aspect: [4, 3] })
 
   const next = useCallback(() => router.push('/(onboarding)/became-us'), [router])
 
@@ -42,12 +51,11 @@ export function FirstDateMemoryScreen() {
       date: date || undefined,
       location: location.trim() || undefined,
       note: note.trim() || undefined,
+      photoUri: photoUri ?? undefined,
     })
     next()
-  }, [date, location, note, setFirstDate, next])
+  }, [date, location, note, photoUri, setFirstDate, next])
 
-  // expo-image-picker lands in Phase 6; the well is real and does nothing yet.
-  const onPickPhoto = useCallback(() => {}, [])
 
   return (
     <AuthScreenLayout onBack={back}>
@@ -64,8 +72,15 @@ export function FirstDateMemoryScreen() {
         <PhotoPicker
           label={COPY.photoLabel}
           name={profile?.name ?? ''}
-          onPick={onPickPhoto}
+          uri={photoUri}
+          onPick={pick}
         />
+
+        {photoError ? (
+          <Text variant="footnote" tone="error" align="center">
+            {photoError}
+          </Text>
+        ) : null}
       </View>
 
       <View style={styles.form}>

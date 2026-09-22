@@ -9,6 +9,8 @@ import { Text } from '@/design-system/primitives/Text'
 
 type Props = {
   onPickPhoto: () => void
+  /** Opens the camera. Live now that `expo-image-picker` is installed. */
+  onCamera: () => void
   /** Starts the real voice-note recorder (`chatStore.startRecording`) and closes this sheet. */
   onVoiceNote: () => void
   /** Navigates to the Memories module (`/(app)/memories`) and closes this sheet. */
@@ -32,7 +34,13 @@ type Props = {
  * than one that visibly is not available yet, same call `SocialButton` makes
  * for OAuth.
  */
-export function AttachmentSheet({ onPickPhoto, onVoiceNote, onMemory, onClose }: Props) {
+export function AttachmentSheet({
+  onPickPhoto,
+  onCamera,
+  onVoiceNote,
+  onMemory,
+  onClose,
+}: Props) {
   // The sheet sits on the bottom edge, so its own padding has to clear the
   // home indicator / gesture bar. Without this the last row of tiles sits
   // under the system affordance on every gesture-nav device — the fixed
@@ -64,8 +72,10 @@ export function AttachmentSheet({ onPickPhoto, onVoiceNote, onMemory, onClose }:
       label: 'Camera',
       accessibilityLabel: 'Camera',
       icon: 'camera',
-      onPress: onClose,
-      disabled: true,
+      // Was `disabled` with `onClose` behind it while `expo-image-picker` was
+      // uninstalled — the sheet's own header explains that pattern. Live now.
+      onPress: onCamera,
+      disabled: false,
     },
     {
       label: 'Voice note',

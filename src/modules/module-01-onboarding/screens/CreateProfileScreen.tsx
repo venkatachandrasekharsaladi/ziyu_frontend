@@ -8,6 +8,7 @@ import { StyleSheet } from 'react-native-unistyles'
 import { useBackTo } from '@/hooks/useBackTo'
 import { FormField } from '@/components/forms/FormField'
 import { CREATE_PROFILE_COPY as COPY } from '@/copy/createProfile'
+import { usePhotoPick } from '@/hooks/usePhotoPick'
 import { PhotoPicker } from '@/design-system/patterns/PhotoPicker'
 import { Button } from '@/design-system/primitives/Button'
 import { DateField } from '@/design-system/primitives/DateField'
@@ -52,13 +53,22 @@ export function CreateProfileScreen() {
       return
     }
 
-    setProfile(result.value)
+    // The picked photo is local and is carried on the profile, so the avatar
+    // the couple just chose is the one the rest of the app shows.
+    setProfile({ ...result.value, photoUri: photoUri ?? undefined })
     router.push('/(onboarding)/invite')
   })
 
   // The picker lands with expo-image-picker in Phase 6. Until then the well is
   // pressable and does nothing, rather than pretending to be wired.
-  const onPickPhoto = useCallback(() => {}, [])
+  const [photoUri, setPhotoUri] = useState<string | null>(null)
+  /*
+   * The real picker. This was `useCallback(() => {}, [])` while
+   * `expo-image-picker` was uninstalled — a control that looked live and did
+   * nothing. `usePhotoPick` owns the permission dance and treats cancelling as
+   * a decision rather than an error; see the hook.
+   */
+  const { pick, error: photoError } = usePhotoPick(setPhotoUri, { allowsEditing: true, aspect: [1, 1] })
 
   return (
     <AuthScreenLayout onBack={back}>
@@ -72,7 +82,13 @@ export function CreateProfileScreen() {
       </View>
 
       <View style={styles.photo}>
-        <PhotoPicker label={COPY.photoLabel} name={name} onPick={onPickPhoto} />
+        <PhotoPicker label={COPY.photoLabel} name={name} uri={photoUri} onPick={pick} />
+
+        {photoError ? (
+          <Text variant="footnote" tone="error" align="center">
+            {photoError}
+          </Text>
+        ) : null}
       </View>
 
       <View style={styles.form}>

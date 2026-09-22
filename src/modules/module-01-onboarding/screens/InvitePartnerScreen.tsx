@@ -1,4 +1,5 @@
 import { useRouter } from 'expo-router'
+import * as Clipboard from 'expo-clipboard'
 import { useCallback, useEffect, useState } from 'react'
 import { Share, View } from 'react-native'
 import { StyleSheet } from 'react-native-unistyles'
@@ -60,12 +61,18 @@ export function InvitePartnerScreen() {
     router.push('/(onboarding)/invitation-sent')
   }, [code, router])
 
-  // expo-clipboard is not installed and is not in this cluster's scope, so the
-  // copy action advances without actually writing to the clipboard. Logged as
-  // an open item rather than quietly adding a dependency mid-cluster.
-  const onCopy = useCallback(() => {
+  /*
+   * Copies for real, then advances.
+   *
+   * This used to advance WITHOUT copying — the worst of the three shapes a
+   * missing dependency can take, because the screen said "copied" and the
+   * clipboard held whatever was there before.
+   */
+  const onCopy = useCallback(async () => {
+    if (code) await Clipboard.setStringAsync(code)
+
     router.push('/(onboarding)/invitation-sent')
-  }, [router])
+  }, [code, router])
 
   return (
     <AuthScreenLayout onBack={back} centred>
