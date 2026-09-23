@@ -1,5 +1,6 @@
 import { Feather } from '@expo/vector-icons'
 import { zodResolver } from '@hookform/resolvers/zod'
+import { useSessionStore } from '@/state/sessionStore'
 import { useRouter } from 'expo-router'
 import { useCallback, useState } from 'react'
 import { useForm } from 'react-hook-form'
@@ -30,6 +31,7 @@ import { authService } from '@/services/auth'
  */
 export function SignInScreen() {
   const router = useRouter()
+  const signedIn = useSessionStore((state) => state.signedIn)
   const back = useBackTo('/(auth)/welcome')
   const { theme } = useUnistyles()
   const [formError, setFormError] = useState<string | null>(null)
@@ -46,9 +48,20 @@ export function SignInScreen() {
     const result = await authService.signIn(values)
 
     if (result.ok) {
-      // Always verify-email for now: branching on `emailVerified` would push to
-      // `(app)`, which has no routes yet and would throw. See spec §10.
-      router.push('/(auth)/verify-email')
+      /*
+       * The session is KEPT now — `(app)` and `(onboarding)` are guarded on it,
+       * and before this store existed the `Session` this call returns was
+       * thrown away, which is why nothing could be guarded.
+       *
+       * The old note here said branching on `emailVerified` would push into
+       * `(app)`, "which has no routes yet and would throw". It has routes now,
+       * so the branch is real: a verified account goes on, an unverified one
+       * still has a mail to open first.
+       */
+      signedIn(result.value)
+
+      router.replace(result.value.emailVerified ? '/(onboarding)/setup' : '/(auth)/verify-email')
+
       return
     }
 
@@ -90,12 +103,18 @@ export function SignInScreen() {
           placeholder={COPY.passwordPlaceholder}
           secure
           autoComplete="current-password"
-          labelTrailing={
-            <Text variant="captionAction" tone="brand" onPress={goToForgot} accessibilityRole="link">
-              {COPY.forgotLink}
-            </Text>
-          }
         />
+
+        <View style={styles.forgot}>
+          <Text
+            variant="captionAction"
+            tone="brand"
+            onPress={goToForgot}
+            accessibilityRole="link"
+          >
+            {COPY.forgotLink}
+          </Text>
+        </View>
 
         {formError ? (
           <Text variant="footnote" tone="error" align="center">
@@ -145,14 +164,20 @@ export function SignInScreen() {
 const styles = StyleSheet.create((theme) => ({
   copy: {
     gap: theme.spacing.xs,
-    paddingTop: theme.spacing.huge,
-    paddingBottom: theme.spacing.huge,
+    // Was `huge` (48) top and bottom around the medallion + heading — the
+    // single biggest contributor to this screen needing to scroll on a
+    // typical phone. `xxl` still gives the block room to breathe.
+    paddingTop: theme.spacing.xxl,
+    paddingBottom: theme.spacing.xxl,
   },
   form: {
     gap: theme.spacing.md,
   },
+  forgot: {
+    alignItems: 'flex-end',
+  },
   divider: {
-    paddingVertical: theme.spacing.xxxl,
+    paddingVertical: theme.spacing.lg,
   },
   social: {
     flexDirection: 'row',

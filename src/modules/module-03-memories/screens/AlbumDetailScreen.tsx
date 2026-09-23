@@ -12,6 +12,7 @@ import { Text } from '@/design-system/primitives/Text'
 import { PhotoMemoryCard } from '@/modules/module-03-memories/components/PhotoMemoryCard'
 import { SAMPLE_HOME } from '@/sample/home'
 import { findAlbum, memoriesInAlbum } from '@/sample/albums'
+import { USE_SAMPLE_CONTENT } from '@/sample'
 
 /**
  * M03-S06 — Album Detail. Figma `Ziyu`, Memories Page frame 3 ("Trips ✈️").
@@ -27,7 +28,13 @@ export function AlbumDetailScreen() {
   const router = useRouter()
   const back = useBackTo('/(app)/memories')
   const { key } = useLocalSearchParams<{ key: string }>()
-  const album = findAlbum(decodeURIComponent(key ?? ''))
+  /*
+   * Gated with the list screen. With the sample switch off there are no album
+   * cards to tap, but the route is still a URL — and this app ships a web
+   * build. A deep link would otherwise have rendered an invented album to a
+   * couple whose app is meant to be empty. `missing` is the honest answer.
+   */
+  const album = USE_SAMPLE_CONTENT ? findAlbum(decodeURIComponent(key ?? '')) : undefined
 
   const open = useCallback((id: string) => router.push(`/(app)/memories/${id}`), [router])
 

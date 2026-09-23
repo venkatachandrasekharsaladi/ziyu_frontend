@@ -4,13 +4,21 @@ import { AUTH_ERROR_COPY } from '@/copy/errors'
 import { SIGN_IN_COPY as COPY } from '@/copy/signIn'
 import { SignInScreen } from '@/modules/module-00-auth/screens/SignInScreen'
 import { authService } from '@/services/auth'
+import { RESERVED_VERIFIED_EMAIL } from '@/services/auth/mock'
+import { useSessionStore } from '@/state/sessionStore'
 import { renderScreen } from '@/test/renderScreen'
 
 const mockPush = jest.fn()
+const mockReplace = jest.fn()
 const mockBack = jest.fn()
 
 jest.mock('expo-router', () => ({
-  useRouter: () => ({ canGoBack: () => true, push: mockPush, back: mockBack, replace: jest.fn() }),
+  useRouter: () => ({
+    canGoBack: () => true,
+    push: mockPush,
+    back: mockBack,
+    replace: mockReplace,
+  }),
 }))
 
 async function fillAndSubmit(email: string, password: string) {
@@ -51,14 +59,41 @@ describe('SignInScreen', () => {
     signIn.mockRestore()
   })
 
-  it('navigates to verify-email on success', async () => {
+  it('sends an UNVERIFIED account to the mail step, and keeps the session', async () => {
     await renderScreen(<SignInScreen />)
 
     await fillAndSubmit('a@example.com', 'hunter2!')
 
     await waitFor(() => {
-      expect(mockPush).toHaveBeenCalledWith('/(auth)/verify-email')
+      expect(mockReplace).toHaveBeenCalledWith('/(auth)/verify-email')
     })
+
+    /*
+     * `replace`, not `push`: there is nothing useful behind a successful sign
+     * in, and leaving it on the stack let a back gesture return to a filled-in
+     * form for an account already signed into.
+     *
+     * The session is asserted through the real store rather than a spy —
+     * `(app)` and `(onboarding)` are guarded on exactly this, so a sign-in that
+     * navigated correctly but stored nothing would bounce the user straight
+     * back to Welcome.
+     */
+    expect(useSessionStore.getState().session).toMatchObject({
+      email: 'a@example.com',
+      emailVerified: false,
+    })
+  })
+
+  it('sends a VERIFIED account onward into onboarding instead', async () => {
+    await renderScreen(<SignInScreen />)
+
+    await fillAndSubmit(RESERVED_VERIFIED_EMAIL, 'hunter2!')
+
+    await waitFor(() => {
+      expect(mockReplace).toHaveBeenCalledWith('/(onboarding)/setup')
+    })
+
+    expect(useSessionStore.getState().session?.emailVerified).toBe(true)
   })
 
   it('shows a form-level error on bad credentials and clears only the password', async () => {

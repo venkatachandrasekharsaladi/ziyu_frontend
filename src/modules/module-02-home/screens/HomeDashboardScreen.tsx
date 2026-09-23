@@ -21,6 +21,7 @@ import { Button } from '@/design-system/primitives/Button'
 import { Card } from '@/design-system/primitives/Card'
 import { Text } from '@/design-system/primitives/Text'
 import { buildComingUp } from '@/modules/module-02-home/comingUp'
+import { NextAdventureCard } from '@/modules/module-06-plans/components/NextAdventureCard'
 import { StatTile } from '@/modules/module-02-home/components/StatTile'
 import { PhotoMemoryCard } from '@/modules/module-03-memories/components/PhotoMemoryCard'
 import { USE_SAMPLE_CONTENT } from '@/sample'
@@ -204,6 +205,14 @@ export function HomeDashboardScreen() {
           </View>
         </View>
       ) : null}
+
+      {/*
+       * THE WAY INTO PLANS. Home is where the couple already is, so the plans
+       * cluster is named here rather than living only behind its own tab. The
+       * card owns both its states (a trip, or an invitation to make one) — see
+       * `NextAdventureCard`.
+       */}
+      <NextAdventureCard />
 
       {USE_SAMPLE_CONTENT ? (
         <View style={styles.section}>

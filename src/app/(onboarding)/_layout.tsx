@@ -1,17 +1,29 @@
-import { Stack } from 'expo-router'
+import { Redirect, Stack } from 'expo-router'
 
 import { useStackScreenOptions } from '@/design-system/patterns/useStackScreenOptions'
+import { selectIsSignedIn, useSessionStore } from '@/state/sessionStore'
 
 /**
- * Module 01 — Onboarding and pairing.
+ * Onboarding — everything between creating an account and reaching the app.
  *
- * Headers are off across the group for the same reason as `(auth)`: every
- * screen draws its own top bar, and they differ — S01 has no back arrow, the
- * status screens have no header at all.
+ * Headers are off across the group, as in `(auth)` and `(app)`: each screen
+ * draws its own top bar.
+ *
+ * GUARDED, on a plain session rather than a verified one. These screens collect
+ * the couple's names, dates and first memory, so they need to belong to
+ * somebody — but they are also where a user lands straight after signing up,
+ * which is the moment email verification has NOT happened yet. Requiring
+ * verification here would have locked people out of the flow they had just
+ * been sent to.
  */
 export default function OnboardingLayout() {
-  // Shared across all four layouts — see `useStackScreenOptions` for why
-  // `ios_from_right` rather than the `slide_from_right` that looks right
-  // and is Android-only.
-  return <Stack screenOptions={useStackScreenOptions()} />
+  const signedIn = useSessionStore(selectIsSignedIn)
+
+  // Before the branch — see `(app)/_layout.tsx` for why a hook cannot sit
+  // behind a conditional return.
+  const screenOptions = useStackScreenOptions()
+
+  if (!signedIn) return <Redirect href="/(auth)/welcome" />
+
+  return <Stack screenOptions={screenOptions} />
 }

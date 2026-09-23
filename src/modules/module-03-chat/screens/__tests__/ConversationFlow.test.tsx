@@ -1,9 +1,13 @@
 import { act, screen, userEvent, waitFor } from '@testing-library/react-native'
+import * as Clipboard from 'expo-clipboard'
 
+import { CHAT_COPY } from '@/copy/chat'
+import { PHOTO_PICK_COPY } from '@/copy/photoPick'
 import { ConversationScreen } from '@/modules/module-03-chat/screens/ConversationScreen'
 import { useChatStore } from '@/modules/module-03-chat/state/chatStore'
 import { chatService } from '@/services/chat'
 import type { ChatEvent, Message } from '@/services/chat/types'
+import { mediaService } from '@/services/media'
 import { renderScreen } from '@/test/renderScreen'
 
 /**
@@ -28,6 +32,55 @@ jest.mock('@/services/chat', () => ({
 }))
 
 const service = jest.mocked(chatService)
+
+/**
+ * `@/services/media` is the boundary `expo-image-picker` sits behind, and the
+ * picker is a native module with no Jest implementation — left real, the first
+ * press of the Photo tile would reach for a permissions prompt and a system
+ * sheet that do not exist in this environment.
+ *
+ * Mocked per-suite rather than in `jest.setup.js`: that file holds only what
+ * EVERY test in the repo needs (the worklets/Reanimated mocks), and a screen
+ * that never opens a picker should not have one silently installed underneath
+ * it.
+ *
+ * The boundary is mocked, NOT `expo-image-picker` itself, for the reason
+ * `services/media/types.ts` gives for the boundary existing at all: it turns
+ * three permission outcomes into one union a screen can switch on. Mocking at
+ * that seam is what lets these tests state an ANSWER (a photo, a cancellation,
+ * a refusal) instead of assembling the picker payload that produces one — the
+ * translation from `ImagePickerResult` to this union is `expoMedia.ts`'s job,
+ * not this screen's, and asserting on it here would test the wrong module.
+ */
+jest.mock('@/services/media', () => ({
+  mediaService: { pickPhoto: jest.fn(), takePhoto: jest.fn() },
+}))
+
+const media = jest.mocked(mediaService)
+
+/**
+ * `expo-clipboard` likewise — a native module, and what is under test is that
+ * the screen ASKS the clipboard for the right string, not that a simulator's
+ * pasteboard changed (nothing here can read one back). Mocked exactly as
+ * `module-01-onboarding/screens/__tests__/InvitationSentScreen.test.tsx`
+ * already does, for the same reason.
+ */
+jest.mock('expo-clipboard', () => ({ setStringAsync: jest.fn(async () => true) }))
+
+const clipboard = jest.mocked(Clipboard)
+
+/**
+ * The two uris the mocked picker hands back.
+ *
+ * Deliberately NOT `file://sample.jpg` — that was the hardcoded placeholder
+ * the screen used to stage while `expo-image-picker` was uninstalled, and a
+ * test written against it would pass whether the screen forwarded the picker's
+ * answer or ignored it and re-staged the old constant. Distinct strings per
+ * entry point for the same reason: they are what tells "the Camera tile opened
+ * the camera" apart from "the Camera tile opened the library".
+ */
+const PICKED = { uri: 'file://picked-from-library.jpg', width: 1200, height: 900 }
+const CAPTURED = { uri: 'file://captured-by-camera.jpg', width: 3024, height: 4032 }
 
 /**
  * `router.push` for two routes (`chat/moment/video`, `chat/moment/voice`)
@@ -89,6 +142,15 @@ beforeEach(() => {
     return () => { listeners = listeners.filter((l) => l !== listener) }
   })
   service.listMessages.mockResolvedValue(SEED)
+
+  // Same restore-after-`clearAllMocks` reason as `mockCanGoBack` above: the
+  // ordinary case is a photo that WAS chosen, so every test gets that answer
+  // by default and the two unhappy paths (cancelled, refused) each override it
+  // for themselves. Without this, a cleared `pickPhoto` resolves `undefined`
+  // and the screen's `result.ok` read throws inside a floating promise, which
+  // surfaces as an unrelated test timing out rather than as a failed pick.
+  media.pickPhoto.mockResolvedValue({ ok: true, value: PICKED })
+  media.takePhoto.mockResolvedValue({ ok: true, value: CAPTURED })
 
   // NOT wrapped in `act()`: doing so — with nothing yet mounted — leaves the
   // test renderer's root empty on the very next `render()` call in this file.
@@ -295,7 +357,7 @@ describe('ConversationScreen', () => {
     expect(screen.getByText('Camera')).toBeTruthy()
   })
 
-  it('stages the mock photo pick and hands it to the share preview', async () => {
+  it('stages the uri the picker actually returned and hands it to the share preview', async () => {
     const user = userEvent.setup()
     await renderScreen(<ConversationScreen />)
     await screen.findByText('Obviously.')
@@ -304,10 +366,99 @@ describe('ConversationScreen', () => {
     await user.press(screen.getByLabelText('Choose photo'))
 
     expect(await screen.findByLabelText('Send photo')).toBeTruthy()
+    expect(media.pickPhoto).toHaveBeenCalled()
+    // THE assertion this test exists for. The preview draws whatever uri it
+    // was handed, so reading it back off the image is how we know the screen
+    // forwarded the picker's answer rather than re-staging a constant of its
+    // own — which is exactly what it used to do (`stagePhoto('file://
+    // sample.jpg')`), and what a test that only asserted "a preview appeared"
+    // would never have caught.
+    // expo-image normalises a single `{ uri }` source into a one-element
+    // array before it reaches the native prop — see `resolveSources`.
+    expect(screen.getByTestId('photo-preview-image').props.source).toMatchObject([
+      { uri: PICKED.uri },
+    ])
+    // The library, not the camera: pressing Photo must not open the wrong one.
+    expect(media.takePhoto).not.toHaveBeenCalled()
     // The two overlays are mutually exclusive, not merely one drawn over
     // the other — the sheet itself is gone, not just hidden behind the
     // preview.
     expect(screen.queryByLabelText('Choose photo')).toBeNull()
+  })
+
+  // The Camera tile went from `disabled` to live in the same change that
+  // installed `expo-image-picker`. It is a SEPARATE service call, not a second
+  // button onto the same one, so it gets its own test rather than being
+  // assumed to work because the Photo tile does.
+  it('opens the camera from the Camera tile and stages what was captured', async () => {
+    const user = userEvent.setup()
+    await renderScreen(<ConversationScreen />)
+    await screen.findByText('Obviously.')
+
+    await user.press(screen.getByLabelText('Add attachment'))
+    await user.press(screen.getByLabelText('Camera'))
+
+    expect(await screen.findByLabelText('Send photo')).toBeTruthy()
+    expect(media.takePhoto).toHaveBeenCalled()
+    expect(media.pickPhoto).not.toHaveBeenCalled()
+    expect(screen.getByTestId('photo-preview-image').props.source).toMatchObject([
+      { uri: CAPTURED.uri },
+    ])
+  })
+
+  /*
+   * Closing the picker is a decision, not a failure — the single sentence
+   * `copy/photoPick.ts` opens with, and the reason `CANCELLED` has no entry in
+   * its error table at all.
+   *
+   * Both halves matter and neither implies the other: a screen could stage
+   * nothing and still shout, or say nothing and still stage `undefined`. The
+   * sheet closing regardless is the third thing worth pinning down — the user
+   * asked for a picker and got one, so the sheet has done its job either way.
+   */
+  it('stages nothing and says nothing when the picker is cancelled', async () => {
+    media.pickPhoto.mockResolvedValue({ ok: false, error: { code: 'CANCELLED' } })
+    const user = userEvent.setup()
+    await renderScreen(<ConversationScreen />)
+    await screen.findByText('Obviously.')
+
+    await user.press(screen.getByLabelText('Add attachment'))
+    await user.press(screen.getByLabelText('Choose photo'))
+
+    // The sheet closes, which is the observable "the picker ran and came
+    // back" — waiting on it is what makes the three negative assertions below
+    // meaningful rather than merely early.
+    await waitFor(() => expect(screen.queryByLabelText('Choose photo')).toBeNull())
+
+    expect(screen.queryByLabelText('Send photo')).toBeNull()
+    expect(useChatStore.getState().pendingPhotoUri).toBeNull()
+    // No banner of any tone. Asserting on the one string a cancellation could
+    // plausibly borrow (`UNKNOWN`) would pass while some other copy was shown,
+    // so this asserts nothing from the table reached the screen at all.
+    for (const message of Object.values(PHOTO_PICK_COPY.errors)) {
+      expect(screen.queryByText(message)).toBeNull()
+    }
+  })
+
+  // A refusal IS worth a sentence, and it is the SHARED one — four screens
+  // offer a photo pick and `copy/photoPick.ts` exists so all four explain a
+  // denied permission identically. Asserting against the constant (not a
+  // copy-pasted string) is what keeps this screen from quietly drifting into
+  // its own chat-specific wording.
+  it('explains a refused photo permission with the shared picker copy', async () => {
+    media.pickPhoto.mockResolvedValue({ ok: false, error: { code: 'PERMISSION_DENIED' } })
+    const user = userEvent.setup()
+    await renderScreen(<ConversationScreen />)
+    await screen.findByText('Obviously.')
+
+    await user.press(screen.getByLabelText('Add attachment'))
+    await user.press(screen.getByLabelText('Choose photo'))
+
+    expect(await screen.findByText(PHOTO_PICK_COPY.errors.PERMISSION_DENIED)).toBeTruthy()
+    // Explained, not half-staged: a refusal must not leave the share preview
+    // sitting there over an image the user was never allowed to choose.
+    expect(screen.queryByLabelText('Send photo')).toBeNull()
+    expect(useChatStore.getState().pendingPhotoUri).toBeNull()
   })
 
   it('sends the staged photo through the real send path', async () => {
@@ -316,7 +467,7 @@ describe('ConversationScreen', () => {
       id: 'm-photo',
       authorId: 'me',
       kind: 'photo',
-      mediaUri: 'file://sample.jpg',
+      mediaUri: PICKED.uri,
       reactions: [],
       pinned: false,
       sentAt: new Date().toISOString(),
@@ -329,9 +480,13 @@ describe('ConversationScreen', () => {
     await user.press(screen.getByLabelText('Choose photo'))
     await user.press(await screen.findByLabelText('Send photo'))
 
+    // End to end, and the whole point of naming the constant: the uri the
+    // PICKER returned is the one that reaches the service. Nothing between the
+    // two — staging, the preview, `sendPhoto` — is allowed to substitute its
+    // own, which is precisely what the old placeholder made impossible to see.
     await waitFor(() =>
       expect(service.sendMessage).toHaveBeenCalledWith(
-        expect.objectContaining({ kind: 'photo', mediaUri: 'file://sample.jpg' }),
+        expect.objectContaining({ kind: 'photo', mediaUri: PICKED.uri }),
       ),
     )
     // The preview is gone once the send has gone through — `sendPhoto`
@@ -349,7 +504,7 @@ describe('ConversationScreen', () => {
       id: 'm-photo',
       authorId: 'me',
       kind: 'photo',
-      mediaUri: 'file://sample.jpg',
+      mediaUri: PICKED.uri,
       body: 'us',
       reactions: [],
       pinned: false,
@@ -366,7 +521,7 @@ describe('ConversationScreen', () => {
 
     await waitFor(() =>
       expect(service.sendMessage).toHaveBeenCalledWith(
-        expect.objectContaining({ kind: 'photo', mediaUri: 'file://sample.jpg', body: 'us' }),
+        expect.objectContaining({ kind: 'photo', mediaUri: PICKED.uri, body: 'us' }),
       ),
     )
   })

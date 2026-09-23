@@ -1,4 +1,5 @@
 import { useRouter } from 'expo-router'
+import * as Clipboard from 'expo-clipboard'
 import { useCallback, useState } from 'react'
 import { Platform, Share, View } from 'react-native'
 import { StyleSheet } from 'react-native-unistyles'
@@ -85,12 +86,19 @@ export function InvitationSentScreen() {
     }
   }, [code])
 
-  // Real "Copy" needs `expo-clipboard`, which is not installed (checked —
-  // nothing matching "clipboard" in package.json), same gap
-  // `MessageContextMenu`'s Copy row has in Chat. Rather than a no-op that
-  // still looks pressable, the button below carries `disabled` permanently
-  // (not merely `!code`) so this reads as genuinely unavailable, not broken.
-  const onCopy = useCallback(() => {}, [])
+  /*
+   * Real now. This carried a permanent `disabled` while `expo-clipboard` was
+   * uninstalled — honest at the time, and pointless once the package landed.
+   *
+   * The same `feedback` channel the share action uses, so copying and sharing
+   * confirm themselves the same way rather than one being silent.
+   */
+  const onCopy = useCallback(async () => {
+    if (!code) return
+
+    await Clipboard.setStringAsync(code)
+    setFeedback({ key: Date.now(), message: COPY.codeCopied })
+  }, [code])
 
   const destroy = useCallback(async () => {
     if (!code) return
@@ -154,7 +162,7 @@ export function InvitationSentScreen() {
 
       <View style={styles.actions}>
         <Button label={COPY.shareAgain} onPress={onShare} disabled={!code} />
-        <Button label={COPY.copy} onPress={onCopy} variant="outline" disabled />
+        <Button label={COPY.copy} onPress={onCopy} variant="outline" disabled={!code} />
         <Button label={COPY.cancel} onPress={askToCancel} variant="link" />
       </View>
 

@@ -101,23 +101,6 @@ export type ThemeColors = {
    */
   accents: readonly { readonly soft: string; readonly ink: string }[]
   /**
-   * The five space moods, as the wash behind each mood card's photograph.
-   *
-   * NAMED rather than an ordered list, unlike `accents`. An accent is cycled by
-   * position and any tint will do; a mood is a thing the couple CHOSE, stored
-   * by name in `spaceStore`, and it has to come back as the same colour every
-   * time. Position would not survive adding a sixth mood.
-   *
-   * Decorative only — see the palette's note. Nothing draws text on these.
-   */
-  moods: {
-    lavenderCalm: string
-    warmMorning: string
-    roseGlow: string
-    goldenHour: string
-    midnightQuiet: string
-  }
-  /**
    * The focus ring, as the colour inside a `boxShadow` spread.
    *
    * A colour and not an `elevation` string, because `elevation` is shared by
@@ -144,19 +127,43 @@ export type ThemeColors = {
     /** Label on top of `accent`. */
     onAccent: string
   }
+  /**
+   * M01-S20's cover style — the two-stop gradient behind each of Dawn / Dusk /
+   * Night on the picker itself and wherever the couple's space shows its
+   * cover (Our Space settings today).
+   *
+   * SAME in both themes, on purpose, like `strength.weak`/`strength.fair`:
+   * this is artwork depicting a time of day, not UI chrome, so it has no
+   * light/dark axis to invert along — dusk looks like dusk whether the app
+   * itself is in lavender or midnight. `theme.parity.test.ts`'s
+   * `SHARED_ON_PURPOSE` list is what keeps that intentional rather than a
+   * dark value someone forgot to write.
+   */
+  cover: {
+    dawn: readonly [string, string]
+    dusk: readonly [string, string]
+    night: readonly [string, string]
+  }
 }
 
 /**
  * Everything that is not a colour, and therefore shared.
  *
  * Dark mode is a repaint, not a relayout: a heading is 34pt and a control is
- * 56pt tall in both themes. Anything that moves when the theme changes is a
+ * 50pt tall in both themes. Anything that moves when the theme changes is a
  * bug, and `theme.parity` asserts these groups are the very same objects.
  */
 const shared = {
-  /** One height for buttons, social buttons and inputs alike. See spec D14. */
+  /**
+   * One height for buttons, social buttons and inputs alike. See spec D14.
+   *
+   * Was 56 — taller than it needed to be for how often a control sits right
+   * above another one (Sign In's fields, the CTA under them, the social row
+   * under that). 50 keeps every control comfortably inside the ≥44pt tap
+   * target guidance while reading as a compact stack instead of a tall one.
+   */
   control: {
-    height: 56,
+    height: 50,
   },
   spacing,
   radii,
@@ -237,13 +244,6 @@ export const lavenderTheme = {
       { soft: palette.mintTint, ink: palette.green700 },
       { soft: palette.lavender200, ink: palette.purple900 },
     ],
-    moods: {
-      lavenderCalm: palette.moodLavenderCalm,
-      warmMorning: palette.moodWarmMorning,
-      roseGlow: palette.moodRoseGlow,
-      goldenHour: palette.moodGoldenHour,
-      midnightQuiet: palette.moodMidnightQuiet,
-    },
     focusRing: palette.focusRingPurple,
     shadow: palette.shadowSoft,
     chat: {
@@ -253,6 +253,11 @@ export const lavenderTheme = {
       accent: palette.iris100,
       accentSoft: palette.iris60,
       onAccent: palette.white,
+    },
+    cover: {
+      dawn: [palette.peachAccent, palette.roseAccent],
+      dusk: [palette.roseAccent, palette.purple900],
+      night: [palette.purple900, palette.ink900],
     },
   } satisfies ThemeColors,
   /**
@@ -322,13 +327,6 @@ export const midnightTheme = {
       { soft: dark.mintTint, ink: dark.mintInk },
       { soft: dark.indigo600, ink: dark.lavender300 },
     ],
-    moods: {
-      lavenderCalm: dark.moodLavenderCalm,
-      warmMorning: dark.moodWarmMorning,
-      roseGlow: dark.moodRoseGlow,
-      goldenHour: dark.moodGoldenHour,
-      midnightQuiet: dark.moodMidnightQuiet,
-    },
     focusRing: dark.focusRingLavender,
     shadow: dark.shadowSoft,
     chat: {
@@ -338,6 +336,13 @@ export const midnightTheme = {
       accent: dark.iris300,
       accentSoft: dark.iris60Dark,
       onAccent: dark.ink900,
+    },
+    // Same values as `lavenderTheme` — see the `cover` doc comment on
+    // `ThemeColors` for why this group does not invert with the theme.
+    cover: {
+      dawn: [dark.peachAccent, dark.roseAccent],
+      dusk: [dark.roseAccent, palette.purple900],
+      night: [palette.purple900, palette.ink900],
     },
   } satisfies ThemeColors,
   scheme: 'dark',

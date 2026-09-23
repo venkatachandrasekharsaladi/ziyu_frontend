@@ -44,7 +44,18 @@ const flat = Object.fromEntries(
  * that is the assertion below, and it is what catches a dark token that was
  * copied from the light palette and never actually darkened.
  */
-const SHARED_ON_PURPOSE = ['strength.weak', 'strength.fair']
+const SHARED_ON_PURPOSE = [
+  'strength.weak',
+  'strength.fair',
+  // Time-of-day artwork, not UI chrome — see `ThemeColors.cover`'s doc
+  // comment in `theme.ts` for why it has no light/dark axis to invert along.
+  'cover.dawn.0',
+  'cover.dawn.1',
+  'cover.dusk.0',
+  'cover.dusk.1',
+  'cover.night.0',
+  'cover.night.1',
+]
 
 /**
  * The structural half of dark-mode testing.

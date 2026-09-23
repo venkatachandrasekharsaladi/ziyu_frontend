@@ -9,6 +9,7 @@ import { Button } from '@/design-system/primitives/Button'
 import { Input } from '@/design-system/primitives/Input'
 import { SegmentedControl } from '@/design-system/primitives/SegmentedControl'
 import { Text } from '@/design-system/primitives/Text'
+import { CoverPreview } from '@/design-system/patterns/CoverPreview'
 import { AuthScreenLayout } from '@/modules/module-00-auth/components/AuthScreenLayout'
 import { useSpaceStore, type CoverStyle } from '@/state/spaceStore'
 
@@ -79,6 +80,18 @@ export function PersonalizeSpaceScreen() {
           segments={[...COPY.styles]}
           value={coverStyle}
           onChange={setCoverStyle}
+        />
+
+        {/*
+          The segmented control alone changes only itself — tapping "Dusk"
+          moves a highlight and nothing else, which reads as broken even
+          though the selection is working. This is what the choice actually
+          does: the space's cover, shown immediately rather than only after
+          `submit` writes it to `spaceStore`.
+        */}
+        <CoverPreview
+          coverStyle={coverStyle}
+          label={COPY.styles.find((s) => s.value === coverStyle)?.label ?? ''}
         />
 
         <Button label={COPY.submit} onPress={submit} />

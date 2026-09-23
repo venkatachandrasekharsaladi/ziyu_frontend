@@ -5,6 +5,7 @@ import { Controller, useForm } from 'react-hook-form'
 import { z } from 'zod'
 
 import { SETTINGS_OUR_SPACE_COPY as COPY } from '@/copy/settingsOurSpace'
+import { CoverPreview } from '@/design-system/patterns/CoverPreview'
 import { SectionPanel } from '@/design-system/patterns/SectionPanel'
 import { SettingsChoiceRow } from '@/design-system/patterns/SettingsChoiceRow'
 import { SettingsScreenLayout } from '@/design-system/patterns/SettingsScreenLayout'
@@ -98,6 +99,11 @@ export function OurSpaceSettingsScreen() {
           segments={COVER_SEGMENTS}
           value={cover}
           onChange={setCover}
+        />
+
+        <CoverPreview
+          coverStyle={cover}
+          label={COVER_SEGMENTS.find((s) => s.value === cover)?.label ?? ''}
         />
       </SectionPanel>
 

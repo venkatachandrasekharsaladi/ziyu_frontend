@@ -1,6 +1,6 @@
 import { Image } from 'expo-image'
 import { View } from 'react-native'
-import { StyleSheet } from 'react-native-unistyles'
+import { StyleSheet, useUnistyles } from 'react-native-unistyles'
 
 /**
  * Decorative hearts and sparkles that float behind the Welcome content.
@@ -12,6 +12,12 @@ import { StyleSheet } from 'react-native-unistyles'
  *
  * The whole layer is hidden from assistive tech — these shapes carry no
  * meaning and announcing four unlabelled images would only add noise.
+ *
+ * Two plain colour dots ride alongside the four line-art shapes — rose and
+ * peach, the same pair `PasswordRequirements`' strength meter already uses
+ * and the only two colours in the palette explicitly marked decorative-only.
+ * Every other shape here is a single outline hue; without them the app's
+ * only screen that isn't purple-on-purple read as flat rather than warm.
  */
 /**
  * Each shape carries its OWN complete style, `position` included.
@@ -47,6 +53,8 @@ const AMBIENT = [
 ] as const
 
 export function AmbientLayer() {
+  const { theme } = useUnistyles()
+
   return (
     <View
       style={styles.layer}
@@ -56,9 +64,32 @@ export function AmbientLayer() {
       {AMBIENT.map(({ key, source, style }) => (
         <Image key={key} source={source} style={style} contentFit="contain" />
       ))}
+
+      <View style={[DOT_ROSE, { backgroundColor: theme.colors.strength.weak }]} />
+      <View style={[DOT_PEACH, { backgroundColor: theme.colors.strength.fair }]} />
     </View>
   )
 }
+
+const DOT_ROSE = {
+  position: 'absolute',
+  left: '72%',
+  top: '8%',
+  width: 10,
+  height: 10,
+  borderRadius: 5,
+  opacity: 0.8,
+} as const
+
+const DOT_PEACH = {
+  position: 'absolute',
+  left: '14%',
+  top: '46%',
+  width: 8,
+  height: 8,
+  borderRadius: 4,
+  opacity: 0.8,
+} as const
 
 const styles = StyleSheet.create({
   layer: {

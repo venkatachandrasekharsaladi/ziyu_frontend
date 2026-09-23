@@ -9,13 +9,6 @@ import { Text } from '@/design-system/primitives/Text'
 type AppHeaderProps = {
   /** When given, a back button is rendered. Omit on an entry-point screen. */
   onBack?: () => void
-  /**
-   * When given, the right slot carries the profile control instead of a
-   * spacer. This is where Profile lives now that the bottom bar's fourth seat
-   * went to Space: one stop, on every screen, in the corner people already
-   * reach for it.
-   */
-  onProfile?: () => void
 }
 
 /**
@@ -30,7 +23,7 @@ type AppHeaderProps = {
  * because it is the only frame that got a header pass; it belongs on every
  * screen that shows the wordmark.
  */
-export function AppHeader({ onBack, onProfile }: AppHeaderProps) {
+export function AppHeader({ onBack }: AppHeaderProps) {
   const { theme } = useUnistyles()
 
   return (
@@ -54,17 +47,7 @@ export function AppHeader({ onBack, onProfile }: AppHeaderProps) {
         </Text>
       </View>
 
-      {onProfile ? (
-        <IconButton
-          icon="user"
-          label="Profile and settings"
-          onPress={onProfile}
-          tone="plain"
-          testID="header-profile"
-        />
-      ) : (
-        <View style={styles.edge} testID="header-edge" />
-      )}
+      <View style={styles.edge} testID="header-edge" />
     </View>
   )
 }

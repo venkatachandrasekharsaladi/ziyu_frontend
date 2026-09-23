@@ -21,6 +21,15 @@ const RESERVED: Record<string, AuthErrorCode> = {
 }
 
 /**
+ * Signs in as somebody who has ALREADY verified their email.
+ *
+ * Reserved so the sign-in screen's verified branch is reachable by hand and in
+ * tests. Every other address returns an unverified session, which is the common
+ * case and the one the screen sends to the mail step.
+ */
+export const RESERVED_VERIFIED_EMAIL = 'verified@example.com'
+
+/**
  * Reserved reset tokens, so every documented failure of
  * `POST /auth/password/reset` is reachable by hand on a device.
  *
@@ -89,9 +98,13 @@ export function createMockAuthService({ latencyMs = 600 }: MockOptions = {}): Au
         return fail(reserved)
       }
 
-      // `emailVerified` is returned but unused by the screens today: M00-S02
-      // cannot branch on it because `(app)` has no routes yet. See spec §10.
-      current = session(email, false)
+      /*
+       * `emailVerified` IS used now. The old note here said M00-S02 could not
+       * branch on it "because `(app)` has no routes yet" — it has routes, and
+       * both `(app)` and `(onboarding)` are guarded on the session this
+       * returns, so the flag decides where a successful sign-in lands.
+       */
+      current = session(email, email.toLowerCase() === RESERVED_VERIFIED_EMAIL)
       setCachedSession(current)
       return { ok: true, value: current }
     },

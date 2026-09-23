@@ -113,6 +113,8 @@ export const CHAT_COPY = {
   /** Save Memory — the context-menu action's pass/fail report (`FeedbackBanner`). */
   feedback: {
     saveMemorySuccess: 'Saved to Memories.',
+    /** After the context menu's Copy row writes a message to the clipboard. */
+    copied: 'Copied to your clipboard.',
     saveMemoryError: 'Could not save to Memories. Try again.',
   },
 } as const

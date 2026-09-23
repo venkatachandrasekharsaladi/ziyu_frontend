@@ -1,5 +1,5 @@
-import { type ReactNode, useCallback, useRef } from 'react'
-import { ActivityIndicator, Pressable, View } from 'react-native'
+import { type ReactNode, useCallback, useRef, useState } from 'react'
+import { ActivityIndicator, Pressable, View, type LayoutChangeEvent } from 'react-native'
 import { StyleSheet, useUnistyles } from 'react-native-unistyles'
 
 import { Text, type TextTone } from '@/design-system/primitives/Text'
@@ -49,6 +49,24 @@ export function Button({
 
   const { theme } = useUnistyles()
 
+  /*
+   * The label's own centering, independent of whatever sits after it.
+   *
+   * `content` used to be a single `justifyContent: 'center'` row, which
+   * centres the LABEL+TRAILING PAIR as one block — correct with no trailing,
+   * but with one (Verify Email's countdown, Sign In's arrow) the label itself
+   * sat left of centre by roughly half the trailing's width. Mirroring an
+   * invisible spacer of that same measured width on the other side keeps the
+   * row symmetric around the label, so the label's own midpoint lands back on
+   * the button's midpoint regardless of how wide the trailing content is.
+   * `loading`'s spinner goes through the same slot so it gets the same
+   * treatment.
+   */
+  const [trailingWidth, setTrailingWidth] = useState(0)
+  const measureTrailing = useCallback((event: LayoutChangeEvent) => {
+    setTrailingWidth(event.nativeEvent.layout.width)
+  }, [])
+
   // Navigation is not instant. Without this guard a fast double tap pushes the
   // destination twice and the user has to press back twice to escape.
   const isHandling = useRef(false)
@@ -80,20 +98,24 @@ export function Button({
       style={styles.pressable}
     >
       <View style={styles.content}>
+        {loading || trailing ? <View style={{ width: trailingWidth }} /> : null}
+
         <Text variant="labelStrong" tone={tone} align="center">
           {label}
         </Text>
 
         {loading ? (
-          <ActivityIndicator
-            size="small"
-            color={
-              variant === 'primary' ? theme.colors.text.onPrimary : theme.colors.brand.primary
-            }
-          />
-        ) : (
-          trailing
-        )}
+          <View onLayout={measureTrailing}>
+            <ActivityIndicator
+              size="small"
+              color={
+                variant === 'primary' ? theme.colors.text.onPrimary : theme.colors.brand.primary
+              }
+            />
+          </View>
+        ) : trailing ? (
+          <View onLayout={measureTrailing}>{trailing}</View>
+        ) : null}
       </View>
     </Pressable>
   )

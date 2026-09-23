@@ -1,3 +1,4 @@
+import * as Clipboard from 'expo-clipboard'
 import { screen, userEvent, waitFor } from '@testing-library/react-native'
 import { Platform, Share } from 'react-native'
 
@@ -5,6 +6,13 @@ import { INVITATION_SENT_COPY as COPY } from '@/copy/invitationSent'
 import { InvitationSentScreen } from '@/modules/module-01-onboarding/screens/InvitationSentScreen'
 import { useRelationshipStore } from '@/state/relationshipStore'
 import { renderScreen } from '@/test/renderScreen'
+
+/**
+ * `expo-clipboard` is a native module with no Jest implementation, and what is
+ * under test is that the screen ASKS it to copy the right string — not that a
+ * simulator's pasteboard changed.
+ */
+jest.mock('expo-clipboard', () => ({ setStringAsync: jest.fn(async () => true) }))
 
 const mockReplace = jest.fn()
 
@@ -85,14 +93,34 @@ describe('InvitationSentScreen', () => {
     delete global.navigator
   })
 
-  // Real "Copy" needs `expo-clipboard`, not installed — the button is
-  // permanently disabled rather than a live-looking no-op.
-  it('renders Copy Code disabled, since expo-clipboard is not installed', async () => {
+  it('offers Copy Code once there is a code to copy', async () => {
+    /*
+     * This asserted a PERMANENT `disabled` while `expo-clipboard` was
+     * uninstalled. The package is installed, so the button is live — but only
+     * when a code actually exists, which is the condition it always should have
+     * had. A copy button with nothing to copy is the same dead control wearing
+     * a different excuse.
+     */
+    useRelationshipStore.getState().setInvite('ABC123')
+
     await renderScreen(<InvitationSentScreen />)
 
     expect(screen.getByRole('button', { name: COPY.copy }).props.accessibilityState).toMatchObject({
-      disabled: true,
+      disabled: false,
     })
+  })
+
+  it('writes the code to the clipboard and says so', async () => {
+    const user = userEvent.setup()
+
+    useRelationshipStore.getState().setInvite('ABC123')
+
+    await renderScreen(<InvitationSentScreen />)
+
+    await user.press(screen.getByRole('button', { name: COPY.copy }))
+
+    expect(Clipboard.setStringAsync).toHaveBeenCalledWith('ABC123')
+    expect(await screen.findByText(COPY.codeCopied)).toBeTruthy()
   })
 
   it('asks before cancelling, because the partner may already hold the code', async () => {

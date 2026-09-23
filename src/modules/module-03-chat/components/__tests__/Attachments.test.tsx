@@ -24,14 +24,16 @@ const noop = () => {}
 describe('AttachmentSheet', () => {
   it('offers the four sources the frame draws', async () => {
     const { getByText } = await renderScreen(
-      <AttachmentSheet onPickPhoto={noop} onVoiceNote={noop} onMemory={noop} onClose={noop} />)
+      <AttachmentSheet
+        onCamera={() => {}} onPickPhoto={noop} onVoiceNote={noop} onMemory={noop} onClose={noop} />)
     for (const l of ['Photo', 'Camera', 'Voice note', 'Memory']) expect(getByText(l)).toBeTruthy()
   })
 
   it('reports a photo pick', async () => {
     const onPickPhoto = jest.fn()
     const { getByText } = await renderScreen(
-      <AttachmentSheet onPickPhoto={onPickPhoto} onVoiceNote={noop} onMemory={noop} onClose={noop} />)
+      <AttachmentSheet
+        onCamera={() => {}} onPickPhoto={onPickPhoto} onVoiceNote={noop} onMemory={noop} onClose={noop} />)
     await fireEvent.press(getByText('Photo'))
     expect(onPickPhoto).toHaveBeenCalled()
   })
@@ -42,7 +44,8 @@ describe('AttachmentSheet', () => {
   // make `getByLabelText('Photo')` ambiguous.
   it('gives the Photo tile a distinct accessible name from a photo message', async () => {
     const { getByLabelText, queryByLabelText } = await renderScreen(
-      <AttachmentSheet onPickPhoto={noop} onVoiceNote={noop} onMemory={noop} onClose={noop} />)
+      <AttachmentSheet
+        onCamera={() => {}} onPickPhoto={noop} onVoiceNote={noop} onMemory={noop} onClose={noop} />)
     expect(getByLabelText('Choose photo')).toBeTruthy()
     expect(queryByLabelText('Photo')).toBeNull()
   })
@@ -50,7 +53,8 @@ describe('AttachmentSheet', () => {
   it('starts the real recorder from the Voice note tile', async () => {
     const onVoiceNote = jest.fn()
     const { getByText } = await renderScreen(
-      <AttachmentSheet onPickPhoto={noop} onVoiceNote={onVoiceNote} onMemory={noop} onClose={noop} />)
+      <AttachmentSheet
+        onCamera={() => {}} onPickPhoto={noop} onVoiceNote={onVoiceNote} onMemory={noop} onClose={noop} />)
     await fireEvent.press(getByText('Voice note'))
     expect(onVoiceNote).toHaveBeenCalled()
   })
@@ -58,7 +62,8 @@ describe('AttachmentSheet', () => {
   it('opens the Memories module from the Memory tile', async () => {
     const onMemory = jest.fn()
     const { getByText } = await renderScreen(
-      <AttachmentSheet onPickPhoto={noop} onVoiceNote={noop} onMemory={onMemory} onClose={noop} />)
+      <AttachmentSheet
+        onCamera={() => {}} onPickPhoto={noop} onVoiceNote={noop} onMemory={onMemory} onClose={noop} />)
     await fireEvent.press(getByText('Memory'))
     expect(onMemory).toHaveBeenCalled()
   })
@@ -68,16 +73,35 @@ describe('AttachmentSheet', () => {
   // `userEvent.press`, unlike `fireEvent.press`, honours a Pressable's own
   // `disabled` prop, which is the whole point here: this proves a real press
   // does not reach `onClose`, not merely that the handler exists.
-  it('renders Camera disabled instead of silently dismissing the sheet', async () => {
+  it('offers Camera as a live tile that opens the camera', async () => {
+    /*
+     * This asserted `disabled: true` while `expo-image-picker` was uninstalled,
+     * and pressing it had to NOT call `onClose` — the tile used `onClose` as a
+     * stand-in handler, so the test existed to prove the sheet did not quietly
+     * dismiss itself instead of taking a photo.
+     *
+     * The package is installed now, so the honest behaviour changed: the tile is
+     * live, and it calls its own handler rather than borrowing another one.
+     */
+    const onCamera = jest.fn()
     const onClose = jest.fn()
     const user = userEvent.setup()
     const { getByText, getByLabelText } = await renderScreen(
-      <AttachmentSheet onPickPhoto={noop} onVoiceNote={noop} onMemory={noop} onClose={onClose} />)
+      <AttachmentSheet
+        onCamera={onCamera}
+        onPickPhoto={noop}
+        onVoiceNote={noop}
+        onMemory={noop}
+        onClose={onClose}
+      />,
+    )
 
-    expect(getByLabelText('Camera').props.accessibilityState).toMatchObject({ disabled: true })
+    expect(getByLabelText('Camera').props.accessibilityState).toMatchObject({ disabled: false })
 
     await user.press(getByText('Camera'))
 
+    expect(onCamera).toHaveBeenCalled()
+    // Still not the dismiss handler — that was the original point of this test.
     expect(onClose).not.toHaveBeenCalled()
   })
 })

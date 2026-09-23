@@ -6,7 +6,7 @@ import { StyleSheet } from 'react-native-unistyles'
 import { SETTINGS_APPEARANCE_COPY } from '@/copy/settingsAppearance'
 import { SETTINGS_HOME_COPY as COPY } from '@/copy/settingsHome'
 import { LANGUAGE_NAMES } from '@/copy/settingsLanguage'
-import { SettingsScreenLayout } from '@/design-system/patterns/SettingsScreenLayout'
+import { AppScreenLayout } from '@/design-system/patterns/AppScreenLayout'
 import { DangerRow } from '@/design-system/patterns/DangerRow'
 import { SectionPanel } from '@/design-system/patterns/SectionPanel'
 import { SettingsRow } from '@/design-system/patterns/SettingsRow'
@@ -15,12 +15,12 @@ import { useThemeMode } from '@/design-system/themes/useThemeMode'
 import { Text } from '@/design-system/primitives/Text'
 import { CoupleHeader } from '@/modules/module-05-profile/components/CoupleHeader'
 import { authService } from '@/services/auth'
+import { useSessionStore } from '@/state/sessionStore'
 import { useRelationshipStore } from '@/state/relationshipStore'
 import { useSpaceStore } from '@/state/spaceStore'
 import { useStoryStore } from '@/state/storyStore'
 import { usePreferencesStore } from '@/state/preferencesStore'
 import { daysSince } from '@/utils/daysUntil'
-import { useBackTo } from '@/hooks/useBackTo'
 
 /**
  * The three theme names come from Appearance's own copy rather than being
@@ -61,17 +61,12 @@ const THEME_LABEL: Record<ThemeChoice, string> = {
  * screenshot alerts, quiet hours and dark mode. Anything a signed-in account
  * writes has to be cleared here, and a new store is not finished until its
  * `reset` is on this list.
- *
- * A PUSHED PAGE, not a tab. Profile lost its seat in the bottom bar to Space
- * and moved to the header's top-right control, so this list is something you
- * open and back out of. `SettingsScreenLayout` is the chrome for exactly that
- * — no bottom bar, a back arrow, and the screen's own title in the bar — and
- * it is what the other twenty settings pages already use.
  */
 export function SettingsHomeScreen() {
   const router = useRouter()
   const profile = useRelationshipStore((state) => state.profile)
   const partner = useRelationshipStore((state) => state.partner)
+  const resetSession = useSessionStore((state) => state.reset)
   const resetRelationship = useRelationshipStore((state) => state.reset)
   const resetPreferences = usePreferencesStore((state) => state.reset)
   const spaceName = useSpaceStore((state) => state.name)
@@ -86,7 +81,6 @@ export function SettingsHomeScreen() {
   const daysTogether = daysSince(met?.value)
 
   const go = useCallback((href: string) => () => router.push(href as Href), [router])
-  const back = useBackTo('/(app)/home')
 
   const signOut = useCallback(async () => {
     try {
@@ -95,6 +89,9 @@ export function SettingsHomeScreen() {
       // Swallowed on purpose — see the header comment.
     }
 
+    // Clears the guard's input too. Without this, signing out left the session
+    // in place and `(app)` stayed reachable by typing its path.
+    resetSession()
     resetRelationship()
     resetPreferences()
     resetChoice()
@@ -106,7 +103,16 @@ export function SettingsHomeScreen() {
   }, [signOut])
 
   return (
-    <SettingsScreenLayout title={COPY.heading} lede={COPY.lede} onBack={back}>
+    <AppScreenLayout activeTab="profile">
+      <View style={styles.copy}>
+        <Text variant="h2" tone="heading">
+          {COPY.heading}
+        </Text>
+        <Text variant="body" tone="body">
+          {COPY.lede}
+        </Text>
+      </View>
+
       <CoupleHeader
         name={profile?.name ?? 'You'}
         partnerName={partner?.name}
@@ -221,7 +227,7 @@ export function SettingsHomeScreen() {
           onPress={go('/(app)/settings/delete-account')}
         />
       </View>
-    </SettingsScreenLayout>
+    </AppScreenLayout>
   )
 }
 

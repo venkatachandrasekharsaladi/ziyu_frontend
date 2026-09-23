@@ -132,26 +132,6 @@ export const palette = {
   iris100: '#5D5FEF',
   iris80: '#7879F1',
   iris60: '#A5A6F6',
-
-  /**
-   * SPACE MOOD WASHES — the five atmospheres a couple can pick for their space.
-   *
-   * DECORATIVE ONLY, like `roseAccent` / `peachAccent`. Each one is a pale wash
-   * that sits BEHIND a photograph on a mood card; the mood's name and its
-   * description are drawn on white below the image, never on the wash. Nothing
-   * here has to carry text, which is why these are not `accents` pairs and are
-   * not contrast-checked.
-   *
-   * The values are Figma's 20%-alpha overlays flattened against white, so the
-   * card reads the same whatever ends up behind it. Figma draws, in order:
-   * rgba(206,189,255,.2), rgba(255,229,163,.2), rgba(233,164,199,.2),
-   * rgba(255,199,168,.2), rgba(41,78,64,.2) — frame 3430:2052 onward.
-   */
-  moodLavenderCalm: '#F5F2FF',
-  moodWarmMorning: '#FFFAED',
-  moodRoseGlow: '#FBEDF4',
-  moodGoldenHour: '#FFF4EE',
-  moodMidnightQuiet: '#D4DCD9',
 } as const
 
 export type Palette = typeof palette
@@ -280,21 +260,6 @@ export const midnightPalette = {
   fuschia60Dark: '#3A2130',
   iris60Dark: '#282A57',
   iris300: '#A5A6F6',
-
-  /**
-   * SPACE MOOD WASHES, midnight. Same five atmospheres, same decorative-only
-   * rule as the lavender set — see that file's note.
-   *
-   * NOT the light values reused. A pale wash on a dark card is a bright plate
-   * with a photograph lost inside it, so each one is rebuilt at the same hue
-   * and a fraction of the lightness. `theme.parity` asserts every colour
-   * differs between the two themes, and would catch a copied value here.
-   */
-  moodLavenderCalm: '#2A2340',
-  moodWarmMorning: '#3A3320',
-  moodRoseGlow: '#3A2430',
-  moodGoldenHour: '#3A2A20',
-  moodMidnightQuiet: '#1E2A25',
 } as const
 
 export type MidnightPalette = typeof midnightPalette

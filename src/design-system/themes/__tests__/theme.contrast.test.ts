@@ -124,7 +124,7 @@ describe.each(NAMES)('%s contrast', (name) => {
   })
 
   it('uses one control height', () => {
-    expect(t.control.height).toBe(56)
+    expect(t.control.height).toBe(50)
   })
 })
 
