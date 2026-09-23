@@ -23,11 +23,14 @@ type MockOptions = {
    * invented content belonging to someone else.
    */
   seed?: Memory[]
+  /** Test-only partner drafts, kept hidden until this client submits too. */
+  partnerPrivateNotes?: Record<string, string>
 }
 
 export function createMockMemoriesService({
   latencyMs = 600,
   seed = [],
+  partnerPrivateNotes = {},
 }: MockOptions = {}): MemoriesService {
   const store = new Map<string, Memory>(seed.map((m) => [m.id, m]))
   let counter = seed.length
@@ -60,6 +63,37 @@ export function createMockMemoriesService({
       store.set(memory.id, memory)
 
       return { ok: true, value: memory }
+    },
+
+    async updatePrivateNote({ id, note }) {
+      await wait(latencyMs)
+      const found = store.get(id)
+      if (!found) return fail('NOT_FOUND')
+      const value = note.trim()
+      if (!value) return fail('UNKNOWN')
+      const partner = partnerPrivateNotes[id]
+      const next = {
+        ...found,
+        myPrivateNote: value,
+        partnerPrivateNote: partner,
+        reciprocalNotesRevealed: partner !== undefined,
+      }
+      store.set(id, next)
+      return { ok: true, value: next }
+    },
+
+    async withdrawPrivateNote({ id }) {
+      await wait(latencyMs)
+      const found = store.get(id)
+      if (!found) return fail('NOT_FOUND')
+      const next = {
+        ...found,
+        myPrivateNote: undefined,
+        partnerPrivateNote: undefined,
+        reciprocalNotesRevealed: false,
+      }
+      store.set(id, next)
+      return { ok: true, value: next }
     },
 
     async toggleFavorite({ id }) {

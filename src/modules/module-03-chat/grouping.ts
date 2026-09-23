@@ -1,4 +1,5 @@
 import type { Message } from '@/services/chat/types'
+import { instantEpochMillis } from '@/utils/dateUtils'
 
 /**
  * How far apart two messages from the same person can be and still read as one
@@ -42,7 +43,10 @@ export function groupPositions(messages: Message[]): GroupPosition[] {
     if (message.status === 'failed' || previous.status === 'failed') return false
     if (message.authorId !== previous.authorId) return false
 
-    const gap = Date.parse(message.sentAt) - Date.parse(previous.sentAt)
+    const sentAt = instantEpochMillis(message.sentAt)
+    const previousSentAt = instantEpochMillis(previous.sentAt)
+    if (sentAt === null || previousSentAt === null) return false
+    const gap = sentAt - previousSentAt
     return gap <= GROUP_WINDOW_MS
   }
 

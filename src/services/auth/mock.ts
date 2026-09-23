@@ -7,6 +7,7 @@ import type {
   Result,
   Session,
 } from '@/services/auth/types'
+import { setCachedSession } from '@/services/auth/session'
 
 /**
  * Reserved addresses, so every error path is reachable by hand on a device and
@@ -81,7 +82,13 @@ type MockOptions = {
  * which is why `expo-secure-store` is not installed yet either.
  */
 export function createMockAuthService({ latencyMs = 600 }: MockOptions = {}): AuthService {
+  let current: Session | null = null
   return {
+    async getCurrentSession() {
+      await wait(latencyMs)
+      return current ? { ok: true, value: current } : fail('TOKEN_INVALID')
+    },
+
     async signIn({ email }: Credentials) {
       await wait(latencyMs)
 
@@ -97,10 +104,9 @@ export function createMockAuthService({ latencyMs = 600 }: MockOptions = {}): Au
        * both `(app)` and `(onboarding)` are guarded on the session this
        * returns, so the flag decides where a successful sign-in lands.
        */
-      return {
-        ok: true,
-        value: session(email, email.toLowerCase() === RESERVED_VERIFIED_EMAIL),
-      }
+      current = session(email, email.toLowerCase() === RESERVED_VERIFIED_EMAIL)
+      setCachedSession(current)
+      return { ok: true, value: current }
     },
 
     async signUp({ email }: Credentials) {
@@ -113,7 +119,9 @@ export function createMockAuthService({ latencyMs = 600 }: MockOptions = {}): Au
         return fail(reserved === 'INVALID_CREDENTIALS' ? 'UNKNOWN' : reserved)
       }
 
-      return { ok: true, value: session(email, false) }
+      current = session(email, false)
+      setCachedSession(current)
+      return { ok: true, value: current }
     },
 
     async requestPasswordReset({ email }: EmailOnly) {
@@ -148,11 +156,15 @@ export function createMockAuthService({ latencyMs = 600 }: MockOptions = {}): Au
       // tokens are live.
       if (!isPasswordAcceptable(newPassword)) return fail('WEAK_PASSWORD')
 
+      current = null
+      setCachedSession(null)
       return { ok: true, value: null }
     },
 
     async signOut() {
       await wait(latencyMs)
+      current = null
+      setCachedSession(null)
 
       // Nothing to tear down yet: there is no token storage and no session
       // store until the HTTP client lands. When it does, this clears the

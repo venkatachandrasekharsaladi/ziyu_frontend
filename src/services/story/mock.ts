@@ -19,7 +19,14 @@ type MockOptions = {
 }
 
 export function createMockStoryService({ latencyMs = 600 }: MockOptions = {}): StoryService {
+  let stored: Story = {}
+
   return {
+    async getStory() {
+      await wait(latencyMs)
+      return { ok: true, value: stored }
+    },
+
     async saveStory(input: Story) {
       await wait(latencyMs)
 
@@ -29,7 +36,8 @@ export function createMockStoryService({ latencyMs = 600 }: MockOptions = {}): S
         return fail('NETWORK')
       }
 
-      return { ok: true, value: input }
+      stored = input
+      return { ok: true, value: stored }
     },
   }
 }

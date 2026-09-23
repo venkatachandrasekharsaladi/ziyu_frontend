@@ -1,4 +1,5 @@
 import type {
+  CoupleLifecycle,
   Invite,
   PairingErrorCode,
   PairingService,
@@ -34,6 +35,12 @@ type MockOptions = {
 }
 
 export function createMockPairingService({ latencyMs = 600 }: MockOptions = {}): PairingService {
+  let lifecycle: CoupleLifecycle = {
+    status: 'connected',
+    sharedWritesAllowed: true,
+    unpairPending: false,
+    unpairRequestedByMe: false,
+  }
   return {
     async createProfile(input: Profile) {
       await wait(latencyMs)
@@ -80,6 +87,51 @@ export function createMockPairingService({ latencyMs = 600 }: MockOptions = {}):
       if (RESERVED[code.trim().toUpperCase()] === 'NETWORK') return fail('NETWORK')
 
       return { ok: true, value: null }
+    },
+
+    async getSpace() {
+      await wait(latencyMs)
+
+      return {
+        ok: true,
+        value: {
+          coupleId: 'mock-couple',
+          coverStyle: 'dawn',
+          status: 'inviting',
+        },
+      }
+    },
+
+    async getLifecycle() {
+      await wait(latencyMs)
+      return { ok: true, value: lifecycle }
+    },
+
+    async pause() {
+      await wait(latencyMs)
+      lifecycle = { ...lifecycle, status: 'paused', sharedWritesAllowed: false }
+      return { ok: true, value: lifecycle }
+    },
+
+    async reactivate() {
+      await wait(latencyMs)
+      lifecycle = { ...lifecycle, status: 'connected', sharedWritesAllowed: true }
+      return { ok: true, value: lifecycle }
+    },
+
+    async requestUnpair() {
+      await wait(latencyMs)
+      lifecycle = {
+        status: 'paused', sharedWritesAllowed: false,
+        unpairPending: true, unpairRequestedByMe: true,
+      }
+      return { ok: true, value: lifecycle }
+    },
+
+    async cancelUnpair() {
+      await wait(latencyMs)
+      lifecycle = { ...lifecycle, unpairPending: false, unpairRequestedByMe: false }
+      return { ok: true, value: lifecycle }
     },
   }
 }

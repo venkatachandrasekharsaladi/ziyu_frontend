@@ -8,6 +8,7 @@ type StoryState = Story & {
   setBecameUs: (moment: Moment) => void
   setFirstMemory: (moment: Moment) => void
   setKeyDates: (dates: KeyDates) => void
+  hydrate: (story: Story) => void
   /** The plain data, for handing to the service. */
   toStory: () => Story
   reset: () => void
@@ -34,6 +35,8 @@ export const useStoryStore = create<StoryState>((set, get) => ({
   setBecameUs: (becameUs) => set({ becameUs }),
   setFirstMemory: (firstMemory) => set({ firstMemory }),
   setKeyDates: (keyDates) => set({ keyDates }),
+  hydrate: ({ met, firstDate, becameUs, firstMemory, keyDates }) =>
+    set({ met, firstDate, becameUs, firstMemory, keyDates }),
 
   toStory: () => {
     const { met, firstDate, becameUs, firstMemory, keyDates } = get()

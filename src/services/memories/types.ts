@@ -22,6 +22,11 @@ export type Memory = {
   photoUri?: string
   /** Private to the couple — the design calls it "Our Note". */
   note?: string
+  /** The signed-in member's private reciprocal note. */
+  myPrivateNote?: string
+  /** Present only after both members have submitted a private note. */
+  partnerPrivateNote?: string
+  reciprocalNotesRevealed?: boolean
   /** Drives the collections on the Memories home screen. */
   tags: string[]
   favorite: boolean
@@ -29,12 +34,17 @@ export type Memory = {
   addedBy?: string
 }
 
-export type NewMemory = Omit<Memory, 'id' | 'favorite'> & { favorite?: boolean }
+export type NewMemory = Omit<
+  Memory,
+  'id' | 'favorite' | 'myPrivateNote' | 'partnerPrivateNote' | 'reciprocalNotesRevealed'
+> & { favorite?: boolean }
 
 export type MemoriesService = {
   list: () => Promise<Result<Memory[]>>
   get: (input: { id: string }) => Promise<Result<Memory>>
   create: (input: NewMemory) => Promise<Result<Memory>>
+  updatePrivateNote: (input: { id: string; note: string }) => Promise<Result<Memory>>
+  withdrawPrivateNote: (input: { id: string }) => Promise<Result<Memory>>
   toggleFavorite: (input: { id: string }) => Promise<Result<Memory>>
   search: (input: { query: string }) => Promise<Result<Memory[]>>
 }
