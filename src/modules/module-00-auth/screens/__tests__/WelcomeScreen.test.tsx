@@ -15,7 +15,7 @@ describe('WelcomeScreen', () => {
 
     expect(screen.getByText(WELCOME_COPY.headlineLines[0])).toBeTruthy()
     expect(screen.getByRole('button', { name: WELCOME_COPY.primaryCta })).toBeTruthy()
-    expect(screen.getByRole('button', { name: WELCOME_COPY.secondaryCta })).toBeTruthy()
+    expect(screen.getByRole('link', { name: WELCOME_COPY.secondaryLink })).toBeTruthy()
   })
 
   /**

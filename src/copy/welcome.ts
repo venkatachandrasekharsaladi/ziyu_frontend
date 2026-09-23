@@ -13,8 +13,9 @@ export const WELCOME_COPY = {
   headlineLines: ['Your relationship.', 'Beautifully kept.'],
   subtitleLines: ['A private digital home for everything', 'that makes you, you.'],
   primaryCta: 'Get Started',
-  secondaryCta: 'Already have an account? Sign In',
-  privacyNote: 'Private by design. Your space belongs to both of you.',
+  secondaryText: 'Already have an account?',
+  secondaryLink: 'Sign In',
+  privacyNote: 'Your space belongs to both of you.',
 } as const
 
 if (__DEV__ && WELCOME_COPY.headlineLines.join(' ') !== BRAND.tagline) {

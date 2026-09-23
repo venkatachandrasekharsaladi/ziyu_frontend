@@ -51,7 +51,7 @@ export function AuthScreenLayout({ onBack, centred = false, children }: AuthScre
         */}
         <LinearGradient
           colors={[theme.colors.surface.glow, theme.colors.surface.glowFade]}
-          style={styles.glow}
+          style={GLOW_STYLE}
           pointerEvents="none"
         />
 
@@ -82,6 +82,28 @@ export function AuthScreenLayout({ onBack, centred = false, children }: AuthScre
   )
 }
 
+/**
+ * Plain style object — Unistyles styles do not reach `LinearGradient`.
+ *
+ * The same failure mode `HeroCollage`, `AmbientLayer` and `WelcomeScreen`'s
+ * own root gradient already carry this note for: a `StyleSheet.create` entry
+ * handed to `LinearGradient` arrives with every property stripped, not just
+ * `flex`. Here that meant `position: 'absolute'` and `height: '42%'` were both
+ * gone, so the glow rendered at its default static 0×0 — invisible, on every
+ * one of the five screens this layout serves.
+ *
+ * Percentage height rather than Figma's fixed 1161pt circle, so it holds its
+ * relationship on any screen height. No border radius and no solid fill: the
+ * fade IS the shape.
+ */
+const GLOW_STYLE = {
+  position: 'absolute',
+  top: 0,
+  left: 0,
+  right: 0,
+  height: '42%',
+} as const
+
 const styles = StyleSheet.create((theme) => ({
   screen: {
     flex: 1,
@@ -89,16 +111,6 @@ const styles = StyleSheet.create((theme) => ({
   },
   flex: {
     flex: 1,
-  },
-  // Percentage height rather than Figma's fixed 1161pt circle, so it holds its
-  // relationship on any screen height. No border radius and no solid fill: the
-  // fade IS the shape.
-  glow: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    height: '42%',
   },
   content: {
     flexGrow: 1,

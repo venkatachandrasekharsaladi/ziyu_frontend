@@ -127,13 +127,18 @@ export function CreateAccountScreen() {
 const styles = StyleSheet.create((theme) => ({
   copy: {
     gap: theme.spacing.md,
-    paddingBottom: theme.spacing.huge,
+    // Was `huge` (48) — the tallest single gap on a screen that also carries
+    // two fields, the password-rules card, the submit button, a divider and
+    // the social row. This is the form Figma calls the biggest in the
+    // cluster; the page not needing to scroll on a typical phone mattered
+    // more here than anywhere else.
+    paddingBottom: theme.spacing.xxl,
   },
   form: {
-    gap: theme.spacing.xxl,
+    gap: theme.spacing.lg,
   },
   divider: {
-    paddingVertical: theme.spacing.xxxl,
+    paddingVertical: theme.spacing.lg,
   },
   social: {
     flexDirection: 'row',

@@ -133,7 +133,15 @@ export function VerifyEmailScreen() {
         */}
         <Button label={COPY.continue} onPress={goToOnboarding} />
 
-        <Button label={COPY.changeEmail} onPress={back} variant="soft" />
+        {/*
+          `outline` — a bordered card, not a flat tint. `soft` was the odd one
+          out: every other secondary/back action in this module (Forgot
+          Password's "Back to Sign In", Invite Partner/Invitation Sent's
+          "Copy") uses `outline`, and this is the only button on this screen
+          that isn't already `primary`, so it read as an unrelated third
+          colour rather than "the other action" on the same screen.
+        */}
+        <Button label={COPY.changeEmail} onPress={back} variant="outline" />
       </View>
     </AuthScreenLayout>
   )

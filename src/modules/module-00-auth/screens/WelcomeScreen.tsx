@@ -9,6 +9,7 @@ import { WELCOME_COPY } from '@/copy/welcome'
 import { Button } from '@/design-system/primitives/Button'
 import { Text } from '@/design-system/primitives/Text'
 import { AppHeader } from '@/design-system/patterns/AppHeader'
+import { FooterPrompt } from '@/design-system/patterns/FooterPrompt'
 import { ThemedStatusBar } from '@/design-system/patterns/ThemedStatusBar'
 import { AmbientLayer } from '@/modules/module-00-auth/components/AmbientLayer'
 import { HeroCollage } from '@/modules/module-00-auth/components/HeroCollage'
@@ -37,7 +38,7 @@ export function WelcomeScreen() {
   return (
     <LinearGradient
       colors={[theme.colors.surface.gradientFrom, theme.colors.surface.gradientTo]}
-      style={styles.screen}
+      style={GRADIENT_SCREEN}
     >
       <ThemedStatusBar />
 
@@ -54,11 +55,23 @@ export function WelcomeScreen() {
             </View>
 
             <View testID="welcome-copy-block" style={styles.copyBlock}>
-              {WELCOME_COPY.headlineLines.map((line) => (
-                <Text key={line} variant="h1" tone="heading" align="center">
-                  {line}
-                </Text>
-              ))}
+              {/*
+                Its own View, gap-less: `copyBlock`'s `gap` used to apply
+                between these two lines as well as between the headline and
+                the subtitle below it, so the two halves of one headline sat
+                as far apart as the headline sat from the subtitle — it read
+                as two separate lines rather than one two-line headline. The
+                lines stay separate Text nodes (not a joined `\n` string) so
+                `WelcomeScreen.test.tsx` can still find `headlineLines[0]` on
+                its own; only the line-height governs their spacing now.
+              */}
+              <View>
+                {WELCOME_COPY.headlineLines.map((line) => (
+                  <Text key={line} variant="h1" tone="heading" align="center">
+                    {line}
+                  </Text>
+                ))}
+              </View>
 
               <View style={styles.subtitleWrap}>
                 {WELCOME_COPY.subtitleLines.map((line) => (
@@ -71,9 +84,11 @@ export function WelcomeScreen() {
 
             <View testID="welcome-actions" style={styles.actions}>
               <Button label={WELCOME_COPY.primaryCta} onPress={goToSignUp} variant="primary" />
-              <View style={styles.secondaryWrap}>
-                <Button label={WELCOME_COPY.secondaryCta} onPress={goToSignIn} variant="link" />
-              </View>
+              <FooterPrompt
+                text={WELCOME_COPY.secondaryText}
+                linkLabel={WELCOME_COPY.secondaryLink}
+                onPress={goToSignIn}
+              />
             </View>
 
             <PrivacyFooter />
@@ -84,10 +99,24 @@ export function WelcomeScreen() {
   )
 }
 
+/**
+ * Plain style object — Unistyles styles do not reach `LinearGradient`.
+ *
+ * Same failure mode `HeroCollage` and `AmbientLayer` already carry this note
+ * for with `expo-image`: Unistyles binds to the native shadow node and never
+ * processes a third-party host component, so a `StyleSheet.create` entry
+ * handed to `LinearGradient` arrived with `flex: 1` stripped. The gradient
+ * then sized itself to its own content (904px) instead of stretching to the
+ * screen (956px on a taller phone), leaving a gap at the bottom where the
+ * app's root background colour — a flat, noticeably lighter lavender — showed
+ * through below the gradient's darkest stop. Confirmed via the rendered
+ * `getBoundingClientRect()` on web: `flex: '0 0 auto'` instead of `'1 1 0%'`.
+ */
+const GRADIENT_SCREEN = {
+  flex: 1,
+} as const
+
 const styles = StyleSheet.create((theme) => ({
-  screen: {
-    flex: 1,
-  },
   safeArea: {
     flex: 1,
   },
@@ -134,8 +163,5 @@ const styles = StyleSheet.create((theme) => ({
     alignSelf: 'center',
     paddingHorizontal: theme.spacing.xl,
     paddingBottom: theme.spacing.xxl,
-  },
-  secondaryWrap: {
-    paddingTop: theme.spacing.md,
   },
 }))

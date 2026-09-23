@@ -127,19 +127,43 @@ export type ThemeColors = {
     /** Label on top of `accent`. */
     onAccent: string
   }
+  /**
+   * M01-S20's cover style — the two-stop gradient behind each of Dawn / Dusk /
+   * Night on the picker itself and wherever the couple's space shows its
+   * cover (Our Space settings today).
+   *
+   * SAME in both themes, on purpose, like `strength.weak`/`strength.fair`:
+   * this is artwork depicting a time of day, not UI chrome, so it has no
+   * light/dark axis to invert along — dusk looks like dusk whether the app
+   * itself is in lavender or midnight. `theme.parity.test.ts`'s
+   * `SHARED_ON_PURPOSE` list is what keeps that intentional rather than a
+   * dark value someone forgot to write.
+   */
+  cover: {
+    dawn: readonly [string, string]
+    dusk: readonly [string, string]
+    night: readonly [string, string]
+  }
 }
 
 /**
  * Everything that is not a colour, and therefore shared.
  *
  * Dark mode is a repaint, not a relayout: a heading is 34pt and a control is
- * 56pt tall in both themes. Anything that moves when the theme changes is a
+ * 50pt tall in both themes. Anything that moves when the theme changes is a
  * bug, and `theme.parity` asserts these groups are the very same objects.
  */
 const shared = {
-  /** One height for buttons, social buttons and inputs alike. See spec D14. */
+  /**
+   * One height for buttons, social buttons and inputs alike. See spec D14.
+   *
+   * Was 56 — taller than it needed to be for how often a control sits right
+   * above another one (Sign In's fields, the CTA under them, the social row
+   * under that). 50 keeps every control comfortably inside the ≥44pt tap
+   * target guidance while reading as a compact stack instead of a tall one.
+   */
   control: {
-    height: 56,
+    height: 50,
   },
   spacing,
   radii,
@@ -230,6 +254,11 @@ export const lavenderTheme = {
       accentSoft: palette.iris60,
       onAccent: palette.white,
     },
+    cover: {
+      dawn: [palette.peachAccent, palette.roseAccent],
+      dusk: [palette.roseAccent, palette.purple900],
+      night: [palette.purple900, palette.ink900],
+    },
   } satisfies ThemeColors,
   /**
    * Which end of the light/dark axis this theme sits on.
@@ -307,6 +336,13 @@ export const midnightTheme = {
       accent: dark.iris300,
       accentSoft: dark.iris60Dark,
       onAccent: dark.ink900,
+    },
+    // Same values as `lavenderTheme` — see the `cover` doc comment on
+    // `ThemeColors` for why this group does not invert with the theme.
+    cover: {
+      dawn: [dark.peachAccent, dark.roseAccent],
+      dusk: [dark.roseAccent, palette.purple900],
+      night: [palette.purple900, palette.ink900],
     },
   } satisfies ThemeColors,
   scheme: 'dark',

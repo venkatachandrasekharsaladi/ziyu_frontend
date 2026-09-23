@@ -125,6 +125,14 @@ export function Input({
           keyboardType={keyboardType}
           autoComplete={autoComplete}
           autoCapitalize={autoCapitalize}
+          // Every field in the app is a name, an email, a password or free
+          // text about the couple's own life — never prose a dictionary
+          // should grade. Without this, typing shows a red squiggly
+          // underline beneath the text on web the moment the browser's
+          // spellchecker doesn't recognise a word (an email address is a
+          // near-guaranteed hit), which reads as a rendering glitch.
+          spellCheck={false}
+          autoCorrect={false}
           editable={editable}
           multiline={multiline}
           accessibilityLabel={label}

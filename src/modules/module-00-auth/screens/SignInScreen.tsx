@@ -103,12 +103,18 @@ export function SignInScreen() {
           placeholder={COPY.passwordPlaceholder}
           secure
           autoComplete="current-password"
-          labelTrailing={
-            <Text variant="captionAction" tone="brand" onPress={goToForgot} accessibilityRole="link">
-              {COPY.forgotLink}
-            </Text>
-          }
         />
+
+        <View style={styles.forgot}>
+          <Text
+            variant="captionAction"
+            tone="brand"
+            onPress={goToForgot}
+            accessibilityRole="link"
+          >
+            {COPY.forgotLink}
+          </Text>
+        </View>
 
         {formError ? (
           <Text variant="footnote" tone="error" align="center">
@@ -158,14 +164,20 @@ export function SignInScreen() {
 const styles = StyleSheet.create((theme) => ({
   copy: {
     gap: theme.spacing.xs,
-    paddingTop: theme.spacing.huge,
-    paddingBottom: theme.spacing.huge,
+    // Was `huge` (48) top and bottom around the medallion + heading — the
+    // single biggest contributor to this screen needing to scroll on a
+    // typical phone. `xxl` still gives the block room to breathe.
+    paddingTop: theme.spacing.xxl,
+    paddingBottom: theme.spacing.xxl,
   },
   form: {
     gap: theme.spacing.md,
   },
+  forgot: {
+    alignItems: 'flex-end',
+  },
   divider: {
-    paddingVertical: theme.spacing.xxxl,
+    paddingVertical: theme.spacing.lg,
   },
   social: {
     flexDirection: 'row',

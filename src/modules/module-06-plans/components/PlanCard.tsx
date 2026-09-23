@@ -95,6 +95,14 @@ const styles = StyleSheet.create((theme) => ({
     minWidth: 0,
   },
   card: {
+    // `cell`'s default `alignItems: 'stretch'` already sizes each cell to the
+    // taller card in its row — that part was already happening. What was
+    // missing is this: without `flex: 1` the CARD inside a taller cell still
+    // only grew to its own content height, leaving the stretched cell's extra
+    // space empty below it. Two cards in the same row could then show
+    // differently-sized boxes even though their cells matched, which is
+    // exactly what made the grid look uneven.
+    flex: 1,
     minHeight: 168,
     gap: theme.spacing.md,
     padding: theme.spacing.lg,
