@@ -19,6 +19,24 @@ export const HOME_DASHBOARD_COPY = {
 
     return `${part}, ${name}`
   },
+
+  /**
+   * The couple greeting assumes a partner who is actually there. Before one
+   * has joined (`relationshipStore.status !== 'connected'`), that reads as
+   * the app not noticing they are alone, so this swaps in instead — a solo
+   * line rather than "Lovely Couple" with nobody on the other side of it.
+   *
+   * One is picked at random each time this screen mounts, so it is not the
+   * same sentence on every visit while they wait for a partner to pair.
+   */
+  soloGreetings: [
+    "Good morning. Today's a good day to invite someone in.",
+    'Still just you here — for now.',
+    "Your story's first page is blank. That's the fun part.",
+    'One half of a "we" is a fine place to start.',
+    'Waiting on a plus-one. No rush.',
+  ],
+
   daysTogetherLine: (days: number) =>
     days === 1 ? '1 beautiful day together.' : `${days.toLocaleString()} beautiful days together.`,
 
@@ -28,8 +46,9 @@ export const HOME_DASHBOARD_COPY = {
 
   /** "A memory worth keeping" — the featured memory card. */
   featuredLabel: 'A memory worth keeping',
-  featuredOpen: 'Open Memory',
-  featuredFavorite: 'Favorite',
+  featuredBackstory: 'Backstory',
+  featuredFavorite: 'Favourite',
+  featuredNotePrompt: 'Add story….',
 
   /** "Your little world" — the stat tiles. Annotated `←need this section`. */
   littleWorldLabel: 'Your little world',
@@ -46,6 +65,9 @@ export const HOME_DASHBOARD_COPY = {
   /** "Upcoming" — the event list from the third variant. */
   upcomingLabel: 'Upcoming',
   upcomingEmpty: 'No dates saved yet.',
+
+  /** The mini month grid — Home's door into the full calendar screen. */
+  calendarWidgetLabel: (month: string, year: number) => `Open the full calendar, ${month} ${year}`,
 
   /**
    * The two empty-state cards, which are where the feature note's Calendar and

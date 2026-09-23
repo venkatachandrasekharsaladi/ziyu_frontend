@@ -11,6 +11,7 @@ import { ReadyToComeHomeScreen } from '@/modules/module-01-onboarding/screens/Re
 import { WelcomeHomeScreen } from '@/modules/module-01-onboarding/screens/WelcomeHomeScreen'
 import { SAMPLE_HOME } from '@/sample/home'
 import { SAMPLE_MEMORIES } from '@/sample/memories'
+import { useRelationshipStore } from '@/state/relationshipStore'
 import { useSpaceStore } from '@/state/spaceStore'
 import { useStoryStore } from '@/state/storyStore'
 import { renderScreen } from '@/test/renderScreen'
@@ -27,6 +28,7 @@ beforeEach(() => {
   mockReplace.mockClear()
   useStoryStore.getState().reset()
   useSpaceStore.getState().reset()
+  useRelationshipStore.getState().reset()
 })
 
 describe('M01-S20 Personalize Our Space', () => {
@@ -123,10 +125,23 @@ describe('M02-S01 Home Dashboard', () => {
 
   it('greets the couple by their space name once it has one', async () => {
     useSpaceStore.getState().setSpace({ name: 'Our Little World', coverStyle: 'dawn' })
+    // The couple greeting is for a partner who is actually there.
+    useRelationshipStore.getState().connect()
 
     await renderScreen(<HomeDashboardScreen />)
 
     expect(screen.getByText(/Our Little World/)).toBeTruthy()
+  })
+
+  it('swaps in a solo line once there is a real space but no partner yet', async () => {
+    useSpaceStore.getState().setSpace({ name: 'Our Little World', coverStyle: 'dawn' })
+
+    await renderScreen(<HomeDashboardScreen />)
+
+    expect(screen.queryByText(/Our Little World/)).toBeNull()
+    expect(
+      HOME_DASHBOARD_COPY.soloGreetings.some((line) => screen.queryByText(line) !== null),
+    ).toBe(true)
   })
 
   it('draws the sections the canvas annotated as needed', async () => {
@@ -157,9 +172,23 @@ describe('M02-S01 Home Dashboard', () => {
 
     await renderScreen(<HomeDashboardScreen />)
 
-    await user.press(screen.getByRole('button', { name: HOME_DASHBOARD_COPY.featuredOpen }))
+    await user.press(screen.getByRole('button', { name: HOME_DASHBOARD_COPY.featuredBackstory }))
 
     expect(mockPush).toHaveBeenCalledWith(`/(app)/memories/${featured.id}`)
+  })
+
+  it('shows the memory\'s own note, and lets Favourite be toggled', async () => {
+    const user = userEvent.setup()
+    const featured = SAMPLE_MEMORIES.find((m) => m.photoUri)!
+
+    await renderScreen(<HomeDashboardScreen />)
+
+    expect(screen.getByText(featured.note!)).toBeTruthy()
+
+    const favourite = screen.getByRole('button', { name: HOME_DASHBOARD_COPY.featuredFavorite })
+    await user.press(favourite)
+    // A toggle, not a navigation — pressing it does not leave the screen.
+    expect(mockPush).not.toHaveBeenCalledWith(expect.stringContaining('/memories/'))
   })
 
   it('sends the birthday spotlight to the memory form', async () => {
