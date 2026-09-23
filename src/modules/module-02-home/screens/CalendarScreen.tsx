@@ -15,7 +15,7 @@ import { USE_SAMPLE_CONTENT } from '@/sample'
 import { SAMPLE_HOME } from '@/sample/home'
 import { useStoryStore } from '@/state/storyStore'
 
-const MONTHS = [
+export const MONTHS = [
   'January',
   'February',
   'March',
