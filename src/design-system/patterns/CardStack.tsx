@@ -1,12 +1,19 @@
 import { type ReactNode, useCallback, useState } from 'react'
-import {
-  type LayoutChangeEvent,
-  type NativeScrollEvent,
-  type NativeSyntheticEvent,
-  ScrollView,
-  View,
-} from 'react-native'
-import { StyleSheet } from 'react-native-unistyles'
+import { type LayoutChangeEvent, View } from 'react-native'
+import { StyleSheet, useUnistyles } from 'react-native-unistyles'
+import Animated, {
+  Extrapolation,
+  interpolate,
+  runOnJS,
+  useAnimatedScrollHandler,
+  useAnimatedStyle,
+  useReducedMotion,
+  useSharedValue,
+  withSequence,
+  withSpring,
+} from 'react-native-reanimated'
+
+const AnimatedScrollView = Animated.ScrollView
 
 type CardStackProps<T> = {
   items: readonly T[]
@@ -27,26 +34,82 @@ type CardStackProps<T> = {
  *
  * Paging is the same `ScrollView` + `pagingEnabled` technique as
  * `PhotoCarousel`, for the same reason: the platform's own drag direction,
- * rather than a hand-rolled gesture that risks inverting it.
+ * rather than a hand-rolled gesture that risks inverting it. On top of that,
+ * the drag position itself drives motion — a page shrinks and dims as it
+ * slides away from centre, and the peek layers tuck in as the next card
+ * arrives — and a small spring "pop" plays on the peeks once a swipe
+ * settles, like the deck resettling. All of it is driven by `scrollX`, a
+ * shared value updated on the UI thread, never by React state — state here
+ * exists only for `index` (what the dots and `peekCount` need) and `width`.
  */
 export function CardStack<T>({ items, renderItem, keyExtractor, testID }: CardStackProps<T>) {
+  const { theme } = useUnistyles()
+  const reduced = useReducedMotion()
   const [width, setWidth] = useState(0)
   const [index, setIndex] = useState(0)
+  const scrollX = useSharedValue(0)
+  const pop = useSharedValue(1)
 
   const onLayout = useCallback((e: LayoutChangeEvent) => {
     setWidth(e.nativeEvent.layout.width)
   }, [])
 
-  const onScrollEnd = useCallback(
-    (e: NativeSyntheticEvent<NativeScrollEvent>) => {
-      if (width <= 0) return
+  const settle = useCallback(
+    (offsetX: number, pageWidth: number) => {
+      if (pageWidth <= 0) return
 
-      const next = Math.round(e.nativeEvent.contentOffset.x / width)
+      const next = Math.round(offsetX / pageWidth)
 
       setIndex(Math.max(0, Math.min(items.length - 1, next)))
     },
-    [width, items.length],
+    [items.length],
   )
+
+  const settleSpring = theme.motion.spring.settle
+
+  // A worklet: everything in here runs on the UI thread, on every scroll
+  // frame — no bridge round trip, which is what keeps the drag itself
+  // perfectly smooth. `runOnJS` is the one hop back, and only on settle.
+  const scrollHandler = useAnimatedScrollHandler({
+    onScroll: (event) => {
+      scrollX.set(event.contentOffset.x)
+    },
+    onEndDrag: (event) => {
+      runOnJS(settle)(event.contentOffset.x, width)
+    },
+    onMomentumEnd: (event) => {
+      runOnJS(settle)(event.contentOffset.x, width)
+      // The little bounce that reads as the stack resettling behind
+      // whichever card just arrived in front.
+      if (!reduced) {
+        pop.set(withSequence(withSpring(1.08, settleSpring), withSpring(1, settleSpring)))
+      }
+    },
+  })
+
+  const peekNearStyle = useAnimatedStyle(() => {
+    if (reduced || width <= 0) return { transform: [{ scale: 1 }], opacity: 1 }
+
+    // Fractional progress through the CURRENT page, 0 at rest and rising
+    // toward 1 as a forward swipe drags the next card into place. Dragging
+    // backward (negative) is clamped away — the near peek has nothing to
+    // do until a card is actually leaving toward it.
+    const progress = scrollX.get() / width - index
+    const scale = interpolate(progress, [0, 1], [1, 0.94], Extrapolation.CLAMP)
+    const opacity = interpolate(progress, [0, 1], [1, 0.75], Extrapolation.CLAMP)
+
+    return { transform: [{ scale: scale * pop.get() }], opacity }
+  })
+
+  const peekFarStyle = useAnimatedStyle(() => {
+    if (reduced || width <= 0) return { transform: [{ scale: 1 }], opacity: 0.6 }
+
+    const progress = scrollX.get() / width - index
+    const scale = interpolate(progress, [0, 1], [1, 0.9], Extrapolation.CLAMP)
+    const opacity = interpolate(progress, [0, 1], [0.6, 0.45], Extrapolation.CLAMP)
+
+    return { transform: [{ scale: scale * pop.get() }], opacity }
+  })
 
   if (items.length === 0) return null
 
@@ -56,28 +119,31 @@ export function CardStack<T>({ items, renderItem, keyExtractor, testID }: CardSt
     <View>
       <View style={styles.stack}>
         {/* Farthest first, so the front card paints last and sits on top. */}
-        {peekCount === 2 ? <View style={styles.peekFar} testID={`${testID}-peek-2`} /> : null}
-        {peekCount >= 1 ? <View style={styles.peekNear} testID={`${testID}-peek-1`} /> : null}
+        {peekCount === 2 ? (
+          <Animated.View style={[styles.peekFar, peekFarStyle]} testID={`${testID}-peek-2`} />
+        ) : null}
+        {peekCount >= 1 ? (
+          <Animated.View style={[styles.peekNear, peekNearStyle]} testID={`${testID}-peek-1`} />
+        ) : null}
 
         <View onLayout={onLayout} style={styles.front}>
           {items.length === 1 ? (
             renderItem(items[0]!, 0)
           ) : (
-            <ScrollView
+            <AnimatedScrollView
               horizontal
               pagingEnabled
               showsHorizontalScrollIndicator={false}
-              onMomentumScrollEnd={onScrollEnd}
-              onScrollEndDrag={onScrollEnd}
+              onScroll={scrollHandler}
               scrollEventThrottle={16}
               testID={testID ? `${testID}-scroll` : undefined}
             >
               {items.map((item, i) => (
-                <View key={keyExtractor(item, i)} style={{ width: width || '100%' }}>
+                <CardStackPage key={keyExtractor(item, i)} index={i} width={width} scrollX={scrollX} reduced={reduced}>
                   {renderItem(item, i)}
-                </View>
+                </CardStackPage>
               ))}
-            </ScrollView>
+            </AnimatedScrollView>
           )}
         </View>
       </View>
@@ -95,6 +161,34 @@ export function CardStack<T>({ items, renderItem, keyExtractor, testID }: CardSt
       ) : null}
     </View>
   )
+}
+
+type CardStackPageProps = {
+  index: number
+  width: number
+  scrollX: ReturnType<typeof useSharedValue<number>>
+  reduced: boolean
+  children: ReactNode
+}
+
+/**
+ * One page of the deck, sized to the stack's width and, unless the system
+ * asked for reduced motion, shrinking and dimming as the drag carries it
+ * away from centre in either direction — the counterpart to the peek
+ * layers tucking in on the way past it.
+ */
+function CardStackPage({ index, width, scrollX, reduced, children }: CardStackPageProps) {
+  const style = useAnimatedStyle(() => {
+    if (reduced || width <= 0) return { transform: [{ scale: 1 }], opacity: 1 }
+
+    const distance = scrollX.get() / width - index
+    const scale = interpolate(distance, [-1, 0, 1], [0.94, 1, 0.94], Extrapolation.CLAMP)
+    const opacity = interpolate(distance, [-1, 0, 1], [0.85, 1, 0.85], Extrapolation.CLAMP)
+
+    return { transform: [{ scale }], opacity }
+  })
+
+  return <Animated.View style={[{ width: width || '100%' }, style]}>{children}</Animated.View>
 }
 
 const styles = StyleSheet.create((theme) => ({
@@ -130,7 +224,6 @@ const styles = StyleSheet.create((theme) => ({
     borderWidth: 1,
     borderColor: theme.colors.border.subtle,
     backgroundColor: theme.colors.surface.field,
-    opacity: 0.6,
   },
   dots: {
     flexDirection: 'row',
