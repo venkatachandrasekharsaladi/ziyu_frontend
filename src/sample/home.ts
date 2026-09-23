@@ -55,4 +55,14 @@ export const SAMPLE_HOME = {
     { key: 'movie', icon: 'film', label: 'Movie Night', detail: 'Friday, 8 PM' },
     { key: 'dinner', icon: 'coffee', label: "Dinner at Luigi's", detail: 'Sunday, 7 PM' },
   ],
+
+  /**
+   * The compatibility card's two birthdays. Sample-only, like everything else
+   * on this file — see `CompatibilityCard`'s header comment for why this one
+   * never comes from a real couple's data.
+   */
+  compatibility: {
+    you: { name: 'Chandu', birthday: '2001-07-14' },
+    partner: { name: 'Sweatcha', birthday: '2004-12-18' },
+  },
 } as const
