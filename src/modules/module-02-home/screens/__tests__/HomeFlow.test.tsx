@@ -172,23 +172,19 @@ describe('M02-S01 Home Dashboard', () => {
 
     await renderScreen(<HomeDashboardScreen />)
 
-    await user.press(screen.getByRole('button', { name: HOME_DASHBOARD_COPY.featuredBackstory }))
+    // No separate "Open Memory" button any more — the card itself is the
+    // door in, via its own caption's press target.
+    await user.press(screen.getByRole('button', { name: featured.title }))
 
     expect(mockPush).toHaveBeenCalledWith(`/(app)/memories/${featured.id}`)
   })
 
-  it('shows the memory\'s own note, and lets Favourite be toggled', async () => {
-    const user = userEvent.setup()
+  it("shows the memory's own note", async () => {
     const featured = SAMPLE_MEMORIES.find((m) => m.photoUri)!
 
     await renderScreen(<HomeDashboardScreen />)
 
     expect(screen.getByText(featured.note!)).toBeTruthy()
-
-    const favourite = screen.getByRole('button', { name: HOME_DASHBOARD_COPY.featuredFavorite })
-    await user.press(favourite)
-    // A toggle, not a navigation — pressing it does not leave the screen.
-    expect(mockPush).not.toHaveBeenCalledWith(expect.stringContaining('/memories/'))
   })
 
   it('sends the birthday spotlight to the memory form', async () => {

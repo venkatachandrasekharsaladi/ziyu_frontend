@@ -44,11 +44,13 @@ export const HOME_DASHBOARD_COPY = {
   daysUnknown: '—',
   daysUnknownHint: 'Add the day you met to start counting.',
 
-  /** "A memory worth keeping" — the featured memory card. */
+  /**
+   * "A memory worth keeping" — the featured memory card. No row of buttons
+   * beneath it any more: the card itself (its photo or its caption) is the
+   * door into the memory, where favouriting, editing and everything else
+   * lives behind that screen's own kebab menu.
+   */
   featuredLabel: 'A memory worth keeping',
-  /** Figma names these "Open Memory" and "Favourites" — not "Backstory"/"Favourite". */
-  featuredBackstory: 'Open Memory',
-  featuredFavorite: 'Favourites',
   featuredNotePrompt: 'Add story….',
 
   /** "Your little world" — the stat tiles. Annotated `←need this section`. */

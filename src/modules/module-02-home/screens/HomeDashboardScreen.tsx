@@ -28,10 +28,8 @@ import { MiniCalendar } from '@/modules/module-02-home/components/MiniCalendar'
 import { NextAdventureCard } from '@/modules/module-06-plans/components/NextAdventureCard'
 import { PhotoMemoryCard } from '@/modules/module-03-memories/components/PhotoMemoryCard'
 import { USE_SAMPLE_CONTENT } from '@/sample'
-import { useSampleFavoriteOverrides } from '@/sample/favoriteOverrides'
 import { SAMPLE_HOME } from '@/sample/home'
 import { SAMPLE_MEMORIES } from '@/sample/memories'
-import { memoriesService } from '@/services/memories'
 import { useRelationshipStore } from '@/state/relationshipStore'
 import { useSpaceStore } from '@/state/spaceStore'
 import { useStoryStore } from '@/state/storyStore'
@@ -119,8 +117,6 @@ export function HomeDashboardScreen() {
     ? SAMPLE_MEMORIES.filter((m) => m.photoUri).slice(0, 4)
     : []
   const featured = featuredSet[0]
-  const favoriteOverrides = useSampleFavoriteOverrides((state) => state.overrides)
-  const setFavoriteOverride = useSampleFavoriteOverrides((state) => state.setOverride)
 
   // Tiles the app can genuinely count, added because the frame clips a 140pt
   // tile 74pt past the edge — a scroller holding more than three.
@@ -174,29 +170,9 @@ export function HomeDashboardScreen() {
   )
   const openCalendar = useCallback(() => router.push('/(app)/calendar'), [router])
 
-  // The pager's current page, wherever it landed — Favourite and Backstory
-  // both act on whatever the couple is actually looking at, not always the
-  // first card.
+  // The pager's current page, wherever it landed — Backstory acts on
+  // whatever the couple is actually looking at, not always the first card.
   const currentFeatured = featuredSet[featuredIndex] ?? featured
-  const currentFeaturedIsFavorite = currentFeatured
-    ? favoriteOverrides[currentFeatured.id] ?? currentFeatured.favorite
-    : false
-
-  // Shared with every other screen, not local-only: a sample memory has no
-  // record in the store to flip, so a `NOT_FOUND` there still updates the
-  // shared override map — see `sample/favoriteOverrides` for why.
-  const toggleFavorite = useCallback(
-    async (id: string, current: boolean) => {
-      const result = await memoriesService.toggleFavorite({ id })
-
-      if (result.ok) {
-        setFavoriteOverride(id, result.value.favorite)
-      } else if (result.error.code === 'NOT_FOUND') {
-        setFavoriteOverride(id, !current)
-      }
-    },
-    [setFavoriteOverride],
-  )
 
   // The mini calendar widget shows THIS month only — the couple's key dates
   // that land in it, resolved the same way the full calendar screen does.
@@ -280,21 +256,6 @@ export function HomeDashboardScreen() {
               </Text>
             </Pressable>
           )}
-
-          <View style={styles.featuredActions}>
-            <Button
-              label={COPY.featuredFavorite}
-              onPress={() =>
-                currentFeatured && toggleFavorite(currentFeatured.id, currentFeaturedIsFavorite)
-              }
-              variant={currentFeaturedIsFavorite ? 'primary' : 'outline'}
-            />
-            <Button
-              label={COPY.featuredBackstory}
-              onPress={() => currentFeatured && openMemory(currentFeatured.id)}
-              variant="soft"
-            />
-          </View>
         </View>
       ) : null}
 
@@ -492,10 +453,6 @@ const styles = StyleSheet.create((theme) => ({
   },
   statCell: {
     width: STAT_CELL_WIDTH,
-  },
-  featuredActions: {
-    flexDirection: 'row',
-    gap: theme.spacing.md,
   },
   /** The "if there is a story it will display, or else" prompt's empty state. */
   addStory: {
