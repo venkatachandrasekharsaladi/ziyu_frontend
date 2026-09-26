@@ -1,8 +1,9 @@
 import { Feather } from '@expo/vector-icons'
 import { Image } from 'expo-image'
+import { LinearGradient } from 'expo-linear-gradient'
 import { useLocalSearchParams, useRouter } from 'expo-router'
 import { useCallback, useEffect, useState } from 'react'
-import { View } from 'react-native'
+import { Modal, View } from 'react-native'
 import { StyleSheet, useUnistyles } from 'react-native-unistyles'
 
 import { useBackTo } from '@/hooks/useBackTo'
@@ -10,23 +11,31 @@ import { MEMORIES_COPY as COPY } from '@/copy/memories'
 import { AppScreenLayout } from '@/design-system/patterns/AppScreenLayout'
 import { MemoryVideoPlayer } from '@/design-system/patterns/MemoryVideoPlayer'
 import { MemoryVoicePlayer } from '@/design-system/patterns/MemoryVoicePlayer'
+import { Overlay } from '@/design-system/patterns/Overlay'
+import { PressableScale } from '@/design-system/patterns/PressableScale'
+import { SettingsRow } from '@/design-system/patterns/SettingsRow'
 import { StatusScreen } from '@/design-system/patterns/StatusScreen'
 import { Button } from '@/design-system/primitives/Button'
 import { Card } from '@/design-system/primitives/Card'
 import { Text } from '@/design-system/primitives/Text'
 import { ConfirmDialog } from '@/components/feedback/ConfirmDialog'
+import { PrivateNoteSheet } from '@/modules/module-03-memories/components/PrivateNoteSheet'
 import { USE_SAMPLE_CONTENT } from '@/sample'
+import { useSampleFavoriteOverrides } from '@/sample/favoriteOverrides'
 import { SAMPLE_MEMORIES } from '@/sample/memories'
 import { memoriesService } from '@/services/memories'
 import type { Memory } from '@/services/memories/types'
+import { usePlansStore } from '@/state/plansStore'
 import { formatDate } from '@/utils/formatStoryDate'
 
 /**
  * M03-S02 — Memory Detail. Stitch screen b5e4bef3.
  *
- * "Share to Chat" and "More" are dropped: chat does not exist, and an overflow
- * menu with nothing behind it is worse than no menu. Favourite, edit and
- * delete are real, because the service supports all three.
+ * Favourite toggles from a colourful pill; everything else that acts ON the
+ * memory — edit, set as cover photo, our private note, remove — sits behind
+ * the kebab so a tap on the memory opens it to LOOK AT, not straight onto a
+ * row of destructive-looking buttons. "Share to Chat" stays dropped: chat
+ * does not exist, and a menu row with nothing behind it is worse than no row.
  *
  * SAMPLE-MEMORY FALLBACK. Every list screen already falls back to
  * `SAMPLE_MEMORIES` when the real store is empty, but this screen only ever
@@ -47,6 +56,11 @@ export function MemoryDetailScreen() {
   const [error, setError] = useState<string | null>(null)
   const [loaded, setLoaded] = useState(false)
   const [confirmingDelete, setConfirmingDelete] = useState(false)
+  const [menuOpen, setMenuOpen] = useState(false)
+  const [noteSheetOpen, setNoteSheetOpen] = useState(false)
+  const favoriteOverrides = useSampleFavoriteOverrides((state) => state.overrides)
+  const setFavoriteOverride = useSampleFavoriteOverrides((state) => state.setOverride)
+  const setTripCover = usePlansStore((state) => state.setTripCover)
 
   useEffect(() => {
     let cancelled = false
@@ -77,6 +91,11 @@ export function MemoryDetailScreen() {
     }
   }, [id])
 
+  // Shared with every other screen, not local-only: a sample memory has no
+  // record in the store to flip, so a `NOT_FOUND` there still updates the
+  // shared override map — see `sample/favoriteOverrides` for why.
+  const isFavorite = memory ? favoriteOverrides[memory.id] ?? memory.favorite : false
+
   const toggleFavorite = useCallback(async () => {
     if (!memory) return
 
@@ -84,17 +103,46 @@ export function MemoryDetailScreen() {
 
     if (result.ok) {
       setMemory(result.value)
+      setFavoriteOverride(memory.id, result.value.favorite)
     } else if (result.error.code === 'NOT_FOUND') {
-      setMemory((current) => (current ? { ...current, favorite: !current.favorite } : current))
+      setFavoriteOverride(memory.id, !isFavorite)
     }
-  }, [memory])
+  }, [memory, isFavorite, setFavoriteOverride])
+
+  const menuToggleFavorite = useCallback(() => {
+    setMenuOpen(false)
+    void toggleFavorite()
+  }, [toggleFavorite])
 
   const edit = useCallback(() => {
     if (!memory) return
+    setMenuOpen(false)
     router.push(`/(app)/memories/edit/${memory.id}`)
   }, [memory, router])
 
-  const confirmDelete = useCallback(() => setConfirmingDelete(true), [])
+  const openMenu = useCallback(() => setMenuOpen(true), [])
+  const closeMenu = useCallback(() => setMenuOpen(false), [])
+
+  const openPrivateNote = useCallback(() => {
+    setMenuOpen(false)
+    setNoteSheetOpen(true)
+  }, [])
+  const closePrivateNote = useCallback(() => setNoteSheetOpen(false), [])
+
+  // One trip at a time — see `plansStore`'s own header — so there is no
+  // "which trip" picker: this memory's photo just becomes ITS cover, and the
+  // itinerary the couple lands on next shows the change immediately.
+  const setAsCoverPhoto = useCallback(() => {
+    if (!memory?.photoUri) return
+    setTripCover(memory.photoUri)
+    setMenuOpen(false)
+    router.push('/(app)/plans/trip')
+  }, [memory, setTripCover, router])
+
+  const confirmDelete = useCallback(() => {
+    setMenuOpen(false)
+    setConfirmingDelete(true)
+  }, [])
   const cancelDelete = useCallback(() => setConfirmingDelete(false), [])
 
   const deleteMemory = useCallback(async () => {
@@ -123,6 +171,18 @@ export function MemoryDetailScreen() {
       </AppScreenLayout>
     )
   }
+
+  // Plain object, built from theme tokens rather than `StyleSheet.create` —
+  // Unistyles styles do not reach `LinearGradient`. See `CoverPreview`'s own
+  // `GRADIENT_FILL` for the same rule.
+  const favPillFill = {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: theme.spacing.sm,
+    height: theme.control.height,
+    borderRadius: theme.radii.pill,
+  } as const
 
   return (
     <AppScreenLayout activeTab="memories" onBack={back}>
@@ -181,23 +241,95 @@ export function MemoryDetailScreen() {
         </Text>
       ) : null}
 
-      <Button
-        label={memory.favorite ? COPY.detail.unfavorite : COPY.detail.favorite}
-        onPress={toggleFavorite}
-        variant={memory.favorite ? 'soft' : 'outline'}
-        trailing={
-          <Feather
-            name="heart"
-            size={16}
-            color={memory.favorite ? theme.colors.brand.primary : theme.colors.text.body}
-          />
-        }
-      />
-
       <View style={styles.actions}>
-        <Button label={COPY.detail.edit} onPress={edit} variant="outline" />
-        <Button label={COPY.detail.delete} onPress={confirmDelete} variant="outline" />
+        <View style={styles.favPillFlex}>
+          <PressableScale
+            onPress={toggleFavorite}
+            accessibilityLabel={isFavorite ? COPY.detail.unfavorite : COPY.detail.favorite}
+          >
+            {isFavorite ? (
+              <LinearGradient colors={theme.colors.cover.dawn} style={favPillFill}>
+                <Feather name="heart" size={16} color={theme.colors.text.heading} />
+                <Text variant="labelStrong" tone="heading">
+                  {COPY.detail.unfavorite}
+                </Text>
+              </LinearGradient>
+            ) : (
+              <View style={styles.favPillOff}>
+                <Feather name="heart" size={16} color={theme.colors.brand.primary} />
+                <Text variant="labelStrong" tone="brand">
+                  {COPY.detail.favorite}
+                </Text>
+              </View>
+            )}
+          </PressableScale>
+        </View>
+
+        <PressableScale onPress={openMenu} accessibilityLabel={COPY.detail.moreOptions}>
+          <View style={styles.kebabButton}>
+            <Feather name="more-vertical" size={20} color={theme.colors.text.heading} />
+          </View>
+        </PressableScale>
       </View>
+
+      {menuOpen ? (
+        <Modal visible transparent animationType="fade" onRequestClose={closeMenu}>
+          <Overlay onDismiss={closeMenu} dismissLabel={COPY.detail.moreOptions} align="bottom">
+            <View style={styles.sheet} accessibilityRole="alert" accessibilityViewIsModal>
+              <Text variant="h3" tone="heading">
+                {memory.title}
+              </Text>
+
+              <SettingsRow
+                icon="edit-2"
+                label={COPY.detail.menu.edit}
+                detail={COPY.detail.menu.editDetail}
+                tint={2}
+                onPress={edit}
+              />
+
+              {memory.photoUri ? (
+                <SettingsRow
+                  icon="image"
+                  label={COPY.detail.menu.setCover}
+                  detail={COPY.detail.menu.setCoverDetail}
+                  tint={0}
+                  onPress={setAsCoverPhoto}
+                />
+              ) : null}
+
+              <SettingsRow
+                icon="lock"
+                label={COPY.detail.menu.privateNote}
+                detail={COPY.detail.menu.privateNoteDetail}
+                tint={1}
+                onPress={openPrivateNote}
+              />
+
+              <SettingsRow
+                icon="heart"
+                label={isFavorite ? COPY.detail.unfavorite : COPY.detail.favorite}
+                onPress={menuToggleFavorite}
+              />
+
+              <SettingsRow
+                icon="trash-2"
+                label={COPY.detail.menu.remove}
+                detail={COPY.detail.menu.removeDetail}
+                tone="danger"
+                onPress={confirmDelete}
+              />
+            </View>
+          </Overlay>
+        </Modal>
+      ) : null}
+
+      <PrivateNoteSheet
+        visible={noteSheetOpen}
+        onClose={closePrivateNote}
+        memory={memory}
+        onUpdate={setMemory}
+      />
 
       <ConfirmDialog
         visible={confirmingDelete}
@@ -219,6 +351,41 @@ const styles = StyleSheet.create((theme) => ({
   },
   actions: {
     flexDirection: 'row',
+    alignItems: 'center',
     gap: theme.spacing.md,
+  },
+  favPillFlex: {
+    flex: 1,
+    height: theme.control.height,
+  },
+  favPillOff: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: theme.spacing.sm,
+    height: theme.control.height,
+    borderRadius: theme.radii.pill,
+    backgroundColor: theme.colors.surface.field,
+  },
+  kebabButton: {
+    width: theme.control.height,
+    height: theme.control.height,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: theme.radii.pill,
+    borderWidth: 1,
+    borderColor: theme.colors.border.subtle,
+    backgroundColor: theme.colors.surface.card,
+  },
+  sheet: {
+    gap: theme.spacing.md,
+    width: '100%',
+    maxWidth: theme.layout.column,
+    alignSelf: 'center',
+    padding: theme.spacing.xl,
+    borderTopLeftRadius: theme.radii.panel,
+    borderTopRightRadius: theme.radii.panel,
+    backgroundColor: theme.colors.surface.card,
+    boxShadow: theme.elevation.held,
   },
 }))

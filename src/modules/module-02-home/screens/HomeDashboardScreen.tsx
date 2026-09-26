@@ -28,6 +28,7 @@ import { MiniCalendar } from '@/modules/module-02-home/components/MiniCalendar'
 import { NextAdventureCard } from '@/modules/module-06-plans/components/NextAdventureCard'
 import { PhotoMemoryCard } from '@/modules/module-03-memories/components/PhotoMemoryCard'
 import { USE_SAMPLE_CONTENT } from '@/sample'
+import { useSampleFavoriteOverrides } from '@/sample/favoriteOverrides'
 import { SAMPLE_HOME } from '@/sample/home'
 import { SAMPLE_MEMORIES } from '@/sample/memories'
 import { memoriesService } from '@/services/memories'
@@ -118,7 +119,8 @@ export function HomeDashboardScreen() {
     ? SAMPLE_MEMORIES.filter((m) => m.photoUri).slice(0, 4)
     : []
   const featured = featuredSet[0]
-  const [favoriteOverrides, setFavoriteOverrides] = useState<Record<string, boolean>>({})
+  const favoriteOverrides = useSampleFavoriteOverrides((state) => state.overrides)
+  const setFavoriteOverride = useSampleFavoriteOverrides((state) => state.setOverride)
 
   // Tiles the app can genuinely count, added because the frame clips a 140pt
   // tile 74pt past the edge — a scroller holding more than three.
@@ -180,18 +182,21 @@ export function HomeDashboardScreen() {
     ? favoriteOverrides[currentFeatured.id] ?? currentFeatured.favorite
     : false
 
-  // Real, not local-only: a sample memory has no record in the store to
-  // flip, so a `NOT_FOUND` there still updates `favoriteOverrides` — same
-  // fallback `MemoryDetailScreen` uses for the identical reason.
-  const toggleFavorite = useCallback(async (id: string, current: boolean) => {
-    const result = await memoriesService.toggleFavorite({ id })
+  // Shared with every other screen, not local-only: a sample memory has no
+  // record in the store to flip, so a `NOT_FOUND` there still updates the
+  // shared override map — see `sample/favoriteOverrides` for why.
+  const toggleFavorite = useCallback(
+    async (id: string, current: boolean) => {
+      const result = await memoriesService.toggleFavorite({ id })
 
-    if (result.ok) {
-      setFavoriteOverrides((overrides) => ({ ...overrides, [id]: result.value.favorite }))
-    } else if (result.error.code === 'NOT_FOUND') {
-      setFavoriteOverrides((overrides) => ({ ...overrides, [id]: !current }))
-    }
-  }, [])
+      if (result.ok) {
+        setFavoriteOverride(id, result.value.favorite)
+      } else if (result.error.code === 'NOT_FOUND') {
+        setFavoriteOverride(id, !current)
+      }
+    },
+    [setFavoriteOverride],
+  )
 
   // The mini calendar widget shows THIS month only — the couple's key dates
   // that land in it, resolved the same way the full calendar screen does.

@@ -39,6 +39,14 @@ type SettingsRowProps = {
    */
   onPress?: () => void
   tone?: 'default' | 'danger'
+  /**
+   * Tints the icon well with one of the three `theme.colors.accents` pairs,
+   * for a menu that wants to read as colourful rather than uniform grey —
+   * the memory detail screen's kebab menu, so far. Omit for the neutral well
+   * every other settings row uses; every existing caller keeps that look
+   * unchanged by leaving this out.
+   */
+  tint?: 0 | 1 | 2
   testID?: string
 }
 
@@ -65,15 +73,18 @@ export function SettingsRow({
   valueLabel,
   onPress,
   tone = 'default',
+  tint,
   testID,
 }: SettingsRowProps) {
   const { theme } = useUnistyles()
-  const iconColour = tone === 'danger' ? theme.colors.feedback.error : theme.colors.brand.primary
+  const accent = tint !== undefined ? theme.colors.accents[tint] : null
+  const iconColour =
+    tone === 'danger' ? theme.colors.feedback.error : (accent?.ink ?? theme.colors.brand.primary)
   const accessibleName = value ? `${label}, ${valueLabel ?? value}` : label
 
   const body = (
     <View style={rowShell.row}>
-      <View style={rowShell.iconWell}>
+      <View style={[rowShell.iconWell, accent ? { backgroundColor: accent.soft } : null]}>
         <Feather name={icon} size={18} color={iconColour} />
       </View>
 

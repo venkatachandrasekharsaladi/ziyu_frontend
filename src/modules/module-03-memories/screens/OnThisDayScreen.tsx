@@ -11,6 +11,7 @@ import { Text } from '@/design-system/primitives/Text'
 import { MemoryCard } from '@/modules/module-03-memories/components/MemoryCard'
 import { PhotoMemoryCard } from '@/modules/module-03-memories/components/PhotoMemoryCard'
 import { USE_SAMPLE_CONTENT } from '@/sample'
+import { applyFavoriteOverrides, useSampleFavoriteOverrides } from '@/sample/favoriteOverrides'
 import { SAMPLE_MEMORIES } from '@/sample/memories'
 import { memoriesService } from '@/services/memories'
 import type { Memory } from '@/services/memories/types'
@@ -74,6 +75,7 @@ export function OnThisDayScreen() {
   const router = useRouter()
   const back = useBackTo('/(app)/memories')
   const [memories, setMemories] = useState<Memory[] | null>(null)
+  const favoriteOverrides = useSampleFavoriteOverrides((state) => state.overrides)
 
   useEffect(() => {
     let cancelled = false
@@ -100,17 +102,22 @@ export function OnThisDayScreen() {
 
   if (memories === null) return <AppScreenLayout activeTab="memories" />
 
+  // Sample memories carry no record in the real store, so a favourite flipped
+  // on another screen lands in the shared override map, not in `memories`
+  // itself — apply it here too (this screen's heart badges read it back).
+  const withOverrides = applyFavoriteOverrides(memories, favoriteOverrides)
+
   const now = new Date()
   let month = now.getMonth() + 1
   let day = now.getDate()
-  let groups = groupByYear(memories, month, day)
+  let groups = groupByYear(withOverrides, month, day)
 
   // Nothing today: fall back to the day the design draws, so the rail is not
   // empty for the sake of realism nobody can see yet.
   if (groups.length === 0 && USE_SAMPLE_CONTENT) {
     month = 10
     day = 14
-    groups = groupByYear(memories, month, day)
+    groups = groupByYear(withOverrides, month, day)
   }
 
   return (

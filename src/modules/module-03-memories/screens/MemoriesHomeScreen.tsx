@@ -12,6 +12,7 @@ import { AlbumCard } from '@/modules/module-03-memories/components/AlbumCard'
 import { MemoryCard } from '@/modules/module-03-memories/components/MemoryCard'
 import { PhotoMemoryCard } from '@/modules/module-03-memories/components/PhotoMemoryCard'
 import { SAMPLE_ALBUMS } from '@/sample/albums'
+import { applyFavoriteOverrides, useSampleFavoriteOverrides } from '@/sample/favoriteOverrides'
 import { SAMPLE_MEMORIES } from '@/sample/memories'
 import { USE_SAMPLE_CONTENT } from '@/sample'
 import { memoriesService } from '@/services/memories'
@@ -44,6 +45,7 @@ const RAIL_SNAP = 116 + 12
 export function MemoriesHomeScreen() {
   const router = useRouter()
   const [memories, setMemories] = useState<Memory[] | null>(null)
+  const favoriteOverrides = useSampleFavoriteOverrides((state) => state.overrides)
 
   useEffect(() => {
     let cancelled = false
@@ -91,10 +93,15 @@ export function MemoriesHomeScreen() {
     )
   }
 
+  // Sample memories carry no record in the real store, so a favourite flipped
+  // on another screen (Home's featured card, the detail screen) lands in the
+  // shared override map, not in `memories` itself — apply it here too.
+  const withOverrides = applyFavoriteOverrides(memories, favoriteOverrides)
+
   // "On this day" leads with a favourite that has a photo — the design's hero is
   // a polaroid, so a text-only memory there would draw an empty frame.
-  const onThisDay = memories.find((m) => m.photoUri && m.favorite) ?? memories[0]
-  const recent = memories.filter((m) => m.id !== onThisDay?.id).slice(0, 6)
+  const onThisDay = withOverrides.find((m) => m.photoUri && m.favorite) ?? withOverrides[0]
+  const recent = withOverrides.filter((m) => m.id !== onThisDay?.id).slice(0, 6)
 
   return (
     <AppScreenLayout activeTab="memories">

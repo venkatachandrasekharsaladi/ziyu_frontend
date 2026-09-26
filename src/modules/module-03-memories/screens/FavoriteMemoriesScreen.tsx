@@ -10,6 +10,7 @@ import { Text } from '@/design-system/primitives/Text'
 import { MemoryCard } from '@/modules/module-03-memories/components/MemoryCard'
 import { PhotoMemoryCard } from '@/modules/module-03-memories/components/PhotoMemoryCard'
 import { USE_SAMPLE_CONTENT } from '@/sample'
+import { applyFavoriteOverrides, useSampleFavoriteOverrides } from '@/sample/favoriteOverrides'
 import { SAMPLE_MEMORIES } from '@/sample/memories'
 import { memoriesService } from '@/services/memories'
 import type { Memory } from '@/services/memories/types'
@@ -25,6 +26,7 @@ export function FavoriteMemoriesScreen() {
   const router = useRouter()
   const back = useBackTo('/(app)/memories')
   const [memories, setMemories] = useState<Memory[] | null>(null)
+  const favoriteOverrides = useSampleFavoriteOverrides((state) => state.overrides)
 
   useEffect(() => {
     let cancelled = false
@@ -50,7 +52,11 @@ export function FavoriteMemoriesScreen() {
 
   if (memories === null) return <AppScreenLayout activeTab="memories" onBack={back} />
 
-  const favorites = memories.filter((m) => m.favorite)
+  // Sample memories carry no record in the real store, so favouriting one
+  // elsewhere (Home's featured card, the detail screen) lands in the shared
+  // override map rather than in `memories` itself — apply it here too, or a
+  // memory favourited on another screen never shows up in this list.
+  const favorites = applyFavoriteOverrides(memories, favoriteOverrides).filter((m) => m.favorite)
 
   return (
     <AppScreenLayout activeTab="memories" onBack={back}>

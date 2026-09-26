@@ -12,6 +12,8 @@ import { Text } from '@/design-system/primitives/Text'
 import { PhotoMemoryCard } from '@/modules/module-03-memories/components/PhotoMemoryCard'
 import { SAMPLE_HOME } from '@/sample/home'
 import { findAlbum, memoriesInAlbum } from '@/sample/albums'
+import { applyFavoriteOverrides, useSampleFavoriteOverrides } from '@/sample/favoriteOverrides'
+import { SAMPLE_MEMORIES } from '@/sample/memories'
 import { USE_SAMPLE_CONTENT } from '@/sample'
 
 /**
@@ -28,6 +30,7 @@ export function AlbumDetailScreen() {
   const router = useRouter()
   const back = useBackTo('/(app)/memories')
   const { key } = useLocalSearchParams<{ key: string }>()
+  const favoriteOverrides = useSampleFavoriteOverrides((state) => state.overrides)
   /*
    * Gated with the list screen. With the sample switch off there are no album
    * cards to tap, but the route is still a URL — and this app ships a web
@@ -49,7 +52,11 @@ export function AlbumDetailScreen() {
     )
   }
 
-  const memories = memoriesInAlbum(album)
+  // The Favorites album is backed by the `favorite` flag, and a sample
+  // memory has no record in the real store to carry a flipped flag — apply
+  // the shared override map, or favouriting one elsewhere never shows up
+  // here (see `sample/favoriteOverrides`).
+  const memories = memoriesInAlbum(album, applyFavoriteOverrides(SAMPLE_MEMORIES, favoriteOverrides))
 
   return (
     <AppScreenLayout activeTab="memories" onBack={back}>
