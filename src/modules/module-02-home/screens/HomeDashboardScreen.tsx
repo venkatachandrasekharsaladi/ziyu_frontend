@@ -21,10 +21,9 @@ import { SectionPanel } from '@/design-system/patterns/SectionPanel'
 import { Button } from '@/design-system/primitives/Button'
 import { Card } from '@/design-system/primitives/Card'
 import { Text } from '@/design-system/primitives/Text'
-import { buildComingUp, dateInDays } from '@/modules/module-02-home/comingUp'
+import { buildComingUp } from '@/modules/module-02-home/comingUp'
 import { CompatibilityCard } from '@/modules/module-02-home/components/CompatibilityCard'
 import { FlashCard } from '@/modules/module-02-home/components/FlashCard'
-import { MiniCalendar } from '@/modules/module-02-home/components/MiniCalendar'
 import { NextAdventureCard } from '@/modules/module-06-plans/components/NextAdventureCard'
 import { PhotoMemoryCard } from '@/modules/module-03-memories/components/PhotoMemoryCard'
 import { USE_SAMPLE_CONTENT } from '@/sample'
@@ -173,18 +172,6 @@ export function HomeDashboardScreen() {
   // The pager's current page, wherever it landed — Backstory acts on
   // whatever the couple is actually looking at, not always the first card.
   const currentFeatured = featuredSet[featuredIndex] ?? featured
-
-  // The mini calendar widget shows THIS month only — the couple's key dates
-  // that land in it, resolved the same way the full calendar screen does.
-  const today = new Date()
-  const calendarYear = today.getFullYear()
-  const calendarMonth = today.getMonth()
-  const calendarMarked = new Set(
-    upcoming
-      .map((row) => dateInDays(row.days, today))
-      .filter((on) => on.getFullYear() === calendarYear && on.getMonth() === calendarMonth)
-      .map((on) => on.getDate()),
-  )
 
   return (
     <AppScreenLayout activeTab="home">
@@ -395,14 +382,6 @@ export function HomeDashboardScreen() {
           ))}
         </SectionPanel>
       ) : null}
-
-      <MiniCalendar
-        year={calendarYear}
-        month={calendarMonth}
-        today={today.getDate()}
-        markedDays={calendarMarked}
-        onPress={openCalendar}
-      />
 
       <SectionPanel title={COPY.littleThingsLabel}>
         {USE_SAMPLE_CONTENT && SAMPLE_HOME.littleThings.length > 0 ? (
