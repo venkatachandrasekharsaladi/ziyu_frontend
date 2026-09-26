@@ -1,17 +1,11 @@
 import { useRouter } from 'expo-router'
-import { useCallback, useState } from 'react'
-import { View } from 'react-native'
-import { StyleSheet } from 'react-native-unistyles'
+import { useCallback } from 'react'
 
 import { useBackTo } from '@/hooks/useBackTo'
 import { MEMORIES_COPY as COPY } from '@/copy/memories'
 import { AppScreenLayout } from '@/design-system/patterns/AppScreenLayout'
-import { usePhotoPick } from '@/hooks/usePhotoPick'
-import { PhotoPicker } from '@/design-system/patterns/PhotoPicker'
-import { Button } from '@/design-system/primitives/Button'
-import { DateField } from '@/design-system/primitives/DateField'
-import { Input } from '@/design-system/primitives/Input'
 import { Text } from '@/design-system/primitives/Text'
+import { MemoryForm, type MemoryFormValues } from '@/modules/module-03-memories/components/MemoryForm'
 import { memoriesService } from '@/services/memories'
 import { useRelationshipStore } from '@/state/relationshipStore'
 
@@ -20,63 +14,32 @@ import { useRelationshipStore } from '@/state/relationshipStore'
  *
  * Only the title is required. Everything the design marks optional stays
  * optional, and the private "Our Note" keeps its own label so it is obvious
- * which field the partner will read.
+ * which field the partner will read. The form itself is `MemoryForm` —
+ * `EditMemoryScreen`'s only real difference is what it starts with and what
+ * it calls on submit.
  */
 export function AddMemoryScreen() {
   const router = useRouter()
   const back = useBackTo('/(app)/memories')
   const profile = useRelationshipStore((state) => state.profile)
 
-  const [title, setTitle] = useState('')
-  const [date, setDate] = useState('')
-  const [caption, setCaption] = useState('')
-  const [location, setLocation] = useState('')
-  const [note, setNote] = useState('')
-  const [error, setError] = useState<string | null>(null)
-  const [formError, setFormError] = useState<string | null>(null)
-  const [saving, setSaving] = useState(false)
+  const submit = useCallback(
+    async (values: MemoryFormValues) => {
+      const result = await memoriesService.create({
+        ...values,
+        tags: [],
+        addedBy: profile?.name,
+      })
 
-  const submit = useCallback(async () => {
-    if (!title.trim()) {
-      setError(COPY.add.titleRequired)
-      return
-    }
+      if (!result.ok) return COPY.add.errors[result.error.code]
 
-    setSaving(true)
-    setFormError(null)
-
-    const result = await memoriesService.create({
-      title: title.trim(),
-      date,
-      caption: caption.trim() || undefined,
-      location: location.trim() || undefined,
-      note: note.trim() || undefined,
-      tags: [],
-      addedBy: profile?.name,
-      // Local uri from the picker. Nothing is uploaded — see `services/media`.
-      photoUri: photoUri ?? undefined,
-    })
-
-    setSaving(false)
-
-    if (!result.ok) {
-      setFormError(COPY.add.errors[result.error.code])
-      return
-    }
-
-    // replace, not push: going "back" to a blank form from the memory you just
-    // saved is not a place anyone wants to return to.
-    router.replace('/(app)/memories')
-  }, [title, date, caption, location, note, profile, router])
-
-  const [photoUri, setPhotoUri] = useState<string | null>(null)
-  /*
-   * The real picker. This was `useCallback(() => {}, [])` while
-   * `expo-image-picker` was uninstalled — a control that looked live and did
-   * nothing. `usePhotoPick` owns the permission dance and treats cancelling as
-   * a decision rather than an error; see the hook.
-   */
-  const { pick, error: photoError } = usePhotoPick(setPhotoUri, { allowsEditing: true, aspect: [4, 3] })
+      // replace, not push: going "back" to a blank form from the memory you
+      // just saved is not a place anyone wants to return to.
+      router.replace('/(app)/memories')
+      return null
+    },
+    [profile, router],
+  )
 
   return (
     <AppScreenLayout activeTab="memories" onBack={back}>
@@ -84,75 +47,7 @@ export function AddMemoryScreen() {
         {COPY.add.heading}
       </Text>
 
-      <View style={styles.photo}>
-        <PhotoPicker label={COPY.add.photoLabel} name={title} uri={photoUri} onPick={pick} />
-
-        {photoError ? (
-          <Text variant="footnote" tone="error" align="center">
-            {photoError}
-          </Text>
-        ) : null}
-      </View>
-
-      <View style={styles.form}>
-        <Input
-          label={COPY.add.titleLabel}
-          value={title}
-          onChangeText={(next) => {
-            setTitle(next)
-            setError(null)
-          }}
-          placeholder={COPY.add.titlePlaceholder}
-          autoCapitalize="sentences"
-          error={error ?? undefined}
-        />
-
-        <DateField label={COPY.add.dateLabel} value={date} onChangeText={setDate} />
-
-        <Input
-          label={COPY.add.captionLabel}
-          value={caption}
-          onChangeText={setCaption}
-          placeholder={COPY.add.captionPlaceholder}
-          autoCapitalize="sentences"
-          multiline
-        />
-
-        <Input
-          label={COPY.add.locationLabel}
-          value={location}
-          onChangeText={setLocation}
-          placeholder={COPY.add.locationPlaceholder}
-          autoCapitalize="words"
-        />
-
-        <Input
-          label={COPY.add.noteLabel}
-          value={note}
-          onChangeText={setNote}
-          placeholder={COPY.add.notePlaceholder}
-          autoCapitalize="sentences"
-          multiline
-        />
-
-        {formError ? (
-          <Text variant="footnote" tone="error" align="center">
-            {formError}
-          </Text>
-        ) : null}
-
-        <Button label={COPY.add.submit} onPress={submit} loading={saving} />
-        <Button label={COPY.add.cancel} onPress={back} variant="link" />
-      </View>
+      <MemoryForm submitLabel={COPY.add.submit} onCancel={back} onSubmit={submit} />
     </AppScreenLayout>
   )
 }
-
-const styles = StyleSheet.create((theme) => ({
-  photo: {
-    paddingBottom: theme.spacing.md,
-  },
-  form: {
-    gap: theme.spacing.md,
-  },
-}))

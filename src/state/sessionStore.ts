@@ -1,5 +1,7 @@
 import { create } from 'zustand'
+import { persist } from 'zustand/middleware'
 
+import { createMockPersistStorage } from '@/state/mockPersistStorage'
 import type { Session } from '@/services/auth/types'
 
 type SessionState = {
@@ -13,6 +15,8 @@ type SessionState = {
   reset: () => void
 }
 
+type PersistedSessionState = Pick<SessionState, 'session'>
+
 /**
  * WHO IS SIGNED IN.
  *
@@ -22,25 +26,33 @@ type SessionState = {
  * by anyone who typed it — on web that is a URL bar, and this app ships a web
  * build.
  *
- * NOTHING PERSISTS, exactly like `relationshipStore` — and for the same stated
- * reason: there is no token worth keeping until a real provider issues one, so
- * `expo-secure-store` is still not installed. A reload signs you out. That is
- * the honest behaviour for a client with no backend, and it is the one thing
- * that has to change first when a real session arrives: persist here, and the
- * guards keep working unchanged.
+ * PERSISTS IN MOCK MODE ONLY, via `createMockPersistStorage` — see that
+ * file's header for why. Against a real backend this stays exactly what the
+ * comment above used to say: nothing persists here, because the thing worth
+ * keeping is a refresh token, and that lives in `services/http/tokens.ts`
+ * once a real provider issues one.
  */
-export const useSessionStore = create<SessionState>((set) => ({
-  session: null,
+export const useSessionStore = create<SessionState>()(
+  persist(
+    (set) => ({
+      session: null,
 
-  signedIn: (session) => set({ session }),
+      signedIn: (session) => set({ session }),
 
-  emailVerified: () =>
-    set((state) =>
-      state.session ? { session: { ...state.session, emailVerified: true } } : state,
-    ),
+      emailVerified: () =>
+        set((state) =>
+          state.session ? { session: { ...state.session, emailVerified: true } } : state,
+        ),
 
-  reset: () => set({ session: null }),
-}))
+      reset: () => set({ session: null }),
+    }),
+    {
+      name: 'tales-of-two:session',
+      storage: createMockPersistStorage<PersistedSessionState>(),
+      partialize: (state): PersistedSessionState => ({ session: state.session }),
+    },
+  ),
+)
 
 /** True once someone is signed in, whether or not they have verified email. */
 export const selectIsSignedIn = (state: SessionState) => state.session !== null

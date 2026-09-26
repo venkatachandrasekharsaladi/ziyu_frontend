@@ -65,6 +65,27 @@ export function createMockMemoriesService({
       return { ok: true, value: memory }
     },
 
+    async update({ id, ...edit }) {
+      await wait(latencyMs)
+
+      const found = store.get(id)
+      if (!found) return fail('NOT_FOUND')
+
+      const next = { ...found, ...edit }
+      store.set(id, next)
+
+      return { ok: true, value: next }
+    },
+
+    async delete({ id }) {
+      await wait(latencyMs)
+
+      if (!store.has(id)) return fail('NOT_FOUND')
+      store.delete(id)
+
+      return { ok: true, value: undefined }
+    },
+
     async updatePrivateNote({ id, note }) {
       await wait(latencyMs)
       const found = store.get(id)

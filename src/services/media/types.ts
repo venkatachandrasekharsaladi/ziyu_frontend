@@ -35,6 +35,13 @@ export type PickedPhoto = {
   height: number
 }
 
+export type PickedVideo = {
+  /** A local `file://` URI. Nothing has been uploaded. */
+  uri: string
+  /** Milliseconds, when the picker reports one. */
+  durationMs?: number
+}
+
 export type PickOptions = {
   /**
    * Offers the system crop step. Used where the result lands in a fixed frame —
@@ -51,4 +58,8 @@ export type MediaService = {
   pickPhoto: (options?: PickOptions) => Promise<Result<PickedPhoto>>
   /** Opens the camera. */
   takePhoto: (options?: PickOptions) => Promise<Result<PickedPhoto>>
+  /** Opens the video library. */
+  pickVideo: () => Promise<Result<PickedVideo>>
+  /** Opens the camera in video mode. */
+  takeVideo: () => Promise<Result<PickedVideo>>
 }

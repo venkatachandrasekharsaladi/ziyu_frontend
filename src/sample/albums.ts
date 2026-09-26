@@ -1,3 +1,4 @@
+import { LOCAL_PHOTO } from '@/sample/localPhotos'
 import { SAMPLE_MEMORIES } from '@/sample/memories'
 import { samplePhotoSquare } from '@/sample/photos'
 import type { Memory } from '@/services/memories/types'
@@ -22,45 +23,72 @@ export type Album = {
   emoji: string
   /** Figma's drawn count. */
   sampleCount: number
+  /** The small thumbnail on the albums grid. */
   coverUri: string
+  /** The big banner behind the title on that album's own detail page — a
+   * different photo from `coverUri` on purpose, per the design. */
+  heroUri: string
+  /**
+   * Where `AlbumDetailScreen`'s `contentFit="cover"` anchors its crop.
+   * `bottom` for Birthdays: the source photo has a caption baked across its
+   * top edge, and anchoring to the bottom keeps that out of the crop instead
+   * of pre-editing the file.
+   */
+  heroContentPosition?: 'center' | 'bottom'
 }
 
 export const SAMPLE_ALBUMS: Album[] = [
-  { key: 'Us', label: 'Us', emoji: '❤️', sampleCount: 86, coverUri: samplePhotoSquare('wedding', 800) },
+  {
+    key: 'Us',
+    label: 'Us',
+    emoji: '❤️',
+    sampleCount: 86,
+    coverUri: LOCAL_PHOTO.albumsUs,
+    heroUri: LOCAL_PHOTO.underAlbumsUs,
+  },
   {
     key: 'Trips',
     label: 'Trips',
     emoji: '✈️',
     sampleCount: 32,
-    coverUri: samplePhotoSquare('santorini', 800),
+    coverUri: LOCAL_PHOTO.albumsTrips,
+    heroUri: LOCAL_PHOTO.underAlbumsTrips,
   },
   {
     key: 'Dates',
     label: 'Dates',
     emoji: '☕',
     sampleCount: 24,
-    coverUri: samplePhotoSquare('coastPalm', 800),
+    coverUri: LOCAL_PHOTO.albumsDates,
+    heroUri: LOCAL_PHOTO.underAlbumsDates,
   },
   {
     key: 'Birthdays',
     label: 'Birthdays',
     emoji: '🎂',
     sampleCount: 12,
+    // Cover still pending — the user is sending a dedicated one.
     coverUri: samplePhotoSquare('balloons', 800),
+    heroUri: LOCAL_PHOTO.underAlbumsBirthdays,
+    heroContentPosition: 'bottom',
   },
   {
     key: 'Little Things',
     label: 'Little Things',
     emoji: '🌼',
     sampleCount: 18,
+    // Cover still pending — the user is sending a dedicated one.
     coverUri: samplePhotoSquare('flowers', 800),
+    heroUri: LOCAL_PHOTO.underAlbumsLittleThings,
   },
   {
     key: 'favorites',
     label: 'Favorites',
     emoji: '⭐',
     sampleCount: 9,
+    // Cover still pending — the user is sending a dedicated one.
     coverUri: samplePhotoSquare('heartLights', 800),
+    heroUri: LOCAL_PHOTO.underAlbumsFavourites,
   },
 ]
 

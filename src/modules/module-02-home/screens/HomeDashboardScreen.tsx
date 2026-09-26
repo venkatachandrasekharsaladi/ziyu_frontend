@@ -1,7 +1,7 @@
 import { Feather } from '@expo/vector-icons'
 import { Image } from 'expo-image'
 import { useRouter } from 'expo-router'
-import { useCallback, useState } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 import {
   type LayoutChangeEvent,
   type NativeScrollEvent,
@@ -16,17 +16,22 @@ import { HOME_DASHBOARD_COPY as COPY } from '@/copy/homeDashboard'
 import { AppScreenLayout } from '@/design-system/patterns/AppScreenLayout'
 import { CountUp } from '@/design-system/primitives/CountUp'
 import { EventRow } from '@/design-system/patterns/EventRow'
+import { OccasionCard } from '@/design-system/patterns/OccasionCard'
 import { SectionPanel } from '@/design-system/patterns/SectionPanel'
 import { Button } from '@/design-system/primitives/Button'
 import { Card } from '@/design-system/primitives/Card'
 import { Text } from '@/design-system/primitives/Text'
-import { buildComingUp } from '@/modules/module-02-home/comingUp'
+import { buildComingUp, dateInDays } from '@/modules/module-02-home/comingUp'
+import { CompatibilityCard } from '@/modules/module-02-home/components/CompatibilityCard'
+import { FlashCard } from '@/modules/module-02-home/components/FlashCard'
+import { MiniCalendar } from '@/modules/module-02-home/components/MiniCalendar'
 import { NextAdventureCard } from '@/modules/module-06-plans/components/NextAdventureCard'
-import { StatTile } from '@/modules/module-02-home/components/StatTile'
 import { PhotoMemoryCard } from '@/modules/module-03-memories/components/PhotoMemoryCard'
 import { USE_SAMPLE_CONTENT } from '@/sample'
 import { SAMPLE_HOME } from '@/sample/home'
 import { SAMPLE_MEMORIES } from '@/sample/memories'
+import { memoriesService } from '@/services/memories'
+import { useRelationshipStore } from '@/state/relationshipStore'
 import { useSpaceStore } from '@/state/spaceStore'
 import { useStoryStore } from '@/state/storyStore'
 import { daysSince } from '@/utils/daysUntil'
@@ -49,6 +54,9 @@ const DATE_ICONS: Partial<Record<DateKey | string, keyof typeof Feather.glyphMap
   firstMeeting: 'star',
 }
 
+/** `FlashCard`'s fixed width in the "Your little world" row. Figma 3337:542 etc. */
+const STAT_CELL_WIDTH = 140
+
 /**
  * M02-S01 — Home Dashboard. Figma `Ziyu`, the three dashboard variants plus the
  * "List of Feature on Home Screen" note pinned beside them.
@@ -59,11 +67,12 @@ const DATE_ICONS: Partial<Record<DateKey | string, keyof typeof Feather.glyphMap
  * things". The two sections the canvas annotates `←need this section` are the
  * stat tiles and "Coming up".
  *
- * The list sections are `SectionPanel` + `EventRow`, per the Stitch frame: an
- * `h3` title and inset row cards on one grouped surface, replacing the muted
- * uppercase caption over loose cards. "Coming up" and "Upcoming" both get it —
- * they are the same pattern twice on one screen, and giving them two different
- * treatments would only read as a bug.
+ * "Coming up" is `SectionPanel` + `EventRow`, per the Stitch frame: an `h3`
+ * title and inset row cards on one grouped surface, replacing the muted
+ * uppercase caption over loose cards. "Upcoming" is the same list shape
+ * (Figma 3337:596 — icon badge, title, detail, countdown pill) through
+ * `OccasionCard` instead of `EventRow`, since its badge is a circle rather
+ * than `EventRow`'s square tile — no stack, no swipe, both are plain lists.
  *
  * Real data wins wherever the story store holds it — days together and the
  * countdowns are still computed, never invented. Sample content fills the rest
@@ -77,6 +86,7 @@ export function HomeDashboardScreen() {
   const { theme } = useUnistyles()
   const story = useStoryStore()
   const spaceName = useSpaceStore((state) => state.name)
+  const relationshipStatus = useRelationshipStore((state) => state.status)
 
   const computedTogether = daysSince(story.met?.value)
   const together = computedTogether ?? (USE_SAMPLE_CONTENT ? SAMPLE_HOME.daysTogether : null)
@@ -86,6 +96,21 @@ export function HomeDashboardScreen() {
   const upcoming = buildComingUp(story.keyDates)
 
   const name = spaceName ?? (USE_SAMPLE_CONTENT ? SAMPLE_HOME.greetingName : null)
+
+  /*
+   * "Lovely Couple" reads as the app not noticing when there is no partner
+   * yet. That is only ever true of a REAL space name — the sample fallback
+   * above is standing in for a fully-paired couple's dashboard and stays on
+   * the couple greeting regardless of this device's own pairing status.
+   *
+   * The line itself is picked once per visit, not per render: `useMemo` with
+   * no deps runs the pick exactly once for the life of this mount.
+   */
+  const soloGreeting = useMemo(
+    () => COPY.soloGreetings[Math.floor(Math.random() * COPY.soloGreetings.length)],
+    [],
+  )
+  const isSolo = Boolean(spaceName) && relationshipStatus !== 'connected'
   // "A memory worth keeping" is a pager, not a single card: swiping it moves to
   // the next memory. The frame draws one card, but it clips the next album card
   // too — the same gesture reading applies.
@@ -93,6 +118,7 @@ export function HomeDashboardScreen() {
     ? SAMPLE_MEMORIES.filter((m) => m.photoUri).slice(0, 4)
     : []
   const featured = featuredSet[0]
+  const [favoriteOverrides, setFavoriteOverrides] = useState<Record<string, boolean>>({})
 
   // Tiles the app can genuinely count, added because the frame clips a 140pt
   // tile 74pt past the edge — a scroller holding more than three.
@@ -119,7 +145,6 @@ export function HomeDashboardScreen() {
 
   const addMemory = useCallback(() => router.push('/(app)/memories/new'), [router])
   const openMemory = useCallback((id: string) => router.push(`/(app)/memories/${id}`), [router])
-  const openMemories = useCallback(() => router.replace('/(app)/memories'), [router])
 
   const [pagerWidth, setPagerWidth] = useState(0)
 
@@ -147,12 +172,45 @@ export function HomeDashboardScreen() {
   )
   const openCalendar = useCallback(() => router.push('/(app)/calendar'), [router])
 
+  // The pager's current page, wherever it landed — Favourite and Backstory
+  // both act on whatever the couple is actually looking at, not always the
+  // first card.
+  const currentFeatured = featuredSet[featuredIndex] ?? featured
+  const currentFeaturedIsFavorite = currentFeatured
+    ? favoriteOverrides[currentFeatured.id] ?? currentFeatured.favorite
+    : false
+
+  // Real, not local-only: a sample memory has no record in the store to
+  // flip, so a `NOT_FOUND` there still updates `favoriteOverrides` — same
+  // fallback `MemoryDetailScreen` uses for the identical reason.
+  const toggleFavorite = useCallback(async (id: string, current: boolean) => {
+    const result = await memoriesService.toggleFavorite({ id })
+
+    if (result.ok) {
+      setFavoriteOverrides((overrides) => ({ ...overrides, [id]: result.value.favorite }))
+    } else if (result.error.code === 'NOT_FOUND') {
+      setFavoriteOverrides((overrides) => ({ ...overrides, [id]: !current }))
+    }
+  }, [])
+
+  // The mini calendar widget shows THIS month only — the couple's key dates
+  // that land in it, resolved the same way the full calendar screen does.
+  const today = new Date()
+  const calendarYear = today.getFullYear()
+  const calendarMonth = today.getMonth()
+  const calendarMarked = new Set(
+    upcoming
+      .map((row) => dateInDays(row.days, today))
+      .filter((on) => on.getFullYear() === calendarYear && on.getMonth() === calendarMonth)
+      .map((on) => on.getDate()),
+  )
+
   return (
     <AppScreenLayout activeTab="home">
       <View style={styles.head}>
         {name ? (
           <Text variant="h2" tone="heading" align="center">
-            {COPY.greeting(name, new Date().getHours())}
+            {isSolo ? soloGreeting : COPY.greeting(name, new Date().getHours())}
           </Text>
         ) : null}
 
@@ -189,19 +247,48 @@ export function HomeDashboardScreen() {
             >
               {featuredSet.map((memory) => (
                 <View key={memory.id} style={{ width: pagerWidth || '100%' }}>
-                  <PhotoMemoryCard memory={memory} onPress={openMemory} />
+                  <PhotoMemoryCard memory={memory} onPress={openMemory} photoTap="press" />
                 </View>
               ))}
             </ScrollView>
           </View>
 
+          {/*
+           * "if there is a story it will display, or else" — the sketch's
+           * own words for this branch. `note` is what the design calls
+           * "Our Note" (see `Memory.note`'s own comment); empty is common,
+           * since most memories never get one.
+           */}
+          {currentFeatured?.note ? (
+            <Text variant="footnote" tone="body">
+              {currentFeatured.note}
+            </Text>
+          ) : (
+            <Pressable
+              onPress={() => currentFeatured && openMemory(currentFeatured.id)}
+              style={styles.addStory}
+              accessibilityRole="button"
+              accessibilityLabel={COPY.featuredNotePrompt}
+            >
+              <Text variant="footnote" tone="muted">
+                {COPY.featuredNotePrompt}
+              </Text>
+            </Pressable>
+          )}
+
           <View style={styles.featuredActions}>
             <Button
-              label={COPY.featuredOpen}
-              onPress={() => openMemory((featuredSet[featuredIndex] ?? featured).id)}
+              label={COPY.featuredFavorite}
+              onPress={() =>
+                currentFeatured && toggleFavorite(currentFeatured.id, currentFeaturedIsFavorite)
+              }
+              variant={currentFeaturedIsFavorite ? 'primary' : 'outline'}
+            />
+            <Button
+              label={COPY.featuredBackstory}
+              onPress={() => currentFeatured && openMemory(currentFeatured.id)}
               variant="soft"
             />
-            <Button label={COPY.featuredFavorite} onPress={openMemories} variant="outline" />
           </View>
         </View>
       ) : null}
@@ -223,23 +310,32 @@ export function HomeDashboardScreen() {
           <ScrollView
             horizontal
             showsHorizontalScrollIndicator={false}
-            snapToInterval={140 + 12}
+            snapToInterval={STAT_CELL_WIDTH + theme.spacing.md}
             decelerationRate="fast"
             contentContainerStyle={styles.tileRow}
             testID="stat-rail"
           >
-            {statTiles.map((stat) => (
+            {statTiles.map((stat, i) => (
               <View key={stat.key} style={styles.statCell}>
-                <StatTile
+                <FlashCard
                   icon={stat.icon as keyof typeof Feather.glyphMap}
                   value={stat.value}
                   label={stat.label}
                   unit={stat.unit || undefined}
+                  index={i}
                 />
               </View>
             ))}
           </ScrollView>
         </View>
+      ) : null}
+
+      {USE_SAMPLE_CONTENT ? (
+        <CompatibilityCard
+          you={SAMPLE_HOME.compatibility.you}
+          partner={SAMPLE_HOME.compatibility.partner}
+          onPress={() => router.push('/(app)/compatibility')}
+        />
       ) : null}
 
       {spotlight ? (
@@ -322,16 +418,25 @@ export function HomeDashboardScreen() {
       {USE_SAMPLE_CONTENT ? (
         <SectionPanel title={COPY.upcomingLabel}>
           {SAMPLE_HOME.upcomingEvents.map((event, i) => (
-            <EventRow
+            <OccasionCard
               key={event.key}
               icon={event.icon as keyof typeof Feather.glyphMap}
               label={event.label}
               detail={event.detail}
+              trailing={COPY.daysShort(event.days)}
               index={i}
             />
           ))}
         </SectionPanel>
       ) : null}
+
+      <MiniCalendar
+        year={calendarYear}
+        month={calendarMonth}
+        today={today.getDate()}
+        markedDays={calendarMarked}
+        onPress={openCalendar}
+      />
 
       <SectionPanel title={COPY.littleThingsLabel}>
         {USE_SAMPLE_CONTENT && SAMPLE_HOME.littleThings.length > 0 ? (
@@ -377,18 +482,23 @@ const styles = StyleSheet.create((theme) => ({
   section: {
     gap: theme.spacing.md,
   },
+  tileRow: {
+    gap: theme.spacing.md,
+  },
+  statCell: {
+    width: STAT_CELL_WIDTH,
+  },
   featuredActions: {
     flexDirection: 'row',
     gap: theme.spacing.md,
   },
-  statCell: {
-    // The width the frame actually draws, rather than three squeezed to fit.
-    width: 140,
-    flexDirection: 'row',
-  },
-  tileRow: {
-    flexDirection: 'row',
-    gap: theme.spacing.md,
+  /** The "if there is a story it will display, or else" prompt's empty state. */
+  addStory: {
+    padding: theme.spacing.md,
+    borderRadius: theme.radii.field,
+    borderWidth: 1,
+    borderStyle: 'dashed',
+    borderColor: theme.colors.border.subtle,
   },
   pulseRow: {
     flexDirection: 'row',

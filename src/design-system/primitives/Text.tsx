@@ -15,6 +15,7 @@ export type TextVariant =
   | 'captionAction'
   | 'tabLabel'
   | 'countdown'
+  | 'statValue'
 
 export type TextTone =
   | 'heading'
@@ -94,6 +95,7 @@ const styles = StyleSheet.create((theme) => ({
         captionAction: theme.typography.captionAction,
         tabLabel: theme.typography.tabLabel,
         countdown: theme.typography.countdown,
+        statValue: theme.typography.statValue,
       },
       tone: {
         heading: { color: theme.colors.text.heading },

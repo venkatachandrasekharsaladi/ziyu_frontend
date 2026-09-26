@@ -72,6 +72,8 @@ type PlansState = {
    * before.
    */
   setGeneratedTrip: (trip: Trip) => void
+  /** The couple's own choice of cover photo, from `CoverPhotoField`. */
+  setTripCover: (uri: string) => void
 
   /* --- year board --- */
   cycleTile: (tileId: string) => void
@@ -153,6 +155,8 @@ export const usePlansStore = create<PlansState>((set, get) => ({
     })),
 
   setGeneratedTrip: (trip) => set({ trip, selectedDay: 1 }),
+
+  setTripCover: (uri) => set((state) => ({ trip: { ...state.trip, coverUri: uri } })),
 
   cycleTile: (tileId) =>
     set((state) => ({

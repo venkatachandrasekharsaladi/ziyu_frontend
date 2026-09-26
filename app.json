@@ -37,7 +37,8 @@
       ],
       "react-native-edge-to-edge",
       "expo-video",
-      "expo-maps"
+      "expo-maps",
+      "expo-audio"
     ],
     "experiments": {
       "baseUrl": "/ziyu_frontend",

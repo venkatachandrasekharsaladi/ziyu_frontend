@@ -40,6 +40,9 @@ type MemoryResponse = {
   caption?: string | null
   location?: string | null
   photoUri?: string | null
+  videoUri?: string | null
+  voiceUri?: string | null
+  voiceDurationMs?: number | null
   note?: string | null
   myPrivateNote?: string | null
   partnerPrivateNote?: string | null
@@ -70,6 +73,9 @@ function toMemory(row: MemoryResponse): Memory {
     caption: optional(row.caption),
     location: optional(row.location),
     photoUri: optional(row.photoUri),
+    videoUri: optional(row.videoUri),
+    voiceUri: optional(row.voiceUri),
+    voiceDurationMs: row.voiceDurationMs ?? undefined,
     note: optional(row.note),
     myPrivateNote: optional(row.myPrivateNote),
     partnerPrivateNote: optional(row.partnerPrivateNote),
@@ -118,8 +124,42 @@ export function createHttpMemoriesService(): MemoriesService {
     async create(input: NewMemory): Promise<Result<Memory>> {
       try {
         const photoUri = await ensureRemoteUri(input.photoUri)
-        const created = await post<MemoryResponse>('/memories', { ...input, photoUri })
+        const videoUri = await ensureRemoteUri(input.videoUri)
+        const voiceUri = await ensureRemoteUri(input.voiceUri)
+        const created = await post<MemoryResponse>('/memories', {
+          ...input,
+          photoUri,
+          videoUri,
+          voiceUri,
+        })
         return ok(toMemory(created))
+      } catch (error) {
+        return fail(error)
+      }
+    },
+
+    async update(input): Promise<Result<Memory>> {
+      try {
+        const { id, ...edit } = input
+        const photoUri = await ensureRemoteUri(edit.photoUri)
+        const videoUri = await ensureRemoteUri(edit.videoUri)
+        const voiceUri = await ensureRemoteUri(edit.voiceUri)
+        const updated = await put<MemoryResponse>(`/memories/${encodeURIComponent(id)}`, {
+          ...edit,
+          photoUri,
+          videoUri,
+          voiceUri,
+        })
+        return ok(toMemory(updated))
+      } catch (error) {
+        return fail(error)
+      }
+    },
+
+    async delete(input: { id: string }): Promise<Result<void>> {
+      try {
+        await del(`/memories/${encodeURIComponent(input.id)}`)
+        return ok(undefined)
       } catch (error) {
         return fail(error)
       }

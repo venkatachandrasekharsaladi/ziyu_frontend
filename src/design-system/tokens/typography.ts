@@ -130,6 +130,19 @@ export const typography = {
     letterSpacing: 1.1,
     textTransform: 'uppercase',
   },
+  /**
+   * `FlashCard`'s big number — "1,395 days", "8 trips". Figma 3337:549.
+   *
+   * Sits right beside `wordmark` and `h3` in size (20-22pt semibold) but
+   * means neither of those: `wordmark` is reserved for the product name and
+   * `h3` for a section title, so a stat tile's own headline gets its own
+   * slot rather than borrowing either one's reserved meaning.
+   */
+  statValue: {
+    fontFamily: fontFamily.semibold,
+    fontSize: 20,
+    lineHeight: 26,
+  },
 } as const
 
 export type Typography = typeof typography

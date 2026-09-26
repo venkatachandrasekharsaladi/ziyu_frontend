@@ -67,6 +67,7 @@ export function MemoriesHomeScreen() {
 
   const add = useCallback(() => router.push('/(app)/memories/new'), [router])
   const search = useCallback(() => router.push('/(app)/memories/search'), [router])
+  const favorites = useCallback(() => router.push('/(app)/memories/favorites'), [router])
   const open = useCallback((id: string) => router.push(`/(app)/memories/${id}`), [router])
   const albums = useCallback(() => router.push('/(app)/memories/albums'), [router])
   const onThisDayScreen = useCallback(() => router.push('/(app)/memories/on-this-day'), [router])
@@ -109,6 +110,7 @@ export function MemoriesHomeScreen() {
       <View style={styles.actions}>
         <Button label={COPY.home.add} onPress={add} />
         <Button label={COPY.home.search} onPress={search} variant="outline" />
+        <Button label={COPY.home.favoritesLabel} onPress={favorites} variant="outline" />
       </View>
 
       {onThisDay ? (

@@ -13,6 +13,7 @@ import { Stack } from 'expo-router'
 import * as SplashScreen from 'expo-splash-screen'
 import { useEffect } from 'react'
 import { Pressable, Text, View } from 'react-native'
+import { GestureHandlerRootView } from 'react-native-gesture-handler'
 import { SafeAreaProvider } from 'react-native-safe-area-context'
 
 import { useStackScreenOptions } from '@/design-system/patterns/useStackScreenOptions'
@@ -59,20 +60,26 @@ export default function RootLayout() {
 
   if (bootstrapPhase === 'offline') {
     return (
-      <SafeAreaProvider>
-        <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', gap: 16, padding: 24 }}>
-          <Text accessibilityRole="alert">LoveOS could not restore your session.</Text>
-          <Pressable accessibilityRole="button" onPress={retryBootstrap}>
-            <Text>Try again</Text>
-          </Pressable>
-        </View>
-      </SafeAreaProvider>
+      <GestureHandlerRootView style={{ flex: 1 }}>
+        <SafeAreaProvider>
+          <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', gap: 16, padding: 24 }}>
+            <Text accessibilityRole="alert">LoveOS could not restore your session.</Text>
+            <Pressable accessibilityRole="button" onPress={retryBootstrap}>
+              <Text>Try again</Text>
+            </Pressable>
+          </View>
+        </SafeAreaProvider>
+      </GestureHandlerRootView>
     )
   }
 
   return (
-    <SafeAreaProvider>
-      <Stack screenOptions={screenOptions} />
-    </SafeAreaProvider>
+    // `CardStack`'s drag gesture needs a `GestureHandlerRootView` ancestor —
+    // once, at the root, rather than per screen.
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <SafeAreaProvider>
+        <Stack screenOptions={screenOptions} />
+      </SafeAreaProvider>
+    </GestureHandlerRootView>
   )
 }

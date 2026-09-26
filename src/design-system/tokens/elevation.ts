@@ -34,6 +34,12 @@ export const elevation = {
    * about to cover.
    */
   composer: '0px -2px 12px 0px rgba(103, 75, 181, 0.10)',
+  /**
+   * `CardStack`'s front card, while held under a finger. Heavier than
+   * anything else here on purpose — every other elevation is a resting
+   * surface, and this is the one card actively being dragged.
+   */
+  held: '0px 20px 25px -5px rgba(0, 0, 0, 0.35), 0px 8px 10px -6px rgba(0, 0, 0, 0.35)',
 } as const
 
 export type Elevation = typeof elevation

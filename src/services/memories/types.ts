@@ -20,6 +20,12 @@ export type Memory = {
   caption?: string
   location?: string
   photoUri?: string
+  /** A local (or, once uploaded, remote) video clip — same honesty as `photoUri`. */
+  videoUri?: string
+  /** A recorded voice note attached to this memory. */
+  voiceUri?: string
+  /** Required alongside `voiceUri` — a player needs a length before the clip loads. */
+  voiceDurationMs?: number
   /** Private to the couple — the design calls it "Our Note". */
   note?: string
   /** The signed-in member's private reciprocal note. */
@@ -39,10 +45,15 @@ export type NewMemory = Omit<
   'id' | 'favorite' | 'myPrivateNote' | 'partnerPrivateNote' | 'reciprocalNotesRevealed'
 > & { favorite?: boolean }
 
+/** Every field but `id` optional — an edit only sends what actually changed. */
+export type MemoryEdit = Partial<NewMemory>
+
 export type MemoriesService = {
   list: () => Promise<Result<Memory[]>>
   get: (input: { id: string }) => Promise<Result<Memory>>
   create: (input: NewMemory) => Promise<Result<Memory>>
+  update: (input: { id: string } & MemoryEdit) => Promise<Result<Memory>>
+  delete: (input: { id: string }) => Promise<Result<void>>
   updatePrivateNote: (input: { id: string; note: string }) => Promise<Result<Memory>>
   withdrawPrivateNote: (input: { id: string }) => Promise<Result<Memory>>
   toggleFavorite: (input: { id: string }) => Promise<Result<Memory>>

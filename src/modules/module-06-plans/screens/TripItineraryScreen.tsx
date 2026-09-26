@@ -1,5 +1,4 @@
 import { Feather } from '@expo/vector-icons'
-import { Image } from 'expo-image'
 import { LinearGradient } from 'expo-linear-gradient'
 import { useRouter } from 'expo-router'
 import { useState } from 'react'
@@ -8,6 +7,7 @@ import { StyleSheet, useUnistyles } from 'react-native-unistyles'
 
 import { TRIP_ITINERARY_COPY } from '@/copy/trips'
 import { AppScreenLayout } from '@/design-system/patterns/AppScreenLayout'
+import { CoverPhotoField } from '@/design-system/patterns/CoverPhotoField'
 import { Button } from '@/design-system/primitives/Button'
 import { Text } from '@/design-system/primitives/Text'
 import { Chip } from '@/modules/module-06-plans/components/Chip'
@@ -20,18 +20,6 @@ import { SHOW_ITINERARY_PREVIEW } from '@/modules/module-06-plans/preview/previe
 import { SAMPLE_TRIP_EXTRAS, SAMPLE_TRIP_IDEA } from '@/sample/plans'
 import { usePlansStore } from '@/state/plansStore'
 import { useRelationshipStore } from '@/state/relationshipStore'
-
-/**
- * Fills its parent, as a PLAIN object — Unistyles styles do not survive the trip
- * into expo-image. See `expoImageStyles.test.ts`.
- */
-const IMAGE_FILL = {
-  position: 'absolute',
-  top: 0,
-  left: 0,
-  right: 0,
-  bottom: 0,
-} as const
 
 /**
  * M06-S03 · The itinerary. Figma 3482:15 ("Our Little Adventure").
@@ -57,6 +45,7 @@ export function TripItineraryScreen() {
   const selectedDay = usePlansStore((state) => state.selectedDay)
   const selectDay = usePlansStore((state) => state.selectDay)
   const toggleMomentSaved = usePlansStore((state) => state.toggleMomentSaved)
+  const setTripCover = usePlansStore((state) => state.setTripCover)
 
   const profile = useRelationshipStore((state) => state.profile)
   const partner = useRelationshipStore((state) => state.partner)
@@ -74,14 +63,7 @@ export function TripItineraryScreen() {
     <AppScreenLayout activeTab="plans" onBack={() => router.back()}>
       {/* HERO */}
       <View style={styles.hero}>
-        {trip.coverUri ? (
-          <Image
-            source={{ uri: trip.coverUri }}
-            style={IMAGE_FILL}
-            contentFit="cover"
-            transition={200}
-          />
-        ) : null}
+        <CoverPhotoField uri={trip.coverUri} onChange={setTripCover} testID="trip-cover" />
 
         <LinearGradient
           colors={['transparent', theme.colors.surface.scrim]}
@@ -288,6 +270,7 @@ const styles = StyleSheet.create((theme) => ({
     padding: theme.spacing.lg,
     borderRadius: theme.radii.panel,
     backgroundColor: theme.colors.surface.soft,
+    boxShadow: theme.elevation.illustration,
     overflow: 'hidden',
   },
   heroBadge: {
