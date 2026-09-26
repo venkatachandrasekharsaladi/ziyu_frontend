@@ -1,6 +1,7 @@
 import { render } from '@testing-library/react-native'
 import type { ReactElement, ReactNode } from 'react'
 import { Dimensions } from 'react-native'
+import { GestureHandlerRootView } from 'react-native-gesture-handler'
 import { SafeAreaProvider } from 'react-native-safe-area-context'
 
 /**
@@ -63,7 +64,11 @@ export function renderScreen(element: ReactElement, options: RenderScreenOptions
   Dimensions.set({ window: { width, height: metrics.frame.height, scale: 2, fontScale: 1 } })
 
   function ScreenWrapper({ children }: { children: ReactNode }) {
-    return <SafeAreaProvider initialMetrics={metrics}>{children}</SafeAreaProvider>
+    return (
+      <GestureHandlerRootView style={{ flex: 1 }}>
+        <SafeAreaProvider initialMetrics={metrics}>{children}</SafeAreaProvider>
+      </GestureHandlerRootView>
+    )
   }
 
   return render(element, { wrapper: ScreenWrapper })

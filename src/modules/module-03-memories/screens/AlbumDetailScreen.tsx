@@ -55,7 +55,7 @@ export function AlbumDetailScreen() {
     <AppScreenLayout activeTab="memories" onBack={back}>
       <View style={styles.hero}>
         <Image
-          source={{ uri: album.coverUri }}
+          source={{ uri: album.heroUri }}
           // Plain style object — Unistyles styles do not reach expo-image.
           style={{
             position: 'absolute',
@@ -66,6 +66,7 @@ export function AlbumDetailScreen() {
             backgroundColor: theme.colors.surface.soft,
           }}
           contentFit="cover"
+          contentPosition={album.heroContentPosition ?? 'center'}
           transition={200}
           testID={`album-hero-${album.key}`}
         />

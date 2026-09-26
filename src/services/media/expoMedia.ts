@@ -1,11 +1,24 @@
 import * as ImagePicker from 'expo-image-picker'
 
-import type { MediaService, PickedPhoto, PickOptions, Result } from '@/services/media/types'
+import type {
+  MediaService,
+  PickedPhoto,
+  PickedVideo,
+  PickOptions,
+  Result,
+} from '@/services/media/types'
 
 function ok(asset: ImagePicker.ImagePickerAsset): Result<PickedPhoto> {
   return {
     ok: true,
     value: { uri: asset.uri, width: asset.width, height: asset.height },
+  }
+}
+
+function okVideo(asset: ImagePicker.ImagePickerAsset): Result<PickedVideo> {
+  return {
+    ok: true,
+    value: { uri: asset.uri, durationMs: asset.duration ?? undefined },
   }
 }
 
@@ -22,6 +35,14 @@ function fromResult(result: ImagePicker.ImagePickerResult): Result<PickedPhoto> 
   const asset = result.assets?.[0]
 
   return asset ? ok(asset) : { ok: false, error: { code: 'UNKNOWN' } }
+}
+
+function fromVideoResult(result: ImagePicker.ImagePickerResult): Result<PickedVideo> {
+  if (result.canceled) return { ok: false, error: { code: 'CANCELLED' } }
+
+  const asset = result.assets?.[0]
+
+  return asset ? okVideo(asset) : { ok: false, error: { code: 'UNKNOWN' } }
 }
 
 /**
@@ -76,6 +97,32 @@ export function createExpoMediaService(): MediaService {
             aspect: options.aspect,
             quality: 0.9,
           }),
+        )
+      } catch {
+        return { ok: false, error: { code: 'UNAVAILABLE' } }
+      }
+    },
+
+    async pickVideo() {
+      try {
+        const permission = await ImagePicker.requestMediaLibraryPermissionsAsync()
+
+        if (!permission.granted) return { ok: false, error: { code: 'PERMISSION_DENIED' } }
+
+        return fromVideoResult(await ImagePicker.launchImageLibraryAsync({ mediaTypes: ['videos'] }))
+      } catch {
+        return { ok: false, error: { code: 'UNAVAILABLE' } }
+      }
+    },
+
+    async takeVideo() {
+      try {
+        const permission = await ImagePicker.requestCameraPermissionsAsync()
+
+        if (!permission.granted) return { ok: false, error: { code: 'PERMISSION_DENIED' } }
+
+        return fromVideoResult(
+          await ImagePicker.launchCameraAsync({ mediaTypes: ['videos'] }),
         )
       } catch {
         return { ok: false, error: { code: 'UNAVAILABLE' } }

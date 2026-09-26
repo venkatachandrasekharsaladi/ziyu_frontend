@@ -46,8 +46,9 @@ export const HOME_DASHBOARD_COPY = {
 
   /** "A memory worth keeping" — the featured memory card. */
   featuredLabel: 'A memory worth keeping',
-  featuredBackstory: 'Backstory',
-  featuredFavorite: 'Favourite',
+  /** Figma names these "Open Memory" and "Favourites" — not "Backstory"/"Favourite". */
+  featuredBackstory: 'Open Memory',
+  featuredFavorite: 'Favourites',
   featuredNotePrompt: 'Add story….',
 
   /** "Your little world" — the stat tiles. Annotated `←need this section`. */

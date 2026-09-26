@@ -22,6 +22,7 @@ export const MEMORIES_COPY = {
     albumsLabel: 'Your albums',
     viewAll: 'View all',
     onThisDayLabel: 'On this day',
+    favoritesLabel: 'Favorites',
     recentlyAddedLabel: 'Recently added',
     yesterday: 'Yesterday',
     voiceNote: 'Voice note',
@@ -39,11 +40,27 @@ export const MEMORIES_COPY = {
     addedBy: (name: string) => `Added by ${name}`,
     missing: 'That memory could not be found.',
     back: 'Back to memories',
+    edit: 'Edit',
+    delete: 'Delete',
+    deleteConfirm: {
+      title: 'Delete this memory?',
+      body: 'This cannot be undone.',
+      confirm: 'Delete',
+      cancel: 'Keep it',
+    },
     errors: {
       NOT_FOUND: 'That memory could not be found.',
       NETWORK: 'No connection. Check your network and try again.',
       UNKNOWN: 'Something went wrong. Try again.',
     },
+  },
+  edit: {
+    heading: 'Edit this memory',
+    submit: 'Save Changes',
+  },
+  favorites: {
+    heading: 'Favorites',
+    empty: 'Nothing favorited yet.',
   },
   add: {
     heading: 'Add a memory',

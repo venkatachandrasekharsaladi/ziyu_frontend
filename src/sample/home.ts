@@ -50,10 +50,13 @@ export const SAMPLE_HOME = {
   /** "Little things" — the pinned reminders row. */
   littleThings: [{ key: 'dinner', text: 'Remember to book our anniversary dinner.' }],
 
-  /** "Upcoming" list from the third variant. */
+  /**
+   * "Upcoming" list from the third variant. `days` is sample-only, the same
+   * way `comingUp`'s is — it feeds the same countdown pill.
+   */
   upcomingEvents: [
-    { key: 'movie', icon: 'film', label: 'Movie Night', detail: 'Friday, 8 PM' },
-    { key: 'dinner', icon: 'coffee', label: "Dinner at Luigi's", detail: 'Sunday, 7 PM' },
+    { key: 'movie', icon: 'film', label: 'Movie Night', detail: 'Friday, 8 PM', days: 2 },
+    { key: 'dinner', icon: 'coffee', label: "Dinner at Luigi's", detail: 'Sunday, 7 PM', days: 4 },
   ],
 
   /**

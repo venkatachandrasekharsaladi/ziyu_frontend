@@ -1,4 +1,5 @@
 import type { WithPhotos } from '@/modules/module-03-memories/photos'
+import { LOCAL_PHOTO } from '@/sample/localPhotos'
 import { samplePhoto, samplePhotoSquare } from '@/sample/photos'
 
 /**
@@ -26,16 +27,12 @@ import { samplePhoto, samplePhotoSquare } from '@/sample/photos'
 export const SAMPLE_MEMORIES: WithPhotos[] = [
   {
     id: 'sample-rome-coffee',
-    photos: [
-      samplePhoto('coffeeTable'),
-      samplePhoto('coffeeToast'),
-      samplePhoto('cafeInterior'),
-    ],
+    photos: [LOCAL_PHOTO.heroMemory, LOCAL_PHOTO.romeCoffeeMemory, LOCAL_PHOTO.memoriesCafe],
     title: 'Coffee, sunshine, and nowhere to be.',
     date: '2023-10-14',
     caption: 'Rome · Oct 14, 2023',
     location: 'Rome',
-    photoUri: samplePhoto('coffeeTable'),
+    photoUri: LOCAL_PHOTO.heroMemory,
     note: 'You ordered for both of us in terrible Italian and it worked.',
     tags: ['Us', 'Dates'],
     favorite: true,
@@ -43,17 +40,12 @@ export const SAMPLE_MEMORIES: WithPhotos[] = [
   },
   {
     id: 'sample-paris-notre-dame',
-    photos: [
-      samplePhoto('parisDusk'),
-      samplePhoto('parisDay'),
-      samplePhoto('parisDusk'),
-      samplePhoto('parisDay'),
-    ],
+    photos: [LOCAL_PHOTO.parisUnderTrips],
     title: 'First time seeing the Eiffel Tower.',
     date: '2023-08-14',
     caption: 'Paris',
     location: 'Paris',
-    photoUri: samplePhoto('parisDusk'),
+    photoUri: LOCAL_PHOTO.parisUnderTrips,
     tags: ['Trips', 'Us'],
     favorite: true,
     addedBy: 'Sweatcha',
@@ -103,7 +95,7 @@ export const SAMPLE_MEMORIES: WithPhotos[] = [
     title: 'Caught mid-laugh.',
     date: '2024-05-02',
     caption: 'Yesterday',
-    photoUri: samplePhoto('caughtLaughing'),
+    photoUri: LOCAL_PHOTO.recentlyAdded,
     tags: ['Us'],
     favorite: false,
     addedBy: 'Sweatcha',

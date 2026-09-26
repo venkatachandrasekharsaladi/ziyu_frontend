@@ -14,9 +14,9 @@ import { StyleSheet, useUnistyles } from 'react-native-unistyles'
 
 import { HOME_DASHBOARD_COPY as COPY } from '@/copy/homeDashboard'
 import { AppScreenLayout } from '@/design-system/patterns/AppScreenLayout'
-import { CardStack } from '@/design-system/patterns/CardStack'
 import { CountUp } from '@/design-system/primitives/CountUp'
 import { EventRow } from '@/design-system/patterns/EventRow'
+import { OccasionCard } from '@/design-system/patterns/OccasionCard'
 import { SectionPanel } from '@/design-system/patterns/SectionPanel'
 import { Button } from '@/design-system/primitives/Button'
 import { Card } from '@/design-system/primitives/Card'
@@ -30,6 +30,7 @@ import { PhotoMemoryCard } from '@/modules/module-03-memories/components/PhotoMe
 import { USE_SAMPLE_CONTENT } from '@/sample'
 import { SAMPLE_HOME } from '@/sample/home'
 import { SAMPLE_MEMORIES } from '@/sample/memories'
+import { memoriesService } from '@/services/memories'
 import { useRelationshipStore } from '@/state/relationshipStore'
 import { useSpaceStore } from '@/state/spaceStore'
 import { useStoryStore } from '@/state/storyStore'
@@ -53,6 +54,9 @@ const DATE_ICONS: Partial<Record<DateKey | string, keyof typeof Feather.glyphMap
   firstMeeting: 'star',
 }
 
+/** `FlashCard`'s fixed width in the "Your little world" row. Figma 3337:542 etc. */
+const STAT_CELL_WIDTH = 140
+
 /**
  * M02-S01 — Home Dashboard. Figma `Ziyu`, the three dashboard variants plus the
  * "List of Feature on Home Screen" note pinned beside them.
@@ -63,11 +67,12 @@ const DATE_ICONS: Partial<Record<DateKey | string, keyof typeof Feather.glyphMap
  * things". The two sections the canvas annotates `←need this section` are the
  * stat tiles and "Coming up".
  *
- * The list sections are `SectionPanel` + `EventRow`, per the Stitch frame: an
- * `h3` title and inset row cards on one grouped surface, replacing the muted
- * uppercase caption over loose cards. "Coming up" and "Upcoming" both get it —
- * they are the same pattern twice on one screen, and giving them two different
- * treatments would only read as a bug.
+ * "Coming up" is `SectionPanel` + `EventRow`, per the Stitch frame: an `h3`
+ * title and inset row cards on one grouped surface, replacing the muted
+ * uppercase caption over loose cards. "Upcoming" is the same list shape
+ * (Figma 3337:596 — icon badge, title, detail, countdown pill) through
+ * `OccasionCard` instead of `EventRow`, since its badge is a circle rather
+ * than `EventRow`'s square tile — no stack, no swipe, both are plain lists.
  *
  * Real data wins wherever the story store holds it — days together and the
  * countdowns are still computed, never invented. Sample content fills the rest
@@ -175,8 +180,17 @@ export function HomeDashboardScreen() {
     ? favoriteOverrides[currentFeatured.id] ?? currentFeatured.favorite
     : false
 
-  const toggleFavorite = useCallback((id: string, current: boolean) => {
-    setFavoriteOverrides((overrides) => ({ ...overrides, [id]: !current }))
+  // Real, not local-only: a sample memory has no record in the store to
+  // flip, so a `NOT_FOUND` there still updates `favoriteOverrides` — same
+  // fallback `MemoryDetailScreen` uses for the identical reason.
+  const toggleFavorite = useCallback(async (id: string, current: boolean) => {
+    const result = await memoriesService.toggleFavorite({ id })
+
+    if (result.ok) {
+      setFavoriteOverrides((overrides) => ({ ...overrides, [id]: result.value.favorite }))
+    } else if (result.error.code === 'NOT_FOUND') {
+      setFavoriteOverrides((overrides) => ({ ...overrides, [id]: !current }))
+    }
   }, [])
 
   // The mini calendar widget shows THIS month only — the couple's key dates
@@ -233,7 +247,7 @@ export function HomeDashboardScreen() {
             >
               {featuredSet.map((memory) => (
                 <View key={memory.id} style={{ width: pagerWidth || '100%' }}>
-                  <PhotoMemoryCard memory={memory} onPress={openMemory} />
+                  <PhotoMemoryCard memory={memory} onPress={openMemory} photoTap="press" />
                 </View>
               ))}
             </ScrollView>
@@ -293,19 +307,26 @@ export function HomeDashboardScreen() {
             {COPY.littleWorldLabel}
           </Text>
 
-          <CardStack
-            items={statTiles}
-            keyExtractor={(stat) => stat.key}
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            snapToInterval={STAT_CELL_WIDTH + theme.spacing.md}
+            decelerationRate="fast"
+            contentContainerStyle={styles.tileRow}
             testID="stat-rail"
-            renderItem={(stat) => (
-              <FlashCard
-                icon={stat.icon as keyof typeof Feather.glyphMap}
-                value={stat.value}
-                label={stat.label}
-                unit={stat.unit || undefined}
-              />
-            )}
-          />
+          >
+            {statTiles.map((stat, i) => (
+              <View key={stat.key} style={styles.statCell}>
+                <FlashCard
+                  icon={stat.icon as keyof typeof Feather.glyphMap}
+                  value={stat.value}
+                  label={stat.label}
+                  unit={stat.unit || undefined}
+                  index={i}
+                />
+              </View>
+            ))}
+          </ScrollView>
         </View>
       ) : null}
 
@@ -396,21 +417,16 @@ export function HomeDashboardScreen() {
 
       {USE_SAMPLE_CONTENT ? (
         <SectionPanel title={COPY.upcomingLabel}>
-          <CardStack
-            items={SAMPLE_HOME.upcomingEvents}
-            keyExtractor={(event) => event.key}
-            testID="upcoming-stack"
-            renderItem={(event, i) => (
-              <Card>
-                <EventRow
-                  icon={event.icon as keyof typeof Feather.glyphMap}
-                  label={event.label}
-                  detail={event.detail}
-                  index={i}
-                />
-              </Card>
-            )}
-          />
+          {SAMPLE_HOME.upcomingEvents.map((event, i) => (
+            <OccasionCard
+              key={event.key}
+              icon={event.icon as keyof typeof Feather.glyphMap}
+              label={event.label}
+              detail={event.detail}
+              trailing={COPY.daysShort(event.days)}
+              index={i}
+            />
+          ))}
         </SectionPanel>
       ) : null}
 
@@ -465,6 +481,12 @@ const styles = StyleSheet.create((theme) => ({
   },
   section: {
     gap: theme.spacing.md,
+  },
+  tileRow: {
+    gap: theme.spacing.md,
+  },
+  statCell: {
+    width: STAT_CELL_WIDTH,
   },
   featuredActions: {
     flexDirection: 'row',
